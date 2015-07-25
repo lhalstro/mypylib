@@ -11,13 +11,11 @@ import numpy as np
 ########################################################################
 ### ISENTROPIC FLOW RELATIONS ##########################################
 ########################################################################
-def SpeedOfSound(T, gamma=1.4, R=1716.49):
-    """Calculate speed of sound [ft/s]
-    Input temperature, specific heat ratio, and gas constant
-    Default: """
+def SpeedOfSound(T, R=287.06, gamma=1.4):
+    """Calculate speed of sound
+    Input temperature, specific heat ratio, and specific gas constant (R/M)
+    Default: R in J*kg^-1*K^-1.  For imperial: R=1716.49 ft*lbf*slug^-1*R^-1"""
     return np.sqrt(gamma * R * T)
-
-
 
 ########################################################################
 ### VECTOR/TRIG CALCS ##################################################

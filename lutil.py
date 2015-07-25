@@ -10,8 +10,6 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 
-
-
 def cmd(command):
     """Execute a shell command.
     Execute multiple commands by separating with semicolon+space: '; '
@@ -20,8 +18,23 @@ def cmd(command):
     #print proc_stdout
     proc_stdout = process.communicate()[0].strip()
 
+def MakeOutputDir(savedir):
+    """make results output directory if it does not already exist.
+    instring --> directory path from script containing folder
+    """
+    #split individual directories
+    splitstring = savedir.split('/')
+    prestring = ''
+    for string in splitstring:
+        prestring += string + '/'
+        try:
+            os.mkdir(prestring)
+        except Exception:
+            pass
 
-
+########################################################################
+### PLOTTING ###########################################################
+########################################################################
 
 #PLOT FORMATTING
 # Configure figures for production
@@ -107,16 +120,4 @@ def ShowPlot(showplot):
     if showplot==1:
         plt.show()
 
-def MakeOutputDir(savedir):
-    """make results output directory if it does not already exist.
-    instring --> directory path from script containing folder
-    """
-    #split individual directories
-    splitstring = savedir.split('/')
-    prestring = ''
-    for string in splitstring:
-        prestring += string + '/'
-        try:
-            os.mkdir(prestring)
-        except Exception:
-            pass
+
