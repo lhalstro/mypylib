@@ -15,8 +15,9 @@ print(mag)
 ang = aero.Ang(3, 4)
 print(ang)
 
-comps = aero.Comps(mag, ang)
+comps = aero.Comps(mag, ang, 'deg')
 print(comps)
 
-
-PlotStart('title', 'xlbl', 'ylbl')
+print(aero.Rotate(1, 2, 3, 0, 90, 0))
+print(aero.Global2Body(100, 0, 0, 20, 0))
+print(aero.Body2Lift(100, 0, 0, 0, 20))
