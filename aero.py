@@ -9,6 +9,37 @@ vector/trig, etc.
 import numpy as np
 
 ########################################################################
+### FLUIDS #############################################################
+########################################################################
+
+def V2Cp(u, v, Vinf):
+    """Get pressure coefficient given cartesian velocity components
+    using bernoulli'strength
+    u--> x-velocity component
+    v--> y-velocity component
+    Vinf--> freestream velocity
+    """
+    Vmag = Mag(u, v)
+    Cp = 1 - (Vmag / Vinf) ** 2
+    return Cp
+
+########################################################################
+### 3D AERO ############################################################
+########################################################################
+
+def AR(b, S):
+    """Find aspect ratio of a wing."""
+    AR = b ** 2 / S
+    return AR
+
+def CDi(CL, AR, e=1):
+    """Find induced drag coefficient of a wing given 3D lift coefficient,
+    wing aspect ratio, and oswald efficiency
+    (Anderson Eqn 5.62"""
+    Cdi = CL ** 2 / (np.pi * e * AR)
+    return Cdi
+
+########################################################################
 ### ISENTROPIC FLOW RELATIONS ##########################################
 ########################################################################
 
@@ -17,6 +48,34 @@ def SpeedOfSound(T, R=287.06, gamma=1.4):
     Input temperature, specific heat ratio, and specific gas constant (R/M)
     Default: R in J*kg^-1*K^-1.  For imperial: R=1716.49 ft*lbf*slug^-1*R^-1"""
     return np.sqrt(gamma * R * T)
+
+def T0_T(M, gamma=1.4):
+    """Find ratio of stagnation temperature over static temperature.
+    (Anderson Eqn 8.40)"""
+    return 1 + (gamma - 1) / 2 * M ** 2
+
+def P0_P(M, gamma=1.4):
+    """Find ratio of stagnation presure over static pressure.
+    (Anderson Eqn 8.41 and 8.42)"""
+    return T0_T(M, gamma) ** (gamma / (gamma - 1))
+
+def rho0_rho(M, gamma=1.4):
+    """Find ratio of stagnation density over static density.
+    (Anderson Eqn 8.41 and 8.43)"""
+    return T0_T(M, gamma) ** gamma
+
+########################################################################
+### TURBULENCE #########################################################
+########################################################################
+
+def Perturbation(mean, inst):
+    """ Given mean value and list of instantaneous values at multiple locations
+    over a time interval, find perturbation values.
+    """
+    pert = np.subtract(inst, mean)
+    return pert
+
+#OTHER FUNCTIONS TO ADD:  Reynolds stress, TKE, averaging, see ATM230 final
 
 ########################################################################
 ### FORCES/MOMENTS #####################################################
@@ -66,7 +125,7 @@ def Comps(mag, ang, unit='deg'):
 def Rotate(x, y, z, phi, theta=0, psi=0, unit='deg'):
     """Perform 3D euler coordinate rotation.  Angles are rotations
     about x,y,z axis, respectively and are input in degrees
-    IMPROVEMENTS:  add option to input radians, simple roation for fewer
+    IMPROVEMENTS:  only perform simple roation for fewer
     rotation angles."""
     #input vector
     vec = np.matrix([[x], [y], [z]])

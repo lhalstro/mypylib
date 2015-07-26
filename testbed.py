@@ -21,3 +21,14 @@ print(comps)
 print(aero.Rotate(1, 2, 3, 0, 90, 0))
 print(aero.Global2Body(100, 0, 0, 20, 0))
 print(aero.Body2Lift(100, 0, 0, 0, 20))
+
+T0T = aero.T0_T(2)
+P0P = aero.P0_P(2)
+print(T0T, P0P)
+
+b, S = 10, 100
+AR = aero.AR(b, S)
+CDi = aero.CDi(2, AR)
+print(AR, CDi)
+
+print(aero.V2Cp(2, 1, 5))

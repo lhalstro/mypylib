@@ -120,4 +120,55 @@ def ShowPlot(showplot):
     if showplot==1:
         plt.show()
 
+def PolyFit(x, y, order, n, showplot=0):
+    """Polynomial fit xdata vs ydata points
+    x --> independent variable data points vector
+    y --> dependent variable data points vector
+    order --> order of polynomial fit
+    n --> number of points in polynomial fit
+    showplot --> '1' to show plot of data fit
+    Returns:
+    function of polynomial fit
+    """
+    #New independent variable vector:
+    xmin, xmax = x[0], x[-1]
+    x_poly = np.linspace(xmin, xmax, n)
+    fit = np.polyfit(x, y, order)
+    polyfit = np.poly1d(fit)
+    y_poly = polyfit(x_poly)
+    #Plot Poly Fit
+    plt.figure()
+    plt.title(str(order) + '-Order Polynomial Fit', fontsize=14)
+    plt.xlabel('x', fontsize=14)
+    plt.ylabel('y', fontsize=14)
+    plt.plot(x, y, 'rx', label='Data')
+    plt.plot(x_poly, y_poly, 'b', label='Fit')
+    plt.legend(loc='best')
+    if showplot == 1:
+        plt.show()
+    return polyfit
+
+########################################################################
+### MATH ###############################################################
+########################################################################
+
+def RMSerror(num, ana):
+    """Find RMS error of a numeric solution compared to the analytic solution"""
+    n = len(num)
+    rms = 0
+    for i in range(0,n):
+        rms += ( (num[i] - ana[i]) ** 2. )
+    rms = (rms / n) ** (1. / 2.)
+    return rms
+
+def NRMS(num, ana, mag):
+    """Find normalized RMS error of a numeric solution compared to analytic"""
+    return RMSerror(num, ana) / mag
+
+
+
+
+
+
+
 
