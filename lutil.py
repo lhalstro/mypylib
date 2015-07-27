@@ -114,6 +114,7 @@ def SavePlot(savename, overwrite=1):
         if overwrite == 0: return
         else: os.remove(savename)
     plt.savefig(savename, bbox_inches='tight')
+    plt.close()
 
 def ShowPlot(showplot):
     """Show plot if variable showplot is 1"""
