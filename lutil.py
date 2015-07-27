@@ -32,6 +32,16 @@ def MakeOutputDir(savedir):
         except Exception:
             pass
 
+def GetParentDir(savename):
+    """Get parent directory from path of file"""
+    #split individual directories
+    splitstring = savename.split('/')
+    parent = ''
+    #concatenate all dirs except bottommost
+    for string in splitstring[:-1]:
+        parent += string + '/'
+    return parent
+
 ########################################################################
 ### PLOTTING ###########################################################
 ########################################################################
@@ -111,8 +121,11 @@ def SavePlot(savename, overwrite=1):
     """Save file given save path.  Do not save if file exists
     or if variable overwrite is 1"""
     if os.path.isfile(savename):
-        if overwrite == 0: return
+        if overwrite == 0:
+            print('     Overwrite is off')
+            return
         else: os.remove(savename)
+    MakeOutputDir(GetParentDir(savename))
     plt.savefig(savename, bbox_inches='tight')
     plt.close()
 
