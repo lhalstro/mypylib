@@ -27,6 +27,18 @@ def V2Cp(u, v, Vinf):
 ### 3D AERO ############################################################
 ########################################################################
 
+def AlphaT(alpha, beta, unit='deg'):
+    """Find total alpha. (angle between freestream velocity and x body axis
+    WITHIN the drag plane). ((Basically, AoA if beta was zero))
+    Return angle in units it was provided in"""
+    if unit == 'deg':
+        theta = np.radians(theta)
+        beta = np.radians(beta)
+    alphaT = np.arccos(np.cos(alpha) * np.cos(beta))
+    if unit == 'deg':
+        alphaT = np.degrees(alphaT)
+    return alphaT
+
 def AR(b, S):
     """Find aspect ratio of a wing."""
     AR = b ** 2 / S

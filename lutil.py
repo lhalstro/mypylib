@@ -167,7 +167,8 @@ def PolyFit(x, y, order, n, showplot=0):
 ########################################################################
 
 def RMSerror(num, ana):
-    """Find RMS error of a numeric solution compared to the analytic solution"""
+    """Find RMS error of a numeric solution compared to the
+    analytic solution"""
     n = len(num)
     rms = 0
     for i in range(0,n):
@@ -176,7 +177,8 @@ def RMSerror(num, ana):
     return rms
 
 def NRMS(num, ana, mag):
-    """Find normalized RMS error of a numeric solution compared to analytic"""
+    """Find normalized RMS error of a numeric solution compared to
+    analytic solution"""
     return RMSerror(num, ana) / mag
 
 
