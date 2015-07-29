@@ -106,7 +106,7 @@ def PlotLegendLabels(ax, handles, labels, loc='best', title=None, alpha=0.5):
     leg = ax.legend(handles, labels, loc=loc, title=title, fancybox=True)
     leg.get_frame().set_alpha(alpha)
     for label in leg.get_texts():
-        label.set_fontsize('small')
+        label.set_fontsize('large')
     return leg
 
 def ColorMap(ncolors, colormap='jet'):
@@ -127,12 +127,33 @@ def SavePlot(savename, overwrite=1):
         else: os.remove(savename)
     MakeOutputDir(GetParentDir(savename))
     plt.savefig(savename, bbox_inches='tight')
-    plt.close()
+    # plt.close()
 
 def ShowPlot(showplot):
     """Show plot if variable showplot is 1"""
-    if showplot==1:
+    if showplot == 1:
         plt.show()
+    else:
+        plt.close()
+
+def GridLines(ax, linestyle='--', color='k', which='major'):
+    """Plot grid lines for given axis.
+    Default dashed line, blach, major ticks
+    (use: 'color = p1.get_color()' to get color of a line 'p1')
+    """
+    ax.grid(True, which=which, linestyle=linestyle, color=color)
+
+def VectorMark(ax, x, y, nmark, color='k'):
+    """Mark line with arrow pointing in direction of x+.
+    Show nmark arrows
+    """
+    n = len(y)
+    indicies = np.linspace(1, n-2, nmark)
+    for ind in indicies:
+        #entries are x, y, dx, dy
+        xbase, ybase = x[ind], y[ind]
+        dx, dy = x[ind+1] - x[ind], y[ind+1] - y[ind]
+        ax.quiver(xbase, ybase, dx, dy ,angles='xy',scale_units='xy',scale=1)
 
 def PolyFit(x, y, order, n, showplot=0):
     """Polynomial fit xdata vs ydata points
