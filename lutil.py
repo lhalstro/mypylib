@@ -148,7 +148,12 @@ def VectorMark(ax, x, y, nmark, color='k'):
     Show nmark arrows
     """
     n = len(y)
-    indicies = np.linspace(1, n-2, nmark)
+    dm = int(len(y) / nmark)
+    # indicies = np.linspace(1, n-2, nmark)
+    indicies = [1]
+    while indicies[-1]+dm < len(y)-1:
+        indicies.append(indicies[-1] + dm)
+
     for ind in indicies:
         #entries are x, y, dx, dy
         xbase, ybase = x[ind], y[ind]
@@ -202,10 +207,8 @@ def NRMS(num, ana, mag):
     analytic solution"""
     return RMSerror(num, ana) / mag
 
-
-
-
-
+def CentralDiff(x2, x1, t2, t1):
+    diff = (x2 - x1) / (t2 - t1)
 
 
 

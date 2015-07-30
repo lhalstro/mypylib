@@ -123,7 +123,8 @@ def Mag(*args):
 def Ang(x, y):
     """ Input orthogonal x,y components.
     Return angle of vector sum with x-axis in degrees"""
-    ang = np.arctan(y / x) * 180 / np.pi
+    # ang = np.arctan(y / x) * 180 / np.pi
+    ang = np.arctan2(y, x) * 180 / np.pi
     return ang
 
 def Comps(mag, ang, unit='deg'):
