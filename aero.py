@@ -12,6 +12,10 @@ import numpy as np
 ### FLUIDS #############################################################
 ########################################################################
 
+def q(rho, V):
+    """Return dynamic pressure"""
+    return 0.5 * rho * V ** 2
+
 def V2Cp(u, v, Vinf):
     """Get pressure coefficient given cartesian velocity components
     using bernoulli'strength
