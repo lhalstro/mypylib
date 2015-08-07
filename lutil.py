@@ -7,6 +7,7 @@ DESCRIPTION:  File manipulation, matplotlib plotting and saving
 
 import subprocess
 import os
+import re
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -42,6 +43,30 @@ def GetParentDir(savename):
     for string in splitstring[:-1]:
         parent += string + '/'
     return parent
+
+def GetFilename(path):
+    """Get filename from path of file"""
+    parent = GetParentDir(path)
+    filename = FindBetween(path, parent)
+    return filename
+
+def NoWhitespace(str):
+    return re.search('[^\s]+', str).group()
+
+def FindBetween(str, before, after=None):
+    """Returns search for characters between 'before' and 'after characters
+    If after=None, return everything after 'before'"""
+    # value_regex = re.compile('(?<=' + before + ')(?P<value>.*?)(?='
+    #                                 + after + ')')
+    if after==None:
+        match = re.search(before + '(.*)$', str)
+        if match != None: return match.group(1)
+        else: return 'No Match'
+    else:
+        match = re.search('(?<=' + before + ')(?P<value>.*?)(?='
+                                    + after + ')', str)
+        if match != None: return match.group('value')
+        else: return 'No Match'
 
 ########################################################################
 ### PLOTTING ###########################################################
