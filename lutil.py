@@ -169,6 +169,13 @@ def GridLines(ax, linestyle='--', color='k', which='major'):
     """
     ax.grid(True, which=which, linestyle=linestyle, color=color)
 
+def TextBox(ax, boxtext, x=0.005, y=0.95, fontsize=font_box['size'],
+                                                    alpha=0.5, props=None):
+    if props == None:
+        props = dict(boxstyle='round', facecolor='white', alpha=alpha)
+    ax.text(x, y, boxtext, transform=ax.transAxes, fontsize=fontsize,
+            verticalalignment='top', bbox=props)
+
 def VectorMark(ax, x, y, nmark, color='k'):
     """Mark line with arrow pointing in direction of x+.
     Show nmark arrows
@@ -236,5 +243,7 @@ def NRMS(num, ana, mag):
 def CentralDiff(x2, x1, t2, t1):
     diff = (x2 - x1) / (t2 - t1)
 
-
+def DX(xmin, xmax, n):
+    """Find increment for n points within range between givein min/max"""
+    return (xmax - xmin) / (n - 1)
 
