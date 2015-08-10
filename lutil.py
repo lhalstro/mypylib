@@ -51,7 +51,8 @@ def GetFilename(path):
     return filename
 
 def NoWhitespace(str):
-    return re.search('[^\s]+', str).group()
+    """Return given string with all whitespace removed"""
+    return str.replace(' ', '')
 
 def FindBetween(str, before, after=None):
     """Returns search for characters between 'before' and 'after characters
@@ -222,6 +223,17 @@ def PolyFit(x, y, order, n, showplot=0):
     return polyfit
 
 ########################################################################
+### LATEX ##############################################################
+########################################################################
+
+def AddToSub(text, subadd):
+    """Add given subadd to end of subscript already existing in text.
+    Assumes no curly brackets {} in existing text"""
+    #split original text into main and subscript
+    split = text.split('_')
+    return split[0] + '_{' + split[1] + subadd + '}'
+
+########################################################################
 ### MATH ###############################################################
 ########################################################################
 
@@ -247,3 +259,10 @@ def DX(xmin, xmax, n):
     """Find increment for n points within range between givein min/max"""
     return (xmax - xmin) / (n - 1)
 
+########################################################################
+### GEOMETRY ###########################################################
+########################################################################
+
+def VolSphere(R):
+    """Find volume of a sphere"""
+    return 4.0 / 3.0 * np.pi * R ** 3.0
