@@ -69,6 +69,17 @@ def FindBetween(str, before, after=None):
         if match != None: return match.group('value')
         else: return 'No Match'
 
+def listify(nonlist, n=1):
+    """Given a single item, return a list n long (default 1).
+    given a list, do nothing"""
+    if type(nonlist) != list:
+        #Extend single vaule into n-length list
+        outlist = [nonlist] * n
+    else:
+        outlist = nonlist
+    return outlist
+
+
 ########################################################################
 ### PLOTTING ###########################################################
 ########################################################################
@@ -114,6 +125,9 @@ def PlotStart(title, xlbl, ylbl):
     plt.title(title, fontdict=font_tit)
     plt.xlabel(xlbl, fontdict=font_lbl)
     plt.ylabel(ylbl, fontdict=font_lbl)
+    #increase title spacing
+    ttl = ax.title
+    ttl.set_position([.5, 1.025])
     return fig, ax
 
 def Plot(ax, x, y, color, label, linestyle='-',
