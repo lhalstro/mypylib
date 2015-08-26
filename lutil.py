@@ -170,7 +170,7 @@ def SavePlot(savename, overwrite=1):
     plt.savefig(savename, bbox_inches='tight')
     # plt.close()
 
-def ShowPlot(showplot):
+def ShowPlot(showplot=1):
     """Show plot if variable showplot is 1"""
     if showplot == 1:
         plt.show()
