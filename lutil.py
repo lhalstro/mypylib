@@ -20,6 +20,13 @@ def cmd(command):
     proc_stdout = process.communicate()[0].strip()
     return proc_stdout
 
+def command(cmd):
+    """Execute shell command and return subprocees and subprocess output"""
+    process = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True)
+    #print proc_stdout
+    proc_stdout = process.communicate()[0].strip()
+    return process, proc_stdout
+
 def MakeOutputDir(savedir):
     """make results output directory if it does not already exist.
     instring --> directory path from script containing folder
