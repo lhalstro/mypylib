@@ -27,6 +27,15 @@ def V2Cp(u, v, Vinf):
     Cp = 1 - (Vmag / Vinf) ** 2
     return Cp
 
+def Re(v, L, rho=1.177, mu=1.846E-5):
+    """Calculate Reynolds number.  Default is metric units.
+    v --> reference velocity
+    L --> reference length
+    rho --> fluid density
+    mu --> fluid dynamic viscosity
+    """
+    return (rho * v * L / )
+
 ########################################################################
 ### 3D AERO ############################################################
 ########################################################################

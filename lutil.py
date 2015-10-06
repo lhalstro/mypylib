@@ -123,6 +123,7 @@ font_box = {'family' : 'arial',
             'weight' : 'normal',
             'size'   : 12,
             }
+font_tick = 16
 #Textbox Properties
 textbox_props = dict(boxstyle='round', facecolor='white', alpha=0.5)
 
@@ -131,7 +132,9 @@ def PlotStart(title, xlbl, ylbl):
     ax = fig.add_subplot(1, 1, 1)
     plt.title(title, fontdict=font_tit)
     plt.xlabel(xlbl, fontdict=font_lbl)
+    plt.xticks(fontsize=font_tick)
     plt.ylabel(ylbl, fontdict=font_lbl)
+    plt.yticks(fontsize=font_tick)
     #increase title spacing
     ttl = ax.title
     ttl.set_position([.5, 1.025])
