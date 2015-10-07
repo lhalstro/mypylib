@@ -127,13 +127,15 @@ font_tick = 16
 #Textbox Properties
 textbox_props = dict(boxstyle='round', facecolor='white', alpha=0.5)
 
-def PlotStart(title, xlbl, ylbl):
+def PlotStart(title, xlbl, ylbl, horzy='vertical'):
+    """Begin plot with title and axis labels
+    horzy --> vertical or horizontal y axis label"""
     fig = plt.figure()
     ax = fig.add_subplot(1, 1, 1)
     plt.title(title, fontdict=font_tit)
     plt.xlabel(xlbl, fontdict=font_lbl)
     plt.xticks(fontsize=font_tick)
-    plt.ylabel(ylbl, fontdict=font_lbl)
+    plt.ylabel(ylbl, fontdict=font_lbl, rotation=horzy)
     plt.yticks(fontsize=font_tick)
     #increase title spacing
     ttl = ax.title
