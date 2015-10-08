@@ -117,6 +117,13 @@ def PlotStart(title, xlbl, ylbl, horzy='vertical'):
     ttl.set_position([.5, 1.025])
     return fig, ax
 
+def MakeTwinx(ax, ylbl, horzy='vertical'):
+    """Make separate y-axis with label"""
+    ax2 = ax.twinx()
+    ax2.set_ylabel(ylbl, fontdict=font_lbl, rotation=horzy)
+    ax2.yticks(fontsize=font_tick)
+    return ax2
+
 def Plot(ax, x, y, color, label, linestyle='-',
             markerstyle='None', line=1.5, mark=5):
     """Enter 'Default' to keep default value if entering values for later
