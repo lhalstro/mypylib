@@ -132,8 +132,7 @@ def Plot(ax, x, y, color, label, linestyle='-',
                     linewidth=line, marker=markerstyle, markersize=mark)
 
 def PlotLegend(ax, loc='best', alpha=0.5, title=None):
-    leg = ax.legend(loc=loc, title=title, fancybox=True)
-    leg.get_frame().set_alpha(alpha)
+    leg = ax.legend(loc=loc, fancybox=True, framealpha=alpha, title=title)
     return leg
 
 def PlotLegendLabels(ax, handles, labels, loc='best', title=None, alpha=0.5):
