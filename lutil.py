@@ -259,6 +259,110 @@ def AddToSub(text, subadd):
     split = text.split('_')
     return split[0] + '_{' + split[1] + subadd + '}'
 
+def TexTable(filename, A, rows, cols, decimal_points='',
+                                            label='table', caption=''):
+    """Given matrix of data, column/row titles, write table to .tex file in
+    LaTeX format.
+    NOTES:  use formatters to put same text in each column entry (i.e. units)
+
+    filename --> name of savefile
+    A --> data to tablulate, i is row number, j is column
+    rows --> row titles
+    cols --> column titles (if one more title than # of columns, first title
+                will be above column of row titles)
+    decimal_points --> number of decimal points in table entries (Default is given format)
+    label --> label for table reference in latex, default 'table'
+    caption --> caption text for table, default is just table number
+    """
+    nx, ny = A.shape
+
+    #SEPARATE EACH COLUMN AND EACH ROW WITH A LINE
+    lines=0
+    col_sep = ' | ' if lines==1 else ' '
+    #BOLD TITLES
+    for i, r in enumerate(rows): rows[i] = '\\textbf{' + r + '}'
+    for i, c in enumerate(cols): cols[i] = '\\textbf{' + c + '}'
+    #BLANK LEFT COLUMN OPTION
+    if len(cols)==ny:
+        #If user did not provide a column title for the leftmost column:
+        #insert blank column title for leftmost column
+        cols = np.insert(cols, 0, '{}')
+
+    with open(filename, 'w') as f:
+        f.write('\\begin{table}[htb]\n')
+        f.write('\\begin{center}\n')
+        f.write('\caption{' + caption + '}\n')
+
+        #TABULAR PORTION
+        f.write('\\begin{tabular}{|c | ' + col_sep.join(['c'] * (len(cols)-1)) + '|}\n')
+        f.write('\hline\n')
+        f.write(' & '.join([str(col) for col in cols]) + ' \\\\\n')
+        f.write('\hline\n')
+        for i, row in enumerate(rows):
+            X = []
+            for x in A[i,:]:
+                if x > 1e2 or x< 10**-(decimal_points-1):
+                    #show value in scientific notation if it is too large or too small
+                    fmt = '{:.' + str(decimal_points) + 'e}'
+                else:
+                    #show value in floating point with specified decimals
+                    fmt = '{:.' + str(decimal_points) + 'f}'
+                X.append(fmt.format(x))
+            f.write(row + ' & ' + ' & '.join(X) + ' \\\\\n')
+            if lines==1: f.write('\hline\n')
+        if lines !=1: f.write('\hline\n')
+        f.write('\end{tabular}\n')
+
+        f.write('\label{' + label + '}\n')
+        f.write('\end{center}\n')
+        f.write('\end{table}\n')
+
+def TexTabular(filename, A, rows, cols, decimal_points=''):
+    """Given matrix of data, column/row titles, write tabular poriton of
+    table to .tex file in LaTeX format.
+    NOTES:  use formatters to put same text in each column entry (i.e. units)
+
+    filename --> name of savefile
+    A --> data to tablulate, i is row number, j is column
+    rows --> row titles
+    cols --> column titles (if one more title than # of columns, first title
+                will be above column of row titles)
+    decimal_points --> number of decimal points in table entries (Default is given format)
+    """
+    nx, ny = A.shape
+
+    #SEPARATE EACH COLUMN AND EACH ROW WITH A LINE
+    lines=0
+    col_sep = ' | ' if lines==1 else ' '
+    #BOLD TITLES
+    for i, r in enumerate(rows): rows[i] = '\\textbf{' + r + '}'
+    for i, c in enumerate(cols): cols[i] = '\\textbf{' + c + '}'
+    #BLANK LEFT COLUMN OPTION
+    if len(cols)==ny:
+        #If user did not provide a column title for the leftmost column:
+        #insert blank column title for leftmost column
+        cols = np.insert(cols, 0, '{}')
+
+    with open(filename, 'w') as f:
+        f.write('\\begin{tabular}{|c | ' + col_sep.join(['c'] * (len(cols)-1)) + '|}\n')
+        f.write('\hline\n')
+        f.write(' & '.join([str(col) for col in cols]) + ' \\\\\n')
+        f.write('\hline\n')
+        for i, row in enumerate(rows):
+            X = []
+            for x in A[i,:]:
+                if x > 1e2 or x< 10**-(decimal_points-1):
+                    #show value in scientific notation if it is too large or too small
+                    fmt = '{:.' + str(decimal_points) + 'e}'
+                else:
+                    #show value in floating point with specified decimals
+                    fmt = '{:.' + str(decimal_points) + 'f}'
+                X.append(fmt.format(x))
+            f.write(row + ' & ' + ' & '.join(X) + ' \\\\\n')
+            if lines==1: f.write('\hline\n')
+        if lines !=1: f.write('\hline\n')
+        f.write('\end{tabular}')
+
 ########################################################################
 ### MATH ###############################################################
 ########################################################################
