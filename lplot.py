@@ -136,11 +136,11 @@ def MakeTwinx(ax, ylbl, horzy='vertical'):
     return ax2
 
 def Plot(ax, x, y, color, label, linestyle='-',
-            markerstyle='None', line=1.5, mark=5):
+            marker='None', line=1.5, mark=5):
     """Enter 'Default' to keep default value if entering values for later
     variables"""
     return ax.plot(x, y, color=color, label=label, linestyle=linestyle,
-                    linewidth=line, marker=markerstyle, markersize=mark)
+                    linewidth=line, marker=marker, markersize=mark)
 
 def PlotLegend(ax, loc='best', alpha=0.5, title=None):
     """General legend command.  Use given handles and labels in plot
@@ -169,12 +169,14 @@ def ColorMap(ncolors, colormap='jet'):
     colors = [cmap(i) for i in np.linspace(0, 1, ncolors)]
     return colors
 
-def ColorBar(label, horzy='horizontal', colorby=None, ):
+def ColorBar(label, horzy='horizontal', ticks=None, colorby=None, pad=25):
     """Add colorbar with label.
     ax --> matplotlib axis object
     label --> colorbar label
     horzy --> label orientation
+    ticks --> manually provide colorbar tick location (default is automatic)
     colorby --> data to base colorbar on.  Default is whatever was plotted last
+    pad --> spacing of label from colorbar. positive is further away
     """
     if colorby == None:
         #MAKE COLORBAR
@@ -183,7 +185,7 @@ def ColorBar(label, horzy='horizontal', colorby=None, ):
         #MAKE COLORBAR WITH GIVEN DATA
         cb = plt.colorbar(colorby)
     #SET LABEL
-    cb.set_label(label, rotation=horzy, fontdict=font_lbl)
+    cb.set_label(label, rotation=horzy, fontdict=font_lbl, labelpad=pad)
     return cb
 
 def SavePlot(savename, overwrite=1):
