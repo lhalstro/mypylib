@@ -102,10 +102,21 @@ font_tick = 16
 #Textbox Properties
 textbox_props = dict(boxstyle='round', facecolor='white', alpha=0.5)
 
-def PlotStart(title, xlbl, ylbl, horzy='vertical'):
-    """Begin plot with title and axis labels
-    horzy --> vertical or horizontal y axis label"""
-    fig = plt.figure()
+def PlotStart(title, xlbl, ylbl, horzy='vertical', figsize=None):
+    """Begin plot with title and axis labels.  Space title above plot.
+    horzy --> vertical or horizontal y axis label
+    figsize --> set figure size. None for autosizing, 'tex' for latex
+                    formatting, or 2D list for user specification.
+    """
+    if figsize == None:
+        #PLOT WITH AUTOMATIC FIGURE SIZING
+        fig = plt.figure()
+    else:
+        if figsize == 'tex':
+            #PLOT WITH LATEX 2-COLUMN FORMAT SIZING
+                #(OTHERWISE PLOT WITH USER SPECIFIED DIMENSIONS)
+            figsize = fig_dims
+        fig = plt.figure(figsize=figsize)
     ax = fig.add_subplot(1, 1, 1)
     plt.title(title, fontdict=font_ttl)
     plt.xlabel(xlbl, fontdict=font_lbl)
@@ -132,12 +143,19 @@ def Plot(ax, x, y, color, label, linestyle='-',
                     linewidth=line, marker=markerstyle, markersize=mark)
 
 def PlotLegend(ax, loc='best', alpha=0.5, title=None):
-    leg = ax.legend(loc=loc, fancybox=True, framealpha=alpha, title=title)
+    """General legend command.  Use given handles and labels in plot
+    commands.  Curved edges, semi-transparent, given title, single markers
+    """
+    leg = ax.legend(loc=loc, fancybox=True, framealpha=alpha, title=title,
+                    numpoints=1, scatterpoints=1)
     return leg
 
 def PlotLegendLabels(ax, handles, labels, loc='best', title=None, alpha=0.5):
-    """Plot legend specifying labels"""
-    leg = ax.legend(handles, labels, loc=loc, title=title, fancybox=True)
+    """Plot legend specifying labels.
+    Curved edges, semi-transparent, given title, single markers
+    """
+    leg = ax.legend(handles, labels, loc=loc, title=title, fancybox=True,
+                    numpoints=1, scatterpoints=1)
     leg.get_frame().set_alpha(alpha)
     for label in leg.get_texts():
         label.set_fontsize('large')
@@ -150,6 +168,23 @@ def ColorMap(ncolors, colormap='jet'):
     cmap = plt.get_cmap(colormap)
     colors = [cmap(i) for i in np.linspace(0, 1, ncolors)]
     return colors
+
+def ColorBar(label, horzy='horizontal', colorby=None, ):
+    """Add colorbar with label.
+    ax --> matplotlib axis object
+    label --> colorbar label
+    horzy --> label orientation
+    colorby --> data to base colorbar on.  Default is whatever was plotted last
+    """
+    if colorby == None:
+        #MAKE COLORBAR
+        cb = plt.colorbar()
+    else:
+        #MAKE COLORBAR WITH GIVEN DATA
+        cb = plt.colorbar(colorby)
+    #SET LABEL
+    cb.set_label(label, rotation=horzy, fontdict=font_lbl)
+    return cb
 
 def SavePlot(savename, overwrite=1):
     """Save file given save path.  Do not save if file exists
@@ -200,6 +235,26 @@ def VectorMark(ax, x, y, nmark, color='k'):
         xbase, ybase = x[ind], y[ind]
         dx, dy = x[ind+1] - x[ind], y[ind+1] - y[ind]
         ax.quiver(xbase, ybase, dx, dy ,angles='xy',scale_units='xy',scale=1)
+
+def PlotVelProfile(ax, y, u, color='green', narrow=4):
+    """Plot velocity profile as y vs y
+    y --> non-dim. vetical grid within BL (y/delta)
+    u --> non-dim. x-velocity withing BL (u/u_e)
+    color --> sting, color of plot
+    narrow --> number of points between arrows
+    """
+    vertlinex = np.zeros(len(y))
+    ax.plot(vertlinex, y, color=color, linewidth=line)
+    ax.fill_betweenx(y, vertlinex, u, facecolor=color, alpha=0.2)
+    wd, ln = 0.03, 0.03
+    for i in range(0, len(y), narrow):
+        if abs(u[i]) < ln:
+            ax.plot([0, u[i]], [y[i], y[i]], color=color, linewidth=line)
+        else:
+            ax.arrow(0, y[i], u[i]-ln, 0, head_width=wd, head_length=ln,
+                fc=color, ec=color, linewidth=line)
+    ax.plot(u, y, color=color, linewidth=line)
+    ax.axis([min(u), max(u), min(y), max(y)])
 
 def PolyFit(x, y, order, n, showplot=0):
     """Polynomial fit xdata vs ydata points

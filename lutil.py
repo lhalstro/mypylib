@@ -220,6 +220,26 @@ def VectorMark(ax, x, y, nmark, color='k'):
         dx, dy = x[ind+1] - x[ind], y[ind+1] - y[ind]
         ax.quiver(xbase, ybase, dx, dy ,angles='xy',scale_units='xy',scale=1)
 
+def PlotVelProfile(ax, y, u, color='green', narrow=4):
+    """Plot velocity profile as y vs y
+    y --> non-dim. vetical grid within BL (y/delta)
+    u --> non-dim. x-velocity withing BL (u/u_e)
+    color --> sting, color of plot
+    narrow --> number of points between arrows
+    """
+    vertlinex = np.zeros(len(y))
+    ax.plot(vertlinex, y, color=color, linewidth=line)
+    ax.fill_betweenx(y, vertlinex, u, facecolor=color, alpha=0.2)
+    wd, ln = 0.03, 0.03
+    for i in range(0, len(y), narrow):
+        if abs(u[i]) < ln:
+            ax.plot([0, u[i]], [y[i], y[i]], color=color, linewidth=line)
+        else:
+            ax.arrow(0, y[i], u[i]-ln, 0, head_width=wd, head_length=ln,
+                fc=color, ec=color, linewidth=line)
+    ax.plot(u, y, color=color, linewidth=line)
+    ax.axis([min(u), max(u), min(y), max(y)])
+
 def PolyFit(x, y, order, n, showplot=0):
     """Polynomial fit xdata vs ydata points
     x --> independent variable data points vector
