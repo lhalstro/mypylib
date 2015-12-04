@@ -126,6 +126,9 @@ def PlotStart(title, xlbl, ylbl, horzy='vertical', figsize=None):
     #increase title spacing
     ttl = ax.title
     ttl.set_position([.5, 1.025])
+    # ax.xaxis.set_label_coords( .5, -1.025*10 )
+    # ax.yaxis.labelpad = 20
+
     return fig, ax
 
 def MakeTwinx(ax, ylbl, horzy='vertical'):
