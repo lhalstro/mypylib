@@ -142,6 +142,24 @@ def PlotStart(title, xlbl, ylbl, horzy='vertical'):
     ttl.set_position([.5, 1.025])
     return fig, ax
 
+def SharexSubPlotStart(nplots, title=''):
+    """Start an array of nplots subplots arranged in a vertical column with
+    a shared x-axis. Optional title.
+    nplots --> number of SubPlotStart
+    title --> title for array of subplots
+    sharex --> true for all subplots sharex"""
+    fig, ax = plt.subplots(nplots, sharex=True)
+    if title != '':
+        plt.title(title, fontdict=font_tit)
+        #increase title spacing
+        ttl = ax.title
+        ttl.set_position([.5, 1.025])
+    return fig, ax
+
+def SharexSubPlotAdd(ax, nplot, x, y, title):
+    ax[nplot].set_title(title, fontdict=font_tit)
+    return ax[nplot].plot(x, y)
+
 def Plot(ax, x, y, color, label, linestyle='-',
             markerstyle='None', line=1.5, mark=5):
     """Enter 'Default' to keep default value if entering values for later
