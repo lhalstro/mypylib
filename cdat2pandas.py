@@ -17,7 +17,6 @@ else:
     sys.path.append('/home/lhalstro/lib/python')
     sys.path.append('/home/robinson/lib/python')
 
-
 import numpy as np
 import pandas as pd
 import cdat
@@ -65,7 +64,7 @@ def SavePandas2Cdat(filename, df):
 
 
 
-df = ReadCdat2Pandas('/home/lhalstro/projects/fads/optFADS/Data/cfd/EFT1CFD')
-# print(df)
-# cd = Pandas2Cdat(df)
-SavePandas2Cdat('test.cdat', df)
+# df = ReadCdat2Pandas('/home/lhalstro/projects/fads/optFADS/Data/cfd/EFT1CFD')
+# # print(df)
+# # cd = Pandas2Cdat(df)
+# SavePandas2Cdat('test.cdat', df)
