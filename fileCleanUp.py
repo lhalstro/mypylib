@@ -84,31 +84,32 @@ def main(dir, headers, istart, iend, incr=1, allbut=False):
 if __name__ == "__main__":
 
     #RUN DIRECTORY
-    dir = '/lustre2/work/lhalstro/parachuteProject/solutions/pendulum/dev1/convergStudy/timesens35deg/m0.15a180.0_0.5dt5sub'
-    dir = '/lustre2/work/lhalstro/parachuteProject/solutions/pendulum/dev1/dynamicRuns/m15/m0.15a180.0_10deg'
+    dir = '/lustre2/work/lhalstro/parachuteProject/solutions/pendulum/dev1/dynamicRuns/m15/m0.15a180.0_wtt'
+    # dir = '/lustre2/work/lhalstro/parachuteProject/solutions/pendulum/dev1/dynamicRuns/m15/m0.15a180.0_10deg'
 
 
-    # cases = ['0.5dt10sub', '1dt10sub', '2.5dt10sub', '2.5dt15sub', '2.5dt5sub', '5dt10sub']
+    # cases = [ '1dt10sub', '2.5dt10sub', '2.5dt15sub', '2.5dt5sub', '5dt10sub']
+    # cases = [4,5,6,7]
     # dir = '/lustre2/work/lhalstro/parachuteProject/solutions/pendulum/pendulum2014/pendulum_runs/timesens_4deg/m0.15a180.0_'
     # for case in cases:
-    #     dir = '/lustre2/work/lhalstro/parachuteProject/solutions/pendulum/pendulum2014/pendulum_runs/timesens/m0.15a180.0_'
-    #     dir = dir + case
+    #     dir = '/lustre2/work/lhalstro/parachuteProject/solutions/pendulum/dev1/staticRuns/wakebox35deg/m0.15a1{}0.0'.format(case)
+    #     # dir = dir + case
 
-    dir = '/lustre2/work/lhalstro/parachuteProject/solutions/pendulum/pendulum2014/pendulum_runs/trialruns/m0.15a180.0_zeroStart'
+    # # dir = '/lustre2/work/lhalstro/parachuteProject/solutions/pendulum/pendulum2014/pendulum_runs/trialruns/m0.15a180.0_zeroStart'
 
     #SOLUTION SLICES
     headers = ['x.y0', 'q.y0', 'x.surf', 'q.surf']
     # headers = [ 'q.y0', 'q.surf']
     # headers = ['x.y0', 'q.y0', 'x.surf']
-    headers = ['x.surf','q.surf']
+    # headers = ['x.surf','q.surf']
 
     #SOLUTION RESTART FILES
     headers = ['x', 'q']
     # # headers = ['q']
 
     #DELETE/SAVE INTERVAL
-    istart = 1000
-    iend = 9000
-    incr = 10
+    istart = 20000
+    iend = 160000
+    incr = 10000
 
     main(dir, headers, istart, iend, incr, allbut=True)
