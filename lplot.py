@@ -82,47 +82,91 @@ fig_dims      = [fig_width_in, fig_height_in] # fig dims as a list
 mark = 5
 minimark = 0.75
 line = 1.5
-#Font Styles
-font_ttl = {'family' : 'serif',
-            'color'  : 'black',
-            'weight' : 'normal',
-            'size'   : 18,
-            }
-font_lbl = {'family' : 'serif',
-            'color'  : 'black',
-            'weight' : 'normal',
-            'size'   : 18,
-            }
-font_box = {'family' : 'arial',
-            'color'  : 'black',
-            'weight' : 'normal',
-            'size'   : 12,
-            }
-font_tick = 16
+
+# global ttl_sz lbl_sz box_sz tick_sz
+
+# ttl_sz = 18
+# lbl_sz = 18
+# box_sz = 12
+# tick_sz = 16
+
+global font_ttl, font_lbl, font_box, font_tck, font_leg
+
+def SetFontDictSize(ttl=None, lbl=None, box=None, tck=None, leg=None):
+    """Set font size in styling dictionaries.  Global dictionaries to use for
+    font styles in all functions.
+    To change a single parameter, call function like: SetFontDictSize(lbl=18)
+    ttl --> title, lbl --> axis label, box --> textbox,
+    tck --> axis tick labels, leg --> legend text
+    """
+    global font_ttl, font_lbl, font_box, font_tck, font_leg
+
+    #DEFAULT FONT SIZES
+    if ttl == None: ttl = 18
+    if lbl == None: lbl = 18
+    if box == None: box = 12
+    if tck == None: tck = 16
+    if leg == None: leg = 16
+
+    #Font Styles
+    font_ttl = {'family' : 'serif',
+                'color'  : 'black',
+                'weight' : 'normal',
+                'size'   : ttl,
+                }
+    font_lbl = {'family' : 'serif',
+                'color'  : 'black',
+                'weight' : 'normal',
+                'size'   : lbl,
+                }
+    font_box = {'family' : 'arial',
+                'color'  : 'black',
+                'weight' : 'normal',
+                'size'   : box,
+                }
+    font_tck = tck
+    font_leg = leg
+
+#INITIAL FONT DICT SETTINGS
+SetFontDictSize()
+
 #Textbox Properties
 textbox_props = dict(boxstyle='round', facecolor='white', alpha=0.5)
 
-def PlotStart(title, xlbl, ylbl, horzy='vertical', figsize=None):
+def PlotStart(title, xlbl, ylbl, horzy='vertical', figsize=None,
+                ttl=None, lbl=None, tck=None, leg=None, box=None):
     """Begin plot with title and axis labels.  Space title above plot.
     horzy --> vertical or horizontal y axis label
     figsize --> set figure size. None for autosizing, 'tex' for latex
                     formatting, or 2D list for user specification.
+    ttl,lbl,tck --> title, label, and axis font sizes
     """
+    #SET FONT SIZES
+    if ttl != None or lbl != None or tck != None or leg != None or box != None:
+        #Set any given font sizes
+        SetFontDictSize(ttl=ttl, lbl=lbl, tck=tck, leg=leg, box=box)
+    else:
+        #Reset default font dictionaries
+        SetFontDictSize()
+
+    #SET FIGURE SIZE
     if figsize == None:
-        #PLOT WITH AUTOMATIC FIGURE SIZING
+        #Plot with automatic figure sizing
         fig = plt.figure()
     else:
         if figsize == 'tex':
-            #PLOT WITH LATEX 2-COLUMN FORMAT SIZING
-                #(OTHERWISE PLOT WITH USER SPECIFIED DIMENSIONS)
+            #Plot with latex 2-column figure sizing
             figsize = fig_dims
+        #Otherwise, plot with user-specificed dimensions (i.e. [width, height])
         fig = plt.figure(figsize=figsize)
+
+    #PLOT FIGURE
     ax = fig.add_subplot(1, 1, 1)
     plt.title(title, fontdict=font_ttl)
     plt.xlabel(xlbl, fontdict=font_lbl)
-    plt.xticks(fontsize=font_tick)
+    plt.xticks(fontsize=font_tck)
     plt.ylabel(ylbl, fontdict=font_lbl, rotation=horzy)
-    plt.yticks(fontsize=font_tick)
+    plt.yticks(fontsize=font_tck)
     #increase title spacing
     ttl = ax.title
     ttl.set_position([.5, 1.025])
@@ -150,7 +194,7 @@ def PlotLegend(ax, loc='best', alpha=0.5, title=None):
     commands.  Curved edges, semi-transparent, given title, single markers
     """
     leg = ax.legend(loc=loc, fancybox=True, framealpha=alpha, title=title,
-                    numpoints=1, scatterpoints=1)
+                    numpoints=1, scatterpoints=1, prop={'size':font_leg})
     return leg
 
 def PlotLegendLabels(ax, handles, labels, loc='best', title=None, alpha=0.5):
@@ -158,7 +202,7 @@ def PlotLegendLabels(ax, handles, labels, loc='best', title=None, alpha=0.5):
     Curved edges, semi-transparent, given title, single markers
     """
     leg = ax.legend(handles, labels, loc=loc, title=title, fancybox=True,
-                    numpoints=1, scatterpoints=1)
+                    numpoints=1, scatterpoints=1, prop={'size':font_leg})
     leg.get_frame().set_alpha(alpha)
     for label in leg.get_texts():
         label.set_fontsize('large')
