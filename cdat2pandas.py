@@ -9,13 +9,11 @@ DESCRIPTION:  Convert between cdat and pandas data objects
 """
 
 import sys
-runlocal = 0
-if runlocal == 1:
-    sys.path.append('/Users/Logan/lib/python')
-    sys.path.append('sourceCode/')
-else:
-    sys.path.append('/home/lhalstro/lib/python')
+import os
+if os.path.isfile('/home/robinson/lib/python'):
     sys.path.append('/home/robinson/lib/python')
+# else:
+    # sys.path.append('SourceCode')
 
 import numpy as np
 import pandas as pd
