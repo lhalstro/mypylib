@@ -66,6 +66,12 @@ def FindBetween(str, before, after=None):
 ### PLOTTING ###########################################################
 ########################################################################
 
+def UseSeaborn():
+    """Call to use seaborn plotting package
+    """
+    import seaborn as sns
+    sns.set(style='whitegrid', font_scale=1.5, rc={'legend.frameon': True})
+
 #PLOT FORMATTING
 # Configure figures for production
 WIDTH = 495.0  # width of one column
@@ -83,12 +89,9 @@ mark = 5
 minimark = 0.75
 line = 1.5
 
-# global ttl_sz lbl_sz box_sz tick_sz
+smallmarkers = ['.', '*', 'x', '1', '+']
+bigmarkers = ['o', 'v', 'd', 's', 'p']
 
-# ttl_sz = 18
-# lbl_sz = 18
-# box_sz = 12
-# tick_sz = 16
 
 global font_ttl, font_lbl, font_box, font_tck, font_leg
 
