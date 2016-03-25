@@ -71,6 +71,17 @@ def UseSeaborn():
     """
     import seaborn as sns
     sns.set(style='whitegrid', font_scale=1.5, rc={'legend.frameon': True})
+    #Nice Blue,green,Red
+    # sns.set_palette('colorblind')
+    #Nice blue, purple, green
+    # colors = ["windows blue", "dusty purple", "tree green", "macaroni and cheese", "greyish"]
+    # sns.set_palette(sns.xkcd_palette(colors))
+    #Nice blue, green red
+    sns.set_palette('deep')
+    # sns.set_palette('Accent_r')
+    # sns.set_palette('Set2')
+    # sns.set_palette('Spectral_r')
+    # sns.set_palette('spectral')
 
 #PLOT FORMATTING
 # Configure figures for production
