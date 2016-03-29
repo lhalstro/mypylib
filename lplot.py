@@ -70,6 +70,7 @@ def UseSeaborn():
     """Call to use seaborn plotting package
     """
     import seaborn as sns
+    #No Background fill, legend font scale, frame on legend
     sns.set(style='whitegrid', font_scale=1.5, rc={'legend.frameon': True})
     #Nice Blue,green,Red
     # sns.set_palette('colorblind')
@@ -82,6 +83,9 @@ def UseSeaborn():
     # sns.set_palette('Set2')
     # sns.set_palette('Spectral_r')
     # sns.set_palette('spectral')
+
+    #FIX INVISIBLE MARKER BUG
+    sns.set_context(rc={'lines.markeredgewidth': 0.1})
 
 #PLOT FORMATTING
 # Configure figures for production
@@ -100,8 +104,10 @@ mark = 5
 minimark = 0.75
 line = 1.5
 
-smallmarkers = ['.', '*', 'x', '1', '+']
+#dot, start, x, tri-line, plus
+smallmarkers = ['.', '*', 'd', '1', '+']
 bigmarkers = ['o', 'v', 'd', 's', 'p']
+scattermarkers = ['o', 'v', 'd', 's', 'p']
 
 
 global font_ttl, font_lbl, font_box, font_tck, font_leg
