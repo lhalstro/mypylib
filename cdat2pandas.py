@@ -48,10 +48,13 @@ def Pandas2Cdat(df):
     #MAKE CDAT OBJECT
     cd = cdat.ColDat()
     #FOR EACH ROW, ADD EACH VALUE FOR EACH KEY
-    for i in range(len(df)):
+    inds = list(df.index.values)
+    for i in inds:
         cd.append({})
         for key in keys:
             cd[-1][key] = df.loc[i,key]
+    #FORCE ORIGINAL KEY ORDER
+    cd.params = keys
     return cd
 
 def SavePandas2Cdat(filename, df):
