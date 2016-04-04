@@ -106,7 +106,7 @@ line = 1.5
 
 #dot, start, x, tri-line, plus
 smallmarkers = ['.', '*', 'd', '1', '+']
-bigmarkers = ['o', 'v', 'd', 's', 'p']
+bigmarkers = ['o', 'v', 'd', 's', 'p', 'D', '8', 'H', '>']
 scattermarkers = ['o', 'v', 'd', 's', 'p']
 
 
