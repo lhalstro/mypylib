@@ -297,6 +297,63 @@ def AddToSub(text, subadd):
     split = text.split('_')
     return split[0] + '_{' + split[1] + subadd + '}'
 
+def df2tex(df, filename=None, dec=4, align='c', boldcol=True, boldrow=True,):
+    """Convert pandas dataframe to latex table and save.  Input dataframe has
+    column keys formatted for latex and indexes formatted to be latex row headers
+    df --> input dataframe
+    filename --> save name for file, .tex extension added later (default dont save)
+    dec --> number of decimal places
+    align --> alignment (left: l, center: c, right: r)
+    boldcol, boldrow --> make columns, rows bold, add $$ for latex math
+    """
+
+    #functions to add
+    #set number formatting (build into to_latex)
+
+
+    #DONT SAVE CHANGES TO ORIGINAL DATAFRAME
+    df = df.copy()
+
+    #BOLD ROWS/COLS
+    cols = list(df.columns.values)
+    rows = list(df.index.values)
+    if boldcol:
+        #bold columns
+        for i, c in enumerate(cols):
+            newcol = '$\\mathbf{{{}}}$'.format(c)
+            df = df.rename(columns = { c : newcol })
+            cols[i] = newcol
+    if boldrow:
+        #bold rows
+        rows = ['$\\mathbf{{{}}}$'.format(r) for r in rows]
+        df = df.set_index([rows])
+
+    def f1(x):
+        return '{:1.{}f}'.format(x, dec)
+
+    out = df.to_latex(escape=False, float_format=f1)
+    #Replace horizonatal lines
+    for repl in ['\\toprule', '\\midrule', '\\bottomrule',]:
+        out = out.replace(repl, '\\hline')
+
+    #FORMAT COLUMNS
+    #new column format (left line, row headers, center line, columns, right line)
+    colform = '| {} | {} |'.format(align, ' '.join([align]*len(cols)) )
+    #REPLACE ORIGINAL COLUMN FORMATTING WITH NEW
+    #original format
+    replace = FindBetween(out, 'begin{tabular}{', '}')
+    #replace
+    out = out.replace( replace, colform )
+    # out = out.replace( ''.join(['l']*(len(cols)+1) ), colform )
+
+    if filename != None:
+        #WRITE TEX TABLE TO FILE
+        f = open('{}.tex'.format(filename), 'w')
+        f.write(out)
+        f.close()
+
+    return out
+
 def TexTable(filename, A, rows, cols, decimal_points='',
                                             label='table', caption=''):
     """Given matrix of data, column/row titles, write table to .tex file in
