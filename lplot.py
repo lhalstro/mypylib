@@ -72,6 +72,11 @@ def UseSeaborn():
     import seaborn as sns
     #No Background fill, legend font scale, frame on legend
     sns.set(style='whitegrid', font_scale=1.5, rc={'legend.frameon': True})
+    #Mark ticks with border on all four sides (overrides 'whitegrid')
+    sns.set_style('ticks')
+    #ticks point in
+    sns.set_style({"xtick.direction": "in","ytick.direction": "in"})
+
     #Nice Blue,green,Red
     # sns.set_palette('colorblind')
     #Nice blue, purple, green
@@ -154,7 +159,8 @@ SetFontDictSize()
 textbox_props = dict(boxstyle='round', facecolor='white', alpha=0.5)
 
 def PlotStart(title, xlbl, ylbl, horzy='vertical', figsize=None,
-                ttl=None, lbl=None, tck=None, leg=None, box=None):
+                ttl=None, lbl=None, tck=None, leg=None, box=None,
+                grid=True):
     """Begin plot with title and axis labels.  Space title above plot.
     horzy --> vertical or horizontal y axis label
     figsize --> set figure size. None for autosizing, 'tex' for latex
@@ -192,6 +198,9 @@ def PlotStart(title, xlbl, ylbl, horzy='vertical', figsize=None,
     ttl.set_position([.5, 1.025])
     # ax.xaxis.set_label_coords( .5, -1.025*10 )
     # ax.yaxis.labelpad = 20
+
+    #turn grid on
+    ax.grid(True)
 
     return fig, ax
 
@@ -287,6 +296,43 @@ def TextBox(ax, boxtext, x=0.005, y=0.95, fontsize=font_box['size'],
         props = dict(boxstyle='round', facecolor='white', alpha=alpha)
     ax.text(x, y, boxtext, transform=ax.transAxes, fontsize=fontsize,
             verticalalignment='top', bbox=props)
+
+def TightLims(ax, tol=0.0):
+    """Return axis limits for tight bounding of data set in ax.
+    NOTE: doesn't work for scatter plots.
+    ax  --> plot axes to bound
+    tol --> whitespace tolerance
+    """
+    xmin = xmax = ymin = ymax = None
+    for line in ax.get_lines():
+        data = line.get_data()
+        curxmin = min(data[0])
+        curxmax = max(data[0])
+        curymin = min(data[1])
+        curymax = max(data[1])
+        if curxmin < xmin or xmin == None:
+            xmin = curxmin
+        if curxmax > xmax or xmax == None:
+            xmax = curxmax
+        if curymin < ymin or ymin == None:
+            ymin = curymin
+        if curymax > ymax or ymax == None:
+            ymax = curymax
+
+    xlim = [xmin-tol, xmax+tol]
+    ylim = [ymin-tol, ymax+tol]
+
+    return xlim, ylim
+
+def PadBounds(axes, tol=0):
+    """Add tolerance to axes bounds"""
+
+    xtol = (axes[1] - axes[0]) * tol
+    ytol = (axes[3] - axes[2]) * tol
+    tols = [-xtol, xtol, -ytol, ytol]
+    for i, (x, t) in enumerate(zip(axes,tols)):
+        axes[i] += t
+    return axes
 
 def VectorMark(ax, x, y, nmark, color='k'):
     """Mark line with arrow pointing in direction of x+.
