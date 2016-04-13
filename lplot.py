@@ -66,7 +66,7 @@ def FindBetween(str, before, after=None):
 ### PLOTTING ###########################################################
 ########################################################################
 
-def UseSeaborn():
+def UseSeaborn(palette='deep'):
     """Call to use seaborn plotting package
     """
     import seaborn as sns
@@ -77,13 +77,19 @@ def UseSeaborn():
     #ticks point in
     sns.set_style({"xtick.direction": "in","ytick.direction": "in"})
 
+    # sns.choose_colorbrewer_palette('q')
+
     #Nice Blue,green,Red
     # sns.set_palette('colorblind')
-    #Nice blue, purple, green
-    # colors = ["windows blue", "dusty purple", "tree green", "macaroni and cheese", "greyish"]
-    # sns.set_palette(sns.xkcd_palette(colors))
+    if palette == 'xkcd':
+        #Nice blue, purple, green
+        colors = ["windows blue", "dusty purple", "leaf green", "macaroni and cheese", "greyish"]
+        sns.set_palette(sns.xkcd_palette(colors))
+    else:
+        sns.set_palette(palette)
     #Nice blue, green red
-    sns.set_palette('deep')
+    # sns.set_palette('deep')
+
     # sns.set_palette('Accent_r')
     # sns.set_palette('Set2')
     # sns.set_palette('Spectral_r')
@@ -222,7 +228,8 @@ def PlotLegend(ax, loc='best', alpha=0.5, title=None):
     """General legend command.  Use given handles and labels in plot
     commands.  Curved edges, semi-transparent, given title, single markers
     """
-    leg = ax.legend(loc=loc, fancybox=True, framealpha=alpha, title=title,
+    leg = ax.legend(loc=loc, title=title,
+                    fancybox=True, frameon=True, framealpha=alpha,
                     numpoints=1, scatterpoints=1, prop={'size':font_leg})
     return leg
 
@@ -230,9 +237,10 @@ def PlotLegendLabels(ax, handles, labels, loc='best', title=None, alpha=0.5):
     """Plot legend specifying labels.
     Curved edges, semi-transparent, given title, single markers
     """
-    leg = ax.legend(handles, labels, loc=loc, title=title, fancybox=True,
+    leg = ax.legend(handles, labels, loc=loc, title=title,
+                    fancybox=True, frameon=True, framealpha=alpha,
                     numpoints=1, scatterpoints=1, prop={'size':font_leg})
-    leg.get_frame().set_alpha(alpha)
+    # leg.get_frame().set_alpha(alpha)
     for label in leg.get_texts():
         label.set_fontsize('large')
     return leg
