@@ -66,6 +66,9 @@ def FindBetween(str, before, after=None):
 ### PLOTTING ###########################################################
 ########################################################################
 
+xkcdcolors = ["windows blue", "dusty purple", "leaf green", "macaroni and cheese",  "cherry" , "greyish",]
+xkcdhex =    ['#3778bf',      '#825f87',      '#5ca904',    '#efb435',              '#cf0234', '#a8a495',]
+
 def UseSeaborn(palette='deep'):
     """Call to use seaborn plotting package
     """
@@ -83,8 +86,7 @@ def UseSeaborn(palette='deep'):
     # sns.set_palette('colorblind')
     if palette == 'xkcd':
         #Nice blue, purple, green
-        colors = ["windows blue", "dusty purple", "leaf green", "macaroni and cheese", "greyish"]
-        sns.set_palette(sns.xkcd_palette(colors))
+        sns.set_palette(sns.xkcd_palette(xkcdcolors))
     else:
         sns.set_palette(palette)
     #Nice blue, green red
