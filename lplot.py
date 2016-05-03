@@ -196,7 +196,8 @@ def PlotStart(title, xlbl, ylbl, horzy='vertical', figsize=None,
 
     #PLOT FIGURE
     ax = fig.add_subplot(1, 1, 1)
-    plt.title(title, fontdict=font_ttl)
+    if title != None:
+    	plt.title(title, fontdict=font_ttl)
     plt.xlabel(xlbl, fontdict=font_lbl)
     plt.xticks(fontsize=font_tck)
     plt.ylabel(ylbl, fontdict=font_lbl, rotation=horzy)
