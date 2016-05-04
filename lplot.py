@@ -275,7 +275,7 @@ def ColorBar(label, horzy='horizontal', ticks=None, colorby=None, pad=25):
     cb.set_label(label, rotation=horzy, fontdict=font_lbl, labelpad=pad)
     return cb
 
-def SavePlot(savename, overwrite=1):
+def SavePlot(savename, overwrite=1, trans=False):
     """Save file given save path.  Do not save if file exists
     or if variable overwrite is 1"""
     if os.path.isfile(savename):
@@ -284,7 +284,7 @@ def SavePlot(savename, overwrite=1):
             return
         else: os.remove(savename)
     MakeOutputDir(GetParentDir(savename))
-    plt.savefig(savename, bbox_inches='tight')
+    plt.savefig(savename, bbox_inches='tight', transparent=trans)
     # plt.close()
 
 def ShowPlot(showplot=1):
