@@ -66,8 +66,8 @@ def FindBetween(str, before, after=None):
 ### PLOTTING ###########################################################
 ########################################################################
 
-xkcdcolors = ["windows blue", "dusty purple", "leaf green", "macaroni and cheese",  "cherry" , "greyish",]
-xkcdhex =    ['#3778bf',      '#825f87',      '#5ca904',    '#efb435',              '#cf0234', '#a8a495',]
+xkcdcolors = ["windows blue", "dusty purple", "leaf green", "macaroni and cheese",  "cherry" , "greyish", "charcoal", "salmon pink", "sandstone",      "tangerine",]
+xkcdhex =    ['#3778bf',      '#825f87',      '#5ca904',    '#efb435',              '#cf0234', '#a8a495', "#343837" , "fe7b7c"     , "#c9ae74"  ,      "ff9408"   ,]
 
 def UseSeaborn(palette='deep'):
     """Call to use seaborn plotting package
@@ -119,7 +119,7 @@ line = 1.5
 
 #dot, start, x, tri-line, plus
 smallmarkers = ['.', '*', 'd', '1', '+']
-bigmarkers = ['o', 'v', 'd', 's', 'p', 'D', '8', 'H', '>']
+bigmarkers = ['o', 'v', 'd', 's', '*', 'D', 'p', '>', 'H', '8']
 scattermarkers = ['o', 'v', 'd', 's', 'p']
 
 
