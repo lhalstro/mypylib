@@ -220,6 +220,21 @@ def MakeTwinx(ax, ylbl, horzy='vertical'):
     ax2.yticks(fontsize=font_tick)
     return ax2
 
+def ZeroAxis(ax, dir='x'):
+    """Set axis lower bound to zero, keep upper bound
+    """
+    if dir == 'x':
+        ax.set_xlim([0, ax.get_xlim()[1]])
+    elif dir == 'y':
+        print(ax.get_ylim()[1])
+        ax.set_ylim([0, ax.get_ylim()[1]])
+
+def ZeroAxes(ax):
+    """Set both axes lower bound to zero, keep upper bound
+    """
+    ax.set_xlim([0, ax.get_xlim()[1]])
+    ax.set_ylim([0, ax.get_ylim()[1]])
+
 def Plot(ax, x, y, color, label, linestyle='-',
             marker='None', line=1.5, mark=5):
     """Enter 'Default' to keep default value if entering values for later
