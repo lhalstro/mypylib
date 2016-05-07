@@ -201,7 +201,7 @@ matplotlib.rcParams.update(params)
 
 
 
-def PlotStart(title, xlbl, ylbl, horzy='vertical', figsize=None,
+def PlotStart(title, xlbl, ylbl, horzy='vertical', figsize='square',
                 ttl=None, lbl=None, tck=None, leg=None, box=None,
                 grid=True, rc=False):
     """Begin plot with title and axis labels.  Space title above plot.
