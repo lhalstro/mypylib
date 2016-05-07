@@ -122,7 +122,14 @@ smallmarkers = ['.', '*', 'd', '1', '+']
 bigmarkers = ['o', 'v', 'd', 's', '*', 'D', 'p', '>', 'H', '8']
 scattermarkers = ['o', 'v', 'd', 's', 'p']
 
+#GLOBAL INITIAL FONT SIZES
+Ttl = 32
+Lbl = 32
+Box = 28
+Leg = 28
+Tck = 22
 
+#MAKE FONT DICT GLOBAL SO IT CAN BE MADE AND USED IN DIFFERENT FUNCTIONS
 global font_ttl, font_lbl, font_box, font_tck, font_leg
 
 def SetFontDictSize(ttl=None, lbl=None, box=None, tck=None, leg=None):
@@ -135,11 +142,17 @@ def SetFontDictSize(ttl=None, lbl=None, box=None, tck=None, leg=None):
     global font_ttl, font_lbl, font_box, font_tck, font_leg
 
     #DEFAULT FONT SIZES
-    if ttl == None: ttl = 18
-    if lbl == None: lbl = 18
-    if box == None: box = 12
-    if tck == None: tck = 16
-    if leg == None: leg = 16
+    # if ttl == None: ttl = 18
+    # if lbl == None: lbl = 18
+    # if box == None: box = 12
+    # if tck == None: tck = 16
+    # if leg == None: leg = 16
+
+    if ttl == None: ttl = Ttl
+    if lbl == None: lbl = Lbl
+    if box == None: box = Box
+    if tck == None: tck = Tck
+    if leg == None: leg = Leg
 
     #Font Styles
     font_ttl = {'family' : 'serif',
@@ -160,28 +173,43 @@ def SetFontDictSize(ttl=None, lbl=None, box=None, tck=None, leg=None):
     font_tck = tck
     font_leg = leg
 
+
 #INITIAL FONT DICT SETTINGS
 SetFontDictSize()
 
 #Textbox Properties
 textbox_props = dict(boxstyle='round', facecolor='white', alpha=0.5)
 
+
+params = {
+            # 'backend': 'ps',
+          # 'text.latex.preamble': ['\usepackage{gensymb}'],
+          'axes.labelsize' : Lbl,
+          'axes.titlesize' : Ttl,
+          'text.fontsize' : Box,
+          'legend.fontsize': Leg,
+          'xtick.labelsize': Tck,
+          'ytick.labelsize': Tck,
+          # 'text.usetex': True,
+          # 'figure.figsize': [fig_width,fig_height],
+          'font.family': 'helvetica'
+}
+import matplotlib
+matplotlib.rcParams.update(params)
+
+
+
+
+
 def PlotStart(title, xlbl, ylbl, horzy='vertical', figsize=None,
                 ttl=None, lbl=None, tck=None, leg=None, box=None,
-                grid=True):
+                grid=True, rc=False):
     """Begin plot with title and axis labels.  Space title above plot.
     horzy --> vertical or horizontal y axis label
     figsize --> set figure size. None for autosizing, 'tex' for latex
                     formatting, or 2D list for user specification.
     ttl,lbl,tck --> title, label, and axis font sizes
     """
-    #SET FONT SIZES
-    if ttl != None or lbl != None or tck != None or leg != None or box != None:
-        #Set any given font sizes
-        SetFontDictSize(ttl=ttl, lbl=lbl, tck=tck, leg=leg, box=box)
-    else:
-        #Reset default font dictionaries
-        SetFontDictSize()
 
     #SET FIGURE SIZE
     if figsize == None:
@@ -191,25 +219,47 @@ def PlotStart(title, xlbl, ylbl, horzy='vertical', figsize=None,
         if figsize == 'tex':
             #Plot with latex 2-column figure sizing
             figsize = fig_dims
+        elif figsize == 'square':
+            figsize = [6, 6]
         #Otherwise, plot with user-specificed dimensions (i.e. [width, height])
         fig = plt.figure(figsize=figsize)
 
     #PLOT FIGURE
     ax = fig.add_subplot(1, 1, 1)
-    if title != None:
-    	plt.title(title, fontdict=font_ttl)
-    plt.xlabel(xlbl, fontdict=font_lbl)
-    plt.xticks(fontsize=font_tck)
-    plt.ylabel(ylbl, fontdict=font_lbl, rotation=horzy)
-    plt.yticks(fontsize=font_tck)
-    #increase title spacing
+
+    if rc:
+        #USE MATPLOTLIB RC PARAMS SETTINGS
+        if title != None:
+            plt.title(title)
+        plt.xlabel(xlbl)
+        plt.ylabel(ylbl)
+    else:
+        #USE FONT DICT SETTINGS
+
+        #Set font sizes
+        if ttl != None or lbl != None or tck != None or leg != None or box != None:
+            #Set any given font sizes
+            SetFontDictSize(ttl=ttl, lbl=lbl, tck=tck, leg=leg, box=box)
+        else:
+            #Reset default font dictionaries
+            SetFontDictSize()
+
+        if title != None:
+            plt.title(title, fontdict=font_ttl)
+        plt.xlabel(xlbl, fontdict=font_lbl)
+        plt.xticks(fontsize=font_tck)
+        plt.ylabel(ylbl, fontdict=font_lbl, rotation=horzy)
+        plt.yticks(fontsize=font_tck)
+
+    #INCREASE TITLE SPACING
     ttl = ax.title
     ttl.set_position([.5, 1.025])
     # ax.xaxis.set_label_coords( .5, -1.025*10 )
     # ax.yaxis.labelpad = 20
 
-    #turn grid on
-    ax.grid(True)
+    #TURN GRID ON
+    if grid:
+        ax.grid(True)
 
     return fig, ax
 
@@ -217,7 +267,7 @@ def MakeTwinx(ax, ylbl, horzy='vertical'):
     """Make separate y-axis with label"""
     ax2 = ax.twinx()
     ax2.set_ylabel(ylbl, fontdict=font_lbl, rotation=horzy)
-    ax2.yticks(fontsize=font_tick)
+    plt.yticks(fontsize=font_tck)
     return ax2
 
 def ZeroAxis(ax, dir='x'):
@@ -226,7 +276,6 @@ def ZeroAxis(ax, dir='x'):
     if dir == 'x':
         ax.set_xlim([0, ax.get_xlim()[1]])
     elif dir == 'y':
-        print(ax.get_ylim()[1])
         ax.set_ylim([0, ax.get_ylim()[1]])
 
 def ZeroAxes(ax):
@@ -259,8 +308,8 @@ def PlotLegendLabels(ax, handles, labels, loc='best', title=None, alpha=0.5):
                     fancybox=True, frameon=True, framealpha=alpha,
                     numpoints=1, scatterpoints=1, prop={'size':font_leg})
     # leg.get_frame().set_alpha(alpha)
-    for label in leg.get_texts():
-        label.set_fontsize('large')
+    # for label in leg.get_texts():
+    #     label.set_fontsize('large')
     return leg
 
 def ColorMap(ncolors, colormap='jet'):
