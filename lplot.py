@@ -291,22 +291,27 @@ def Plot(ax, x, y, color, label, linestyle='-',
     return ax.plot(x, y, color=color, label=label, linestyle=linestyle,
                     linewidth=line, marker=marker, markersize=mark)
 
-def PlotLegend(ax, loc='best', alpha=0.5, title=None):
+def PlotLegend(ax, loc='best', alpha=0.5, title=None, fontsize=None):
     """General legend command.  Use given handles and labels in plot
     commands.  Curved edges, semi-transparent, given title, single markers
     """
+    if fontsize == None:
+        fontsize = font_leg
     leg = ax.legend(loc=loc, title=title,
                     fancybox=True, frameon=True, framealpha=alpha,
-                    numpoints=1, scatterpoints=1, prop={'size':font_leg})
+                    numpoints=1, scatterpoints=1, prop={'size':fontsize})
     return leg
 
-def PlotLegendLabels(ax, handles, labels, loc='best', title=None, alpha=0.5):
+def PlotLegendLabels(ax, handles, labels, loc='best', title=None, alpha=0.5,
+                        fontsize=None):
     """Plot legend specifying labels.
     Curved edges, semi-transparent, given title, single markers
     """
+    if fontsize == None:
+        fontsize = font_leg
     leg = ax.legend(handles, labels, loc=loc, title=title,
                     fancybox=True, frameon=True, framealpha=alpha,
-                    numpoints=1, scatterpoints=1, prop={'size':font_leg})
+                    numpoints=1, scatterpoints=1, prop={'size':fontsize})
     # leg.get_frame().set_alpha(alpha)
     # for label in leg.get_texts():
     #     label.set_fontsize('large')
