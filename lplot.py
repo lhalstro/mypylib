@@ -405,7 +405,7 @@ def TightLims(ax, tol=0.0):
     return xlim, ylim
 
 def PadBounds(axes, tol=0):
-    """Add tolerance to axes bounds"""
+    """Add tolerance to axes bounds to pad with whitespace"""
 
     xtol = (axes[1] - axes[0]) * tol
     ytol = (axes[3] - axes[2]) * tol
@@ -430,6 +430,24 @@ def VectorMark(ax, x, y, nmark, color='k'):
         xbase, ybase = x[ind], y[ind]
         dx, dy = x[ind+1] - x[ind], y[ind+1] - y[ind]
         ax.quiver(xbase, ybase, dx, dy ,angles='xy',scale_units='xy',scale=1)
+
+def PlotArrow(ax, x1, y1, x2, y2, label, head1='<', head2='>',
+                color='grey', sz=10):
+    """Plot an arrow between two given points.  Specify arrowhead type on
+    either side (default double-headed arrow).
+    ax      --> plot axis object
+    x1,y1   --> x,y coordinates of starting point
+    x2,y2   --> x,y coordinates of ending point
+    label   --> label for legend
+    head1,2 --> first and second arrowheads (e.g. '<', '>', 'v', '^')
+    color   --> color of arrow
+    sz      --> size of arrowheads
+    """
+    #Plot line connecting two points
+    ax.plot([x1, x2], [y1, y2], color=color, label=label)
+    ax.plot(x1, y1, color=color, marker=head1, markersize=sz) #1st arrow head
+    ax.plot(x2, y2, color=color, marker=head2, markersize=sz) #2nd arrow head
+    return ax
 
 def PlotVelProfile(ax, y, u, color='green', narrow=4):
     """Plot velocity profile as y vs y
