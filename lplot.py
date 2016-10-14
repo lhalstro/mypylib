@@ -299,7 +299,9 @@ def PlotLegend(ax, loc='best', alpha=0.5, title=None, fontsize=None):
         fontsize = font_leg
     leg = ax.legend(loc=loc, title=title,
                     fancybox=True, frameon=True, framealpha=alpha,
-                    numpoints=1, scatterpoints=1, prop={'size':fontsize})
+                    numpoints=1, scatterpoints=1, prop={'size':fontsize},
+                    borderpad=0.1, borderaxespad=0.1, handletextpad=0.2,
+                    handlelength=1.0, labelspacing=0)
     return leg
 
 def PlotLegendLabels(ax, handles, labels, loc='best', title=None, alpha=0.5,
@@ -311,7 +313,9 @@ def PlotLegendLabels(ax, handles, labels, loc='best', title=None, alpha=0.5,
         fontsize = font_leg
     leg = ax.legend(handles, labels, loc=loc, title=title,
                     fancybox=True, frameon=True, framealpha=alpha,
-                    numpoints=1, scatterpoints=1, prop={'size':fontsize})
+                    numpoints=1, scatterpoints=1, prop={'size':fontsize},
+                    borderpad=0.1, borderaxespad=0.1, handletextpad=0.2,
+                    handlelength=1.0, labelspacing=0)
     # leg.get_frame().set_alpha(alpha)
     # for label in leg.get_texts():
     #     label.set_fontsize('large')
