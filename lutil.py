@@ -61,22 +61,23 @@ def NoWhitespace(str):
     """Return given string with all whitespace removed"""
     return str.replace(' ', '')
 
-def FindBetween(str, before='^', after=None):
-    """Returns search for characters between 'before' and 'after' characters
+def FindBetween(string, before='^', after=None):
+    """Search 'string' for characters between 'before' and 'after' characters
     If after=None, return everything after 'before'
     Default before is beginning of line
     """
-    # value_regex = re.compile('(?<=' + before + ')(?P<value>.*?)(?='
-    #                                 + after + ')')
     if after == None and before != None:
-        match = re.search(before + '(.*)$', str)
-        if match != None: return match.group(1)
-        else: return 'No Match'
+        match = re.search('{}(.*)$'.format(before), string)
+        if match != None:
+            return match.group(1)
+        else:
+            return 'No Match'
     else:
-        match = re.search('(?<=' + before + ')(?P<value>.*?)(?='
-                                    + after + ')', str)
-        if match != None: return match.group('value')
-        else: return 'No Match'
+        match = re.search('(?<={})(?P<value>.*?)(?={})'.format(before, after), string)
+        if match != None:
+            return match.group('value')
+        else:
+            return 'No Match'
 
 def listify(nonlist, n=1):
     """Given a single item, return a list n long (default 1).
