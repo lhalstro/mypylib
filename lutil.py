@@ -301,8 +301,14 @@ def AddToSub(text, subadd):
     return split[0] + '_{' + split[1] + subadd + '}'
 
 def df2tex(df, filename=None, dec=4, align='c', boldcol=True, boldrow=True,):
-    """Convert pandas dataframe to latex table and save.  Input dataframe has
-    column keys formatted for latex and indexes formatted to be latex row headers
+    """Convert pandas dataframe to latex table and save as '.tex' text file.
+    Dataframe column keys will be column titles of table.
+    Dataframe indices will be row titles of table.
+    NOTE: to make an existing column the indices of the dataframe, use:
+         "df = df.set_index('columnkey')")
+    NOTE: If you want to switch columns and rows, use:
+        "df = df.transpose()"
+
     df --> input dataframe
     filename --> save name for file, .tex extension added later (default dont save)
     dec --> number of decimal places
