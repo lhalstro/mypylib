@@ -10,6 +10,8 @@ import os
 import re
 import matplotlib.pyplot as plt
 import numpy as np
+from scipy.interpolate import interp1d
+import pandas as pd
 
 def cmd(command):
     """Execute a shell command.
@@ -88,6 +90,27 @@ def listify(nonlist, n=1):
     else:
         outlist = nonlist
     return outlist
+
+########################################################################
+### PANDAS UTILITIES ###################################################
+########################################################################
+
+def dfInterp(df, key, vals, method='linear'):
+    """Interpolate a Pandas DataFrame so that the selected column
+    matches the provided list.
+    NOTE: Recommended use time as 'key' for timeseries data for correct interp
+    df     --> Pandas DataFrame to interpolate
+    key    --> column key for independent variable to interpolate against
+    vals   --> values to interpolate to
+    method --> interpolation method ('linear', 'nearest', 'cubic')
+                (see scipy.interpolate.interp1d for more options)
+    """
+    newdf = pd.DataFrame() #Interpolated DataFrame
+    for k in df.keys():
+        f = interp1d(df[key], df[k], kind=method) #interp func for each column
+        newdf[k] = f(vals) #Interp each column to desired values
+    return newdf
+
 
 
 ########################################################################

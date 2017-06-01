@@ -265,10 +265,45 @@ def PlotStart(title, xlbl, ylbl, horzy='vertical', figsize='square',
     return fig, ax
 
 def MakeTwinx(ax, ylbl, horzy='vertical'):
-    """Make separate y-axis with label"""
+    """Make separate, secondary y-axis for new variable with label.
+    (must later plot data on ax2 for axis ticks an bounds to be set)
+    ax    --> original axes object
+    ylbl  --> text for new y-axis label
+    horzy --> set orientation of y-axis label
+    """
     ax2 = ax.twinx()
     ax2.set_ylabel(ylbl, fontdict=font_lbl, rotation=horzy)
     plt.yticks(fontsize=font_tck)
+    return ax2
+
+def MakeTwiny(ax, xlbl):
+    """Make separate, secondary x-axis for new variable with label.
+    (must later plot data on ax2 for axis ticks an bounds to be set)
+    ax --> original axes object for plot
+    xlbl --> new x-axis label
+    """
+    ax2 = ax.twiny() #get separte x-axis for labeling trajectory Mach
+    ax2.set_xlabel(xlbl, fontdict=font_lbl) #label new x-axis
+    plt.xticks(fontsize=font_tck) #set tick font size
+    return ax2
+
+def MakeSecondaryXaxis(ax, xlbl, tickfunc, locs=5):
+    """Make an additional x-axis for the data already plotted
+    ax       --> original axes object for plot
+    xlbl     --> new x-axis label
+    tickfunc --> function that calculates tick value, based on location
+    locs     --> desired tick locations (fractions between 0 and 1)
+                    If integer value given, use as number of ticks
+    """
+    #SETUP SECONDARY AXIS
+    ax2 = MakeTwiny(ax, xlbl)
+    #SETUP TICKS ON SECONDARY AXIS
+    ax2.set_xlim(ax.get_xlim()) #set same limits as original x-axis
+    if type(locs) == int:
+        locs = np.linspace(1, locs) #array between 0 and 1 with n=locs
+    ax2.set_xticks(locs) #set new ticks to specificed increment
+    ax2.set_xticklabels(tickfunc(locs)) #label new ticks
+
     return ax2
 
 def ZeroAxis(ax, dir='x'):
