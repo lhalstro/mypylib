@@ -10,6 +10,7 @@ import subprocess
 import os
 import re
 import matplotlib.pyplot as plt
+from matplotlib.cm import get_cmap
 import numpy as np
 
 def MakeOutputDir(savedir):
@@ -68,11 +69,14 @@ def FindBetween(str, before, after=None):
 
 xkcdcolors = ["windows blue", "dusty purple", "leaf green", "macaroni and cheese",  "cherry" , "greyish", "charcoal", "salmon pink", "sandstone",      "tangerine",]
 xkcdhex =    ['#3778bf',      '#825f87',      '#5ca904',    '#efb435',              '#cf0234', '#a8a495', "#343837" , "fe7b7c"     , "#c9ae74"  ,      "ff9408"   ,]
+global colors
+colors = xkcdhex
 
 def UseSeaborn(palette='deep'):
     """Call to use seaborn plotting package
     """
     import seaborn as sns
+    global colors
     #No Background fill, legend font scale, frame on legend
     sns.set(style='whitegrid', font_scale=1.5, rc={'legend.frameon': True})
     #Mark ticks with border on all four sides (overrides 'whitegrid')
@@ -99,6 +103,8 @@ def UseSeaborn(palette='deep'):
 
     #FIX INVISIBLE MARKER BUG
     sns.set_context(rc={'lines.markeredgewidth': 0.1})
+
+    colors = sns.color_palette() #Save new color palette to variable
 
 #PLOT FORMATTING
 # Configure figures for production
