@@ -327,6 +327,37 @@ def Plot(ax, x, y, color, label, linestyle='-',
     return ax.plot(x, y, color=color, label=label, linestyle=linestyle,
                     linewidth=line, marker=marker, markersize=mark)
 
+def ScatPlot(ax, df, X, Y, lbl, clr=colors[0], mkr='o', plottype='mark'):
+    """Make a scatter plot using various styling techniques.
+    Plot using data in provided dataframe according to provided keys
+    ax --> matplotlib axis object
+    df --> dataframe with data to plot
+    X, Y --> dataframe keys to plot
+    lbl --> plot label
+    clr --> plot color
+    mkr --> plot marker
+    plottype --> type of scatter plot ('mark': hollow marker, 'scat': scatter)
+    """
+
+    if plottype == 'mark':
+        #HOLLOW MARKER PLOT
+        ax.plot(df[X], df[Y],
+                label=lbl, color=clr,
+                linewidth=0,
+                marker=mkr, markevery=1,
+                markeredgecolor=clr, markeredgewidth=1,
+                markerfacecolor="None",
+                )
+
+    elif plottype == 'scat':
+        #SCATTER PLOT
+        ax.scatter(df[X], df[Y], label=lbl,
+                    marker=mkr, s=35, facecolor=clr,
+                    # alpha=0.5,
+                    edgecolor='black')
+
+    return ax
+
 def PlotLegend(ax, loc='best', alpha=0.5, title=None, fontsize=None):
     """General legend command.  Use given handles and labels in plot
     commands.  Curved edges, semi-transparent, given title, single markers
@@ -453,6 +484,15 @@ def PadBounds(axes, tol=0):
     for i, (x, t) in enumerate(zip(axes,tols)):
         axes[i] += t
     return axes
+
+def LineShrinker(i, width=1.5, factor=0.15):
+    """Incrementailly decrease the width of lines in a plot so that all can be
+    seen, even if coincident. (First line is full size)
+    i      --> index of current line, start with 0
+    width  --> starting line width
+    factor --> fraction to shrink linewidth by with each increment
+    """
+    return width * (1 - factor * i)
 
 def VectorMark(ax, x, y, nmark, color='k'):
     """Mark line with arrow pointing in direction of x+.
