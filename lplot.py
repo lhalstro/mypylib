@@ -72,8 +72,10 @@ xkcdhex =    ['#3778bf',      '#825f87',      '#5ca904',    '#efb435',          
 global colors
 colors = xkcdhex
 
-def UseSeaborn(palette='deep'):
+def UseSeaborn(palette='deep', ncycle=6):
     """Call to use seaborn plotting package
+    palette --> keyword for default color palette
+    ncycle  --> number of colors in color palette cycle
     """
     import seaborn as sns
     global colors
@@ -92,14 +94,14 @@ def UseSeaborn(palette='deep'):
         #Nice blue, purple, green
         sns.set_palette(sns.xkcd_palette(xkcdcolors))
     else:
-        sns.set_palette(palette)
-    #Nice blue, green red
-    # sns.set_palette('deep')
+        sns.set_palette(palette, ncycle)
+        #Nice blue, green red
+        # sns.set_palette('deep')
 
-    # sns.set_palette('Accent_r')
-    # sns.set_palette('Set2')
-    # sns.set_palette('Spectral_r')
-    # sns.set_palette('spectral')
+        # sns.set_palette('Accent_r')
+        # sns.set_palette('Set2')
+        # sns.set_palette('Spectral_r')
+        # sns.set_palette('spectral')
 
     #FIX INVISIBLE MARKER BUG
     sns.set_context(rc={'lines.markeredgewidth': 0.1})
