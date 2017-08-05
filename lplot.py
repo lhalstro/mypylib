@@ -108,6 +108,12 @@ def UseSeaborn(palette='deep', ncycle=6):
 
     colors = sns.color_palette() #Save new color palette to variable
 
+    #CALL MATPLOTLIB DEFAULTS AGAIN, AFTER SEABORN CHANGED THEM
+    matplotlib.rcParams.update(params)
+
+
+
+#################
 #PLOT FORMATTING
 # Configure figures for production
 WIDTH = 495.0  # width of one column
@@ -190,19 +196,39 @@ textbox_props = dict(boxstyle='round', facecolor='white', alpha=0.5)
 
 
 params = {
-            # 'backend': 'ps',
-          # 'text.latex.preamble': ['\usepackage{gensymb}'],
-          'axes.labelsize' : Lbl,
-          'axes.titlesize' : Ttl,
-          # 'text.fontsize' : Box,
-          'font.size' : Box,
-          'legend.fontsize': Leg,
-          'xtick.labelsize': Tck,
-          'ytick.labelsize': Tck,
-          # 'text.usetex': True,
-          # 'figure.figsize': [fig_width,fig_height],
-          'font.family': 'helvetica'
+        # 'backend': 'ps',
+        # 'text.latex.preamble': ['\usepackage{gensymb}'],
+        'axes.labelsize' : Lbl,
+        'axes.titlesize' : Ttl,
+        # 'text.fontsize' : Box,
+        'font.size' : Box,
+        'legend.fontsize': Leg,
+        'xtick.labelsize': Tck,
+        'ytick.labelsize': Tck,
+        # 'text.usetex': True,
+        # 'figure.figsize': [fig_width,fig_height],
+        # 'font.family': 'Helvetica',
+        'font.family': 'serif',
+        'font.fantasy': 'xkcd',
+        'font.sans-serif': 'Helvetica', #default font for font.family=serif
+        'font.monospace': 'Courier',
+        #LEGEND PROPERTIES
+        'legend.framealpha'     : 0.5,
+        'legend.fancybox'       : True,
+        'legend.frameon'        : True,
+        'legend.numpoints'      : 1,
+        'legend.scatterpoints'  : 1,
+        'legend.borderpad'      : 0.1,
+        'legend.borderaxespad'  : 0.1,
+        'legend.handletextpad'  : 0.2,
+        'legend.handlelength'   : 1.0,
+        'legend.labelspacing'   : 0,
 }
+
+
+
+
+
 import matplotlib
 matplotlib.rcParams.update(params)
 
@@ -212,12 +238,14 @@ matplotlib.rcParams.update(params)
 
 def PlotStart(title, xlbl, ylbl, horzy='vertical', figsize='square',
                 ttl=None, lbl=None, tck=None, leg=None, box=None,
-                grid=True, rc=False):
+                grid=True, rc=True):
     """Begin plot with title and axis labels.  Space title above plot.
     horzy --> vertical or horizontal y axis label
     figsize --> set figure size. None for autosizing, 'tex' for latex
                     formatting, or 2D list for user specification.
     ttl,lbl,tck --> title, label, and axis font sizes
+    grid --> show grid
+    rc --> use matplotlib rc params default
     """
 
     #SET FIGURE SIZE
@@ -261,8 +289,9 @@ def PlotStart(title, xlbl, ylbl, horzy='vertical', figsize='square',
         plt.yticks(fontsize=font_tck)
 
     #INCREASE TITLE SPACING
-    ttl = ax.title
-    ttl.set_position([.5, 1.025])
+    if title != None:
+        ttl = ax.title
+        ttl.set_position([.5, 1.025])
     # ax.xaxis.set_label_coords( .5, -1.025*10 )
     # ax.yaxis.labelpad = 20
 
@@ -291,8 +320,10 @@ def MakeTwiny(ax, xlbl):
     xlbl --> new x-axis label
     """
     ax2 = ax.twiny() #get separte x-axis for labeling trajectory Mach
-    ax2.set_xlabel(xlbl, fontdict=font_lbl) #label new x-axis
-    plt.xticks(fontsize=font_tck) #set tick font size
+    ax2.set_xlabel(xlbl) #label new x-axis
+    # plt.xticks(fontsize=font_tck) #set tick font size
+    # ax2.set_xlabel(xlbl, fontdict=font_lbl) #label new x-axis
+    # plt.xticks(fontsize=font_tck) #set tick font size
     return ax2
 
 def MakeSecondaryXaxis(ax, xlbl, tickfunc, locs=5):
@@ -366,34 +397,66 @@ def ScatPlot(ax, df, X, Y, lbl, clr=colors[0], mkr='o', plottype='mark'):
 
     return ax
 
-def PlotLegend(ax, loc='best', alpha=0.5, title=None, fontsize=None):
+def PlotLegend(ax, loc='best', alpha=0.5, title=None, fontsize=None, outside=None):
     """General legend command.  Use given handles and labels in plot
     commands.  Curved edges, semi-transparent, given title, single markers
     """
-    if fontsize == None:
-        fontsize = font_leg
-    leg = ax.legend(loc=loc, title=title,
-                    fancybox=True, frameon=True, framealpha=alpha,
-                    numpoints=1, scatterpoints=1, prop={'size':fontsize},
-                    borderpad=0.1, borderaxespad=0.1, handletextpad=0.2,
-                    handlelength=1.0, labelspacing=0)
+    if fontsize == None: fontsize = font_leg
+
+    if outside != None:
+        #Legend outside plot
+        if outside == 'top':
+            #legend on top of lpot
+            bbox = (0.5,0)
+            loc = 'center'
+        else:
+            #Legend to right of plot
+            bbox = (1,0.5)
+            loc = 'center left'
+        leg = ax.legend(title=title, framealpha=alpha,
+                        prop={'size':fontsize},
+                        bbox_to_anchor=bbox, loc=loc)
+    else:
+        leg = ax.legend(loc=loc, title=title, framealpha=alpha,
+                        # fancybox=True, frameon=True,
+                        # numpoints=1, scatterpoints=1,
+                        prop={'size':fontsize},
+                        # borderpad=0.1, borderaxespad=0.1, handletextpad=0.2,
+                        # handlelength=1.0, labelspacing=0
+                        )
     return leg
 
 def PlotLegendLabels(ax, handles, labels, loc='best', title=None, alpha=0.5,
-                        fontsize=None):
+                        fontsize=None, outside=None):
     """Plot legend specifying labels.
     Curved edges, semi-transparent, given title, single markers
     """
     if fontsize == None:
         fontsize = font_leg
-    leg = ax.legend(handles, labels, loc=loc, title=title,
-                    fancybox=True, frameon=True, framealpha=alpha,
-                    numpoints=1, scatterpoints=1, prop={'size':fontsize},
-                    borderpad=0.1, borderaxespad=0.1, handletextpad=0.2,
-                    handlelength=1.0, labelspacing=0)
-    # leg.get_frame().set_alpha(alpha)
-    # for label in leg.get_texts():
-    #     label.set_fontsize('large')
+    if outside != None:
+        #Legend outside plot
+        if outside == 'top':
+            #legend on top of lpot
+            bbox = (0.5,0)
+            loc = 'center'
+        else:
+            #Legend to right of plot
+            bbox = (1,0.5)
+            loc = 'center left'
+        leg = ax.legend(handles, labels, title=title, framealpha=alpha,
+                        prop={'size':fontsize},
+                        bbox_to_anchor=bbox, loc=loc)
+    else:
+        leg = ax.legend(handles, labels, loc=loc, title=title,
+                    framealpha=alpha,
+                    # fancybox=True, frameon=True,
+                    # numpoints=1, scatterpoints=1,
+                    prop={'size':fontsize},
+                    # borderpad=0.1, borderaxespad=0.1, handletextpad=0.2,
+                    # handlelength=1.0, labelspacing=0
+                    )
+
+
     return leg
 
 def ColorMap(ncolors, colormap='jet'):
