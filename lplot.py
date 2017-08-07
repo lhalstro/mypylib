@@ -80,7 +80,7 @@ def UseSeaborn(palette='deep', ncycle=6):
     import seaborn as sns
     global colors
     #No Background fill, legend font scale, frame on legend
-    sns.set(style='whitegrid', font_scale=1.5, rc={'legend.frameon': True})
+    sns.set(style='whitegrid', font_scale=1, rc={'legend.frameon': True})
     #Mark ticks with border on all four sides (overrides 'whitegrid')
     sns.set_style('ticks')
     #ticks point in
@@ -140,7 +140,7 @@ scattermarkers = ['o', 'v', 'd', 's', 'p']
 Ttl = 32
 Lbl = 32
 Box = 28
-Leg = 28
+Leg = 24
 Tck = 22
 
 #MAKE FONT DICT GLOBAL SO IT CAN BE MADE AND USED IN DIFFERENT FUNCTIONS
@@ -202,9 +202,7 @@ params = {
         'axes.titlesize' : Ttl,
         # 'text.fontsize' : Box,
         'font.size' : Box,
-        'legend.fontsize': Leg,
-        'xtick.labelsize': Tck,
-        'ytick.labelsize': Tck,
+        # 'xtick.major.pad' :
         # 'text.usetex': True,
         # 'figure.figsize': [fig_width,fig_height],
         # 'font.family': 'Helvetica',
@@ -213,6 +211,7 @@ params = {
         'font.sans-serif': 'Helvetica', #default font for font.family=serif
         'font.monospace': 'Courier',
         #LEGEND PROPERTIES
+        'legend.fontsize'       : Leg,
         'legend.framealpha'     : 0.5,
         'legend.fancybox'       : True,
         'legend.frameon'        : True,
@@ -225,20 +224,27 @@ params = {
         'legend.labelspacing'   : 0,
 }
 
+tickparams = {
+        'xtick.labelsize': Tck,
+        'ytick.labelsize': Tck,
+}
 
 
 
 
 import matplotlib
 matplotlib.rcParams.update(params)
+matplotlib.rcParams.update(tickparams)
 
+
+import matplotlib.ticker as ticker
 
 
 
 
 def PlotStart(title, xlbl, ylbl, horzy='vertical', figsize='square',
                 ttl=None, lbl=None, tck=None, leg=None, box=None,
-                grid=True, rc=True):
+                grid=True, rc=False):
     """Begin plot with title and axis labels.  Space title above plot.
     horzy --> vertical or horizontal y axis label
     figsize --> set figure size. None for autosizing, 'tex' for latex
@@ -247,6 +253,11 @@ def PlotStart(title, xlbl, ylbl, horzy='vertical', figsize='square',
     grid --> show grid
     rc --> use matplotlib rc params default
     """
+
+    # if not rc:
+        # #Reset default tick fontsize to get desired tick spacing
+        # matplotlib.rcParams.update({'xtick.labelsize': 12,
+        #                             'ytick.labelsize': 12,})
 
     #SET FIGURE SIZE
     if figsize == None:
@@ -271,6 +282,9 @@ def PlotStart(title, xlbl, ylbl, horzy='vertical', figsize='square',
         plt.xlabel(xlbl)
         plt.ylabel(ylbl)
     else:
+
+
+
         #USE FONT DICT SETTINGS
 
         #Set font sizes
@@ -287,6 +301,10 @@ def PlotStart(title, xlbl, ylbl, horzy='vertical', figsize='square',
         plt.xticks(fontsize=font_tck)
         plt.ylabel(ylbl, fontdict=font_lbl, rotation=horzy)
         plt.yticks(fontsize=font_tck)
+
+        # #Return Matplotlib Defaults
+        # matplotlib.rcParams.update({'xtick.labelsize': Tck,
+        #                             'ytick.labelsize': Tck,})
 
     #INCREASE TITLE SPACING
     if title != None:
@@ -320,10 +338,10 @@ def MakeTwiny(ax, xlbl):
     xlbl --> new x-axis label
     """
     ax2 = ax.twiny() #get separte x-axis for labeling trajectory Mach
-    ax2.set_xlabel(xlbl) #label new x-axis
-    # plt.xticks(fontsize=font_tck) #set tick font size
-    # ax2.set_xlabel(xlbl, fontdict=font_lbl) #label new x-axis
-    # plt.xticks(fontsize=font_tck) #set tick font size
+    # ax2.set_xlabel(xlbl) #label new x-axis
+    plt.xticks(fontsize=font_tck) #set tick font size
+    ax2.set_xlabel(xlbl, fontdict=font_lbl) #label new x-axis
+    plt.xticks(fontsize=font_tck) #set tick font size
     return ax2
 
 def MakeSecondaryXaxis(ax, xlbl, tickfunc, locs=5):
