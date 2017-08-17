@@ -43,8 +43,18 @@ def MakeOutputDir(savedir):
         except Exception:
             pass
 
+def GetRootDir(savename):
+    """Get root path from a string, local or global.
+    (ORIGINAL FUNCTIONALITY OF GETPARENTDIR)
+    """
+    splitstring = savename.split('/')
+    parent = '/'.join(splitstring[:-1])
+    return parent
+
 def GetParentDir(savename):
-    """Get parent directory from path of file"""
+    """Original functionality (DEPRICATED).
+    Return root path with slash at end
+    """
     #split individual directories
     splitstring = savename.split('/')
     parent = ''
@@ -53,10 +63,29 @@ def GetParentDir(savename):
         parent += string + '/'
     return parent
 
+def GetGlobalParentDir(savename):
+    """Get global parent directory from path of file.
+    (No slash at end of string returned)
+    """
+    if savename.find('/') == -1:
+        #NO PATH, FILE IS IN CURRENT WORKING DIRECTORY
+        parent = os.getcwd()
+    elif savename[0] != '/':
+        #LOCAL PATH PROVIDED, GET GLOBAL PATH
+        ogdir = os.getcwd()
+        os.chdir(GetRootDir(savename))
+        parent = os.getcwd()
+        os.chdir(ogdir)
+    else:
+        #PATH PROVIDED IS GLOBAL
+        parent = GetRoodDir(savename)
+    return parent
+
 def GetFilename(path):
     """Get filename from path of file"""
     parent = GetParentDir(path)
     filename = FindBetween(path, parent)
+    filename = filename.replace('/', '') #remove slashes
     return filename
 
 def NoWhitespace(str):
