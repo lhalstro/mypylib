@@ -78,7 +78,7 @@ def GetGlobalParentDir(savename):
         os.chdir(ogdir)
     else:
         #PATH PROVIDED IS GLOBAL
-        parent = GetRoodDir(savename)
+        parent = GetRootDir(savename)
     return parent
 
 def GetFilename(path):
