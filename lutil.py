@@ -102,13 +102,13 @@ def FindBetween(string, before='^', after=None):
         if match != None:
             return match.group(1)
         else:
-            return 'No Match'
+            return None
     else:
         match = re.search('(?<={})(?P<value>.*?)(?={})'.format(before, after), string)
         if match != None:
             return match.group('value')
         else:
-            return 'No Match'
+            return None
 
 def listify(nonlist, n=1):
     """Given a single item, return a list n long (default 1).
