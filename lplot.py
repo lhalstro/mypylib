@@ -574,6 +574,30 @@ def PadBounds(axes, tol=0):
         axes[i] += t
     return axes
 
+def XAxisScale(ax, divby=1000, param='Time', unit='s'):
+    """Divide all axis values by provided factor to make easier to read
+    """
+    #Get current ticks
+    vals = ax.get_xticks()
+    #Scale tick values
+    ax.set_xticklabels([x/divby for x in vals])
+    #Reset axis label to indicate scaling
+    ax.set_xlabel('{} (${}\\times10^{{{}}}$)'.format(param, unit,
+                                                -int(np.floor(np.log10(divby)))))
+    return ax
+
+def YAxisScale(ax, divby=1000, param='Time', unit='s'):
+    """Divide all axis values by provided factor to make easier to read
+    """
+    #Get current ticks
+    vals = ax.get_yticks()
+    #Scale tick values
+    ax.set_yticklabels([x/divby for x in vals])
+    #Reset axis label to indicate scaling
+    ax.set_ylabel('{} (${}\\times10^{{{}}}$)'.format(param, unit,
+                                                -int(np.floor(np.log10(divby)))))
+    return ax
+
 def LineShrinker(i, width=1.5, factor=0.15):
     """Incrementailly decrease the width of lines in a plot so that all can be
     seen, even if coincident. (First line is full size)
