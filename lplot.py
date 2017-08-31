@@ -415,7 +415,7 @@ def ScatPlot(ax, df, X, Y, lbl, clr=colors[0], mkr='o', plottype='mark'):
 
     return ax
 
-def PlotLegend(ax, loc='best', alpha=0.5, title=None, fontsize=None, outside=None):
+def PlotLegend(ax, loc='best', alpha=0.5, title=None, fontsize=None, outside=None, ncol=1):
     """General legend command.  Use given handles and labels in plot
     commands.  Curved edges, semi-transparent, given title, single markers
     """
@@ -433,9 +433,10 @@ def PlotLegend(ax, loc='best', alpha=0.5, title=None, fontsize=None, outside=Non
             loc = 'center left'
         leg = ax.legend(title=title, framealpha=alpha,
                         prop={'size':fontsize},
-                        bbox_to_anchor=bbox, loc=loc)
+                        bbox_to_anchor=bbox, loc=loc, ncol=ncol,
+                        )
     else:
-        leg = ax.legend(loc=loc, title=title, framealpha=alpha,
+        leg = ax.legend(loc=loc, title=title, framealpha=alpha, ncol=ncol,
                         # fancybox=True, frameon=True,
                         # numpoints=1, scatterpoints=1,
                         prop={'size':fontsize},
@@ -445,7 +446,7 @@ def PlotLegend(ax, loc='best', alpha=0.5, title=None, fontsize=None, outside=Non
     return leg
 
 def PlotLegendLabels(ax, handles, labels, loc='best', title=None, alpha=0.5,
-                        fontsize=None, outside=None):
+                        fontsize=None, outside=None, ncol=1):
     """Plot legend specifying labels.
     Curved edges, semi-transparent, given title, single markers
     """
@@ -454,8 +455,8 @@ def PlotLegendLabels(ax, handles, labels, loc='best', title=None, alpha=0.5,
     if outside != None:
         #Legend outside plot
         if outside == 'top':
-            #legend on top of lpot
-            bbox = (0.5,0)
+            #legend on top of plot
+            bbox = (0.5,1)
             loc = 'center'
         else:
             #Legend to right of plot
@@ -463,9 +464,10 @@ def PlotLegendLabels(ax, handles, labels, loc='best', title=None, alpha=0.5,
             loc = 'center left'
         leg = ax.legend(handles, labels, title=title, framealpha=alpha,
                         prop={'size':fontsize},
-                        bbox_to_anchor=bbox, loc=loc)
+                        bbox_to_anchor=bbox, loc=loc, ncol=ncol,
+                        )
     else:
-        leg = ax.legend(handles, labels, loc=loc, title=title,
+        leg = ax.legend(handles, labels, loc=loc, title=title, ncol=ncol,
                     framealpha=alpha,
                     # fancybox=True, frameon=True,
                     # numpoints=1, scatterpoints=1,
