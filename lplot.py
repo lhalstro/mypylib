@@ -110,6 +110,7 @@ def UseSeaborn(palette='deep', ncycle=6):
 
     #CALL MATPLOTLIB DEFAULTS AGAIN, AFTER SEABORN CHANGED THEM
     matplotlib.rcParams.update(params)
+    matplotlib.rcParams.update(tickparams) #DONT CALL THIS IF YOU WANT TIGHT TICK SPACING
 
 
 
@@ -231,7 +232,9 @@ tickparams = {
 
 
 
-
+#UPDATE MATPLOTLIB DEFAULT PREFERENCES
+    #These commands are called again in UseSeaborn since Seaborn resets defaults
+     #If you want tight tick spacing, don't update tick size default, just do manually
 import matplotlib
 matplotlib.rcParams.update(params)
 matplotlib.rcParams.update(tickparams)
@@ -244,7 +247,7 @@ import matplotlib.ticker as ticker
 
 def PlotStart(title, xlbl, ylbl, horzy='vertical', figsize='square',
                 ttl=None, lbl=None, tck=None, leg=None, box=None,
-                grid=True, rc=False):
+                grid=True, rc=True):
     """Begin plot with title and axis labels.  Space title above plot.
     horzy --> vertical or horizontal y axis label
     figsize --> set figure size. None for autosizing, 'tex' for latex
@@ -318,6 +321,69 @@ def PlotStart(title, xlbl, ylbl, horzy='vertical', figsize='square',
         ax.grid(True)
 
     return fig, ax
+
+
+
+# def SubPlotStart(shape, figsize='square',
+#                 sharex=False, sharey=False,
+#                 ttl=None, lbl=None, tck=None, leg=None, box=None,
+#                 grid=True, ):
+#     """Just like PlotStart, but for subplots. Enter subplot layout in `shape
+#     figsize --> set figure size. None for autosizing, 'tex' for latex
+#                     formatting, or 2D list for user specification.
+#     ttl,lbl,tck --> title, label, and axis font sizes
+#     grid --> show grid
+#     rc --> use matplotlib rc params default
+#     """
+
+#     #SET FIGURE SIZE
+#     if figsize == None:
+#         #Plot with automatic figure sizing
+#         fig, ax = plt.subplots(shape, sharex=sharex, sharey=sharey)
+#     else:
+#         if figsize == 'tex':
+#             #Plot with latex 2-column figure sizing
+#             figsize = fig_dims
+#         elif figsize == 'square':
+#             figsize = [6, 6]
+#         #Otherwise, plot with user-specificed dimensions (i.e. [width, height])
+#         fig, ax = plt.subplots(shape, sharex=sharex, sharey=sharey, figsize=figsize)
+
+#     else:
+
+#         #USE FONT DICT SETTINGS
+
+#         #Set font sizes
+#         if ttl != None or lbl != None or tck != None or leg != None or box != None:
+#             #Set any given font sizes
+#             SetFontDictSize(ttl=ttl, lbl=lbl, tck=tck, leg=leg, box=box)
+#         else:
+#             #Reset default font dictionaries
+#             SetFontDictSize()
+
+#         if title != None:
+#             plt.title(title, fontdict=font_ttl)
+#         # plt.xlabel(xlbl, fontdict=font_lbl)
+#         plt.xticks(fontsize=font_tck)
+#         # plt.ylabel(ylbl, fontdict=font_lbl, rotation=horzy)
+#         plt.yticks(fontsize=font_tck)
+
+#         # #Return Matplotlib Defaults
+#         # matplotlib.rcParams.update({'xtick.labelsize': Tck,
+#         #                             'ytick.labelsize': Tck,})
+
+#     # #INCREASE TITLE SPACING
+#     # if title != None:
+#     #     ttl = ax.title
+#     #     ttl.set_position([.5, 1.025])
+#     # # ax.xaxis.set_label_coords( .5, -1.025*10 )
+#     # # ax.yaxis.labelpad = 20
+
+#     # #TURN GRID ON
+#     # if grid:
+#     #     ax.grid(True)
+
+#     return fig, ax
 
 def MakeTwinx(ax, ylbl, horzy='vertical'):
     """Make separate, secondary y-axis for new variable with label.
@@ -456,7 +522,12 @@ def PlotLegendLabels(ax, handles, labels, loc='best', title=None, alpha=0.5,
         #Legend outside plot
         if outside == 'top':
             #legend on top of plot
-            bbox = (0.5,1)
+            # bbox = (0.5,1)
+            bbox = (0.5,1.1)
+            loc = 'center'
+        elif outside == 'bottom':
+            #legend on top of plot
+            bbox = (0.5,-0.1)
             loc = 'center'
         else:
             #Legend to right of plot
