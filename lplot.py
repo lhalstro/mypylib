@@ -604,9 +604,12 @@ def GridLines(ax, linestyle='--', color='k', which='major'):
     ax.grid(True, which=which, linestyle=linestyle, color=color)
 
 def TextBox(ax, boxtext, x=0.005, y=0.95, fontsize=font_box['size'],
-                                                    alpha=0.5, props=None):
+                alpha=0.5, props=None, color=None):
     if props == None:
         props = dict(boxstyle='round', facecolor='white', alpha=alpha)
+    if color != None:
+        props['edgecolor'] = color
+        props['facecolor'] = color
     ax.text(x, y, boxtext, transform=ax.transAxes, fontsize=fontsize,
             verticalalignment='top', bbox=props)
 
