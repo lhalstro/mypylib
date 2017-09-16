@@ -12,6 +12,7 @@ import re
 import matplotlib.pyplot as plt
 from matplotlib.cm import get_cmap
 import numpy as np
+from scipy.interpolate import interp1d
 
 def MakeOutputDir(savedir):
     """make results output directory if it does not already exist.
@@ -385,7 +386,7 @@ def PlotStart(title, xlbl, ylbl, horzy='vertical', figsize='square',
 
 #     return fig, ax
 
-def MakeTwinx(ax, ylbl, horzy='vertical'):
+def MakeTwinx(ax, ylbl='', horzy='vertical'):
     """Make separate, secondary y-axis for new variable with label.
     (must later plot data on ax2 for axis ticks an bounds to be set)
     ax    --> original axes object
@@ -397,7 +398,7 @@ def MakeTwinx(ax, ylbl, horzy='vertical'):
     plt.yticks(fontsize=font_tck)
     return ax2
 
-def MakeTwiny(ax, xlbl):
+def MakeTwiny(ax, xlbl=''):
     """Make separate, secondary x-axis for new variable with label.
     (must later plot data on ax2 for axis ticks an bounds to be set)
     ax --> original axes object for plot
@@ -409,6 +410,7 @@ def MakeTwiny(ax, xlbl):
     ax2.set_xlabel(xlbl, fontdict=font_lbl) #label new x-axis
     plt.xticks(fontsize=font_tck) #set tick font size
     return ax2
+
 
 def MakeSecondaryXaxis(ax, xlbl, tickfunc, locs=5):
     """Make an additional x-axis for the data already plotted
@@ -428,6 +430,61 @@ def MakeSecondaryXaxis(ax, xlbl, tickfunc, locs=5):
     ax2.set_xticklabels(tickfunc(locs)) #label new ticks
 
     return ax2
+
+def SecondXaxisSameGrid(ax1, xold, xnew, xlbl='', rot=0):
+    """Make a secondary x-axis with the same tick locations as the original
+    for a specific second parameter. Tick values are interpolated to match original
+    ax1  --> original axis handle
+    xold --> x-data used when plotting with ax1
+    xnew --> new x-data to be mapped to second x-axis
+    xlbl --> optional axis label for new x-axis
+    rot  --> angle to rotate new tick labels, default none
+    """
+    #Make second x-axis
+    ax2 = MakeTwiny(ax1, xlbl)
+    #Get relative tick locations of first axis
+    tcks1, vals1 = GetRelativeTicksX(ax1)
+    #interpolate new x-axis values at these locations
+    vals2 = interp1d(xold, xnew, fill_value='extrapolate' )(vals1)
+    #set new ticks to specificed increment
+    ax2.set_xticks(tcks1)
+    #label new ticks
+    ax2.set_xticklabels(vals2)
+    #rotate new ticks, if specified
+    for tk in ax2.get_xticklabels():
+        tk.set_rotation(rot)
+    return ax2
+
+def GetRelativeTicksX(ax):
+    """Get relative tick locations for an x-axis, use to match shared axes.
+    Use linear interpolation, leave out endpoints if they exceede the data bounds
+    Return relative tick locations and corresponding tick values
+    """
+    #Get bounds of axis values
+    axmin, axmax = ax.get_xlim()
+    #Get values at each tick
+    tickvals = ax.get_xticks()
+    #if exterior ticks are outside bounds of data, drop them
+    if tickvals[0] < axmin:
+        tickvals = tickvals[1:]
+    if tickvals[-1] > axmax:
+        tickvals = tickvals[:-1]
+    #Interopolate relative tick locations for bounds 0 to 1
+    relticks = np.interp(tickvals, np.linspace(axmin, axmax), np.linspace(0, 1))
+    return relticks, tickvals
+
+    # #old method, wasnt reliable
+    # xmin, xmax = ax.get_xlim()
+    # ticks = [(tick - xmin)/(xmax - xmin) for tick in ax.get_xticks()]
+    # return ticks
+
+def GetRelativeTicksY(ax):
+    """Get relative tick locations for an y-axis, use to match shared axes
+    """
+    xmin, xmax = ax.get_ylim()
+    ticks = [(tick - xmin)/(xmax - xmin) for tick in ax.get_yticks()]
+    return ticks
+
 
 def ZeroAxis(ax, dir='x'):
     """Set axis lower bound to zero, keep upper bound
@@ -613,35 +670,6 @@ def TextBox(ax, boxtext, x=0.005, y=0.95, fontsize=font_box['size'],
     ax.text(x, y, boxtext, transform=ax.transAxes, fontsize=fontsize,
             verticalalignment='top', bbox=props)
 
-def GetRelativeTicksX(ax):
-    """Get relative tick locations for an x-axis, use to match shared axes.
-    Uses equation for a line
-    """
-    #Get bounds of axis values
-    axmin, axmax = ax.get_xlim()
-    #Get values at each tick
-    tickvals = ax.get_xticks()
-    #if exterior ticks are outside bounds of data, drop them
-    if tickvals[0] < axmin:
-        tickvals = tickvals[1:]
-    if tickvals[-1] > axmax:
-        tickvals = tickvals[:-1]
-    #Interopolate relative tick locations for bounds 0 to 1
-    # relticks = interp1d(np.linspace(axmin, axmax), np.linspace(0, 1))(tickvals)
-    relticks = np.interp(tickvals, np.linspace(axmin, axmax), np.linspace(0, 1))
-    return relticks
-
-    # #old method, wasnt reliable
-    # xmin, xmax = ax.get_xlim()
-    # ticks = [(tick - xmin)/(xmax - xmin) for tick in ax.get_xticks()]
-    # return ticks
-
-def GetRelativeTicksY(ax):
-    """Get relative tick locations for an y-axis, use to match shared axes
-    """
-    xmin, xmax = ax.get_ylim()
-    ticks = [(tick - xmin)/(xmax - xmin) for tick in ax.get_yticks()]
-    return ticks
 
 def TightLims(ax, tol=0.0):
     """Return axis limits for tight bounding of data set in ax.
@@ -767,6 +795,7 @@ def PlotVelProfile(ax, y, u, color='green', narrow=4):
                 fc=color, ec=color, linewidth=line)
     ax.plot(u, y, color=color, linewidth=line)
     ax.axis([min(u), max(u), min(y), max(y)])
+    return ax
 
 def PolyFit(x, y, order, n, showplot=0):
     """Polynomial fit xdata vs ydata points
