@@ -613,6 +613,20 @@ def TextBox(ax, boxtext, x=0.005, y=0.95, fontsize=font_box['size'],
     ax.text(x, y, boxtext, transform=ax.transAxes, fontsize=fontsize,
             verticalalignment='top', bbox=props)
 
+def GetRelativeTicksX(ax):
+    """Get relative tick locations for an x-axis, use to match shared axes
+    """
+    xmin, xmax = ax.get_xlim()
+    ticks = [(tick - xmin)/(xmax - xmin) for tick in ax.get_xticks()]
+    return ticks
+
+def GetRelativeTicksY(ax):
+    """Get relative tick locations for an y-axis, use to match shared axes
+    """
+    xmin, xmax = ax.get_ylim()
+    ticks = [(tick - xmin)/(xmax - xmin) for tick in ax.get_yticks()]
+    return ticks
+
 def TightLims(ax, tol=0.0):
     """Return axis limits for tight bounding of data set in ax.
     NOTE: doesn't work for scatter plots.
