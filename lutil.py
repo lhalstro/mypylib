@@ -124,7 +124,7 @@ def listify(nonlist, n=1):
 ### PANDAS UTILITIES ###################################################
 ########################################################################
 
-def dfInterp(df, key, vals, method='linear'):
+def dfInterp(df, key, vals, method='linear', fill=np.nan):
     """Interpolate a Pandas DataFrame so that the selected column
     matches the provided list.
     NOTE: Recommended use time as 'key' for timeseries data for correct interp
@@ -136,7 +136,8 @@ def dfInterp(df, key, vals, method='linear'):
     """
     newdf = pd.DataFrame() #Interpolated DataFrame
     for k in df.keys():
-        f = interp1d(df[key], df[k], kind=method) #interp func for each column
+        #interp func for each column
+        f = interp1d(df[key], df[k], kind=method, fill_value=fill)
         newdf[k] = f(vals) #Interp each column to desired values
     return newdf
 

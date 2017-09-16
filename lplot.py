@@ -614,11 +614,27 @@ def TextBox(ax, boxtext, x=0.005, y=0.95, fontsize=font_box['size'],
             verticalalignment='top', bbox=props)
 
 def GetRelativeTicksX(ax):
-    """Get relative tick locations for an x-axis, use to match shared axes
+    """Get relative tick locations for an x-axis, use to match shared axes.
+    Uses equation for a line
     """
-    xmin, xmax = ax.get_xlim()
-    ticks = [(tick - xmin)/(xmax - xmin) for tick in ax.get_xticks()]
-    return ticks
+    #Get bounds of axis values
+    axmin, axmax = ax.get_xlim()
+    #Get values at each tick
+    tickvals = ax.get_xticks()
+    #if exterior ticks are outside bounds of data, drop them
+    if tickvals[0] < axmin:
+        tickvals = tickvals[1:]
+    if tickvals[-1] > axmax:
+        tickvals = tickvals[:-1]
+    #Interopolate relative tick locations for bounds 0 to 1
+    # relticks = interp1d(np.linspace(axmin, axmax), np.linspace(0, 1))(tickvals)
+    relticks = np.interp(tickvals, np.linspace(axmin, axmax), np.linspace(0, 1))
+    return relticks
+
+    # #old method, wasnt reliable
+    # xmin, xmax = ax.get_xlim()
+    # ticks = [(tick - xmin)/(xmax - xmin) for tick in ax.get_xticks()]
+    # return ticks
 
 def GetRelativeTicksY(ax):
     """Get relative tick locations for an y-axis, use to match shared axes
