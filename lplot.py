@@ -204,6 +204,7 @@ params = {
         'axes.titlesize' : Ttl,
         # 'text.fontsize' : Box,
         'font.size' : Box,
+        'legend.fontsize'       : Leg,
         # 'xtick.major.pad' :
         # 'text.usetex': True,
         # 'figure.figsize': [fig_width,fig_height],
@@ -212,8 +213,10 @@ params = {
         'font.fantasy': 'xkcd',
         'font.sans-serif': 'Helvetica', #default font for font.family=serif
         'font.monospace': 'Courier',
+        #AXIS PROPERTIES
+        'axes.titlepad'  : 2*6.0, #title spacing from axis
+        'axes.grid'      : True,  #grid on plot
         #LEGEND PROPERTIES
-        'legend.fontsize'       : Leg,
         'legend.framealpha'     : 0.5,
         'legend.fancybox'       : True,
         'legend.frameon'        : True,
@@ -310,10 +313,10 @@ def PlotStart(title, xlbl, ylbl, horzy='vertical', figsize='square',
         # matplotlib.rcParams.update({'xtick.labelsize': Tck,
         #                             'ytick.labelsize': Tck,})
 
-    #INCREASE TITLE SPACING
-    if title != None:
-        ttl = ax.title
-        ttl.set_position([.5, 1.025])
+    # #INCREASE TITLE SPACING
+    # if title != None:
+    #     ttl = ax.title
+    #     ttl.set_position([.5, 1.025])
     # ax.xaxis.set_label_coords( .5, -1.025*10 )
     # ax.yaxis.labelpad = 20
 
@@ -548,7 +551,7 @@ def PlotLegend(ax, loc='best', alpha=0.5, title=None, fontsize=None, outside=Non
         #Legend outside plot
         if outside == 'top':
             #legend on top of lpot
-            bbox = (0.5,0)
+            bbox = (0.5,1)
             loc = 'center'
         else:
             #Legend to right of plot
