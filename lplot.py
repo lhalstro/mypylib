@@ -139,7 +139,7 @@ bigmarkers = ['o', 'v', 'd', 's', '*', 'D', 'p', '>', 'H', '8']
 scattermarkers = ['o', 'v', 'd', 's', 'p']
 
 #GLOBAL INITIAL FONT SIZES
-Ttl = 32
+Ttl = 24
 Lbl = 32
 Box = 28
 Leg = 24
@@ -618,23 +618,37 @@ def ColorMap(ncolors, colormap='jet'):
     colors = [cmap(i) for i in np.linspace(0, 1, ncolors)]
     return colors
 
-def ColorBar(label, horzy='horizontal', ticks=None, colorby=None, pad=25):
-    """Add colorbar with label.
-    ax --> matplotlib axis object
-    label --> colorbar label
-    horzy --> label orientation
-    ticks --> manually provide colorbar tick location (default is automatic)
-    colorby --> data to base colorbar on.  Default is whatever was plotted last
-    pad --> spacing of label from colorbar. positive is further away
+def PlotContourFill(ax, X, Y, data, Ncontour=100, lmin=None, lmax=None,
+                           cmap=plt.cm.viridis):
+    """Plot field data as Ncontour contours filled between.
+    Optionally limit contour levels to reside between lmin and lmax.
+    ax --> matplotlib axis object on which to plot contours
+    X,Y --> mesh grid
+    data --> data to plot contours of
+    Ncontour --> number of contours to plot
+    lmax, lmin --> max/min contour value to color
+    cmap --> colormap to use
     """
-    if colorby == None:
-        #MAKE COLORBAR
-        cb = plt.colorbar()
-    else:
-        #MAKE COLORBAR WITH GIVEN DATA
-        cb = plt.colorbar(colorby)
-    #SET LABEL
-    cb.set_label(label, rotation=horzy, fontdict=font_lbl, labelpad=pad)
+    #SET DEFAULTS
+    if lmin == None:
+        lmin = data.min()
+    if lmax == None:
+        lmax = data.max()
+
+    #PLOT CONTOURS
+    contours = ax.contourf(X, Y, data, levels=np.linspace(lmin, lmax, Ncontour), cmap=cmap)
+    return contours
+
+def PlotColorbar(ax, contours, label, pad=25, form=None, horzy='horizontal'):
+    """Add a colorbar to a plot that corresponds to the provided contour data.
+    ax --> matplotlib axis object on which to plot colorbar
+    contours --> contour data previously plotted with 'contour' or 'contourf'
+    label --> colobar text label
+    pad --> space between colorbar and label
+    form --> colorbar number format (e.g. '%.2f' for 2 decimals)
+    """
+    cb = plt.colorbar(contours, ax=ax, format=form) #add colorbar
+    cb.set_label(label, rotation=horzy, labelpad=pad) #label colorbar
     return cb
 
 def SavePlot(savename, overwrite=1, trans=False):
