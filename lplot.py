@@ -207,7 +207,7 @@ params = {
         'legend.fontsize'       : Leg,
         # 'xtick.major.pad' :
         # 'text.usetex': True,
-        # 'figure.figsize': [fig_width,fig_height],
+        'figure.figsize': [6,6],
         # 'font.family': 'Helvetica',
         'font.family': 'serif',
         'font.fantasy': 'xkcd',
