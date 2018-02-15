@@ -701,13 +701,13 @@ def TightLims(ax, tol=0.0):
         curxmax = max(data[0])
         curymin = min(data[1])
         curymax = max(data[1])
-        if curxmin < xmin or xmin == None:
+        if xmin == None or curxmin < xmin:
             xmin = curxmin
-        if curxmax > xmax or xmax == None:
+        if xmax == None or curxmax > xmax:
             xmax = curxmax
-        if curymin < ymin or ymin == None:
+        if ymin == None or curymin < ymin:
             ymin = curymin
-        if curymax > ymax or ymax == None:
+        if ymax == None or curymax > ymax:
             ymax = curymax
 
     xlim = [xmin-tol, xmax+tol]
