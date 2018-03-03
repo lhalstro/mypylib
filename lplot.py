@@ -488,6 +488,37 @@ def GetRelativeTicksY(ax):
     ticks = [(tick - xmin)/(xmax - xmin) for tick in ax.get_yticks()]
     return ticks
 
+def OffsetTicks(ax, whichax='x', offset=1.5):
+    """Offset tick labels so that alternating labels are at different distances
+    from the axis.
+    Makes it easier to differentiate labels that are close together.
+    Note: change tick font size with:
+        'ax.tick_params(axis='both', labelsize=ticksize)'
+    ax --> plot axis object
+    whichax --> choose which axis to offset ('x' default, 'y')
+    offset --> factor by which tick label offset will be increased
+    """
+    #GET AXIS TICK OBJECTS
+        #(list of objects, one for each tick label)
+    if whichax == 'x':
+        #get x-axis ticks to offset
+        tks = ax.get_xaxis().majorTicks
+    else:
+        #get y-axis ticks to offset
+        tks = ax.get_yaxis().majorTicks
+
+    #get current pad value (shift pads proportinally to this value)
+    pad = tks[0].get_pad()
+
+    #shift every other tick closer to axis (starting with 1st tick)
+    for i in range(0, len(tks), 2):
+        tks[i].set_pad(0.5*pad)
+    #shift every other tick further from axis (starting with 2nd tick)
+    for i in range(1, len(tks), 2):
+        tks[i].set_pad(offset*pad)
+
+    return ax
+
 
 def ZeroAxis(ax, dir='x'):
     """Set axis lower bound to zero, keep upper bound
