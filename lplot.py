@@ -678,14 +678,33 @@ def GridLines(ax, linestyle='--', color='k', which='major'):
     ax.grid(True, which=which, linestyle=linestyle, color=color)
 
 def TextBox(ax, boxtext, x=0.005, y=0.95, fontsize=font_box['size'],
-                alpha=0.5, props=None, color=None):
+                alpha=0.5, props=None, color=None, relcoord=True,
+                vert='top', horz='left'):
+    """Add text box.
+    (Anchor position is upper left corner of text box)
+    relcoord --> Use relative coordinate achor points (0 --> 1) if true,
+                    actual x,y coordinates if False
+    vert/horz --> vertical and horizontal alignment of box about given point
+                    e.g. center/center places box centered on point
+                         top/center places box with point on top center
+    """
     if props == None:
+        #Default textbox properties
         props = dict(boxstyle='round', facecolor='white', alpha=alpha)
     if color != None:
+        #Set box fill and edge color if specified
         props['edgecolor'] = color
         props['facecolor'] = color
-    ax.text(x, y, boxtext, transform=ax.transAxes, fontsize=fontsize,
-            verticalalignment='top', bbox=props)
+    if relcoord:
+        #Use relative coordinates to anchor textbox
+        ax.text(x, y, boxtext, fontsize=fontsize, bbox=props,
+                verticalalignment=vert, horizontalalignment=horz,
+                transform=ax.transAxes, #makes coordinate relative
+                )
+    else:
+        #Use absolute coordinates to anchor textbox
+        ax.text(x, y, boxtext, fontsize=fontsize, bbox=props,
+                verticalalignment=vert, horizontalalignment=horz,)
 
 
 def TightLims(ax, tol=0.0):
