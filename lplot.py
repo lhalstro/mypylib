@@ -11,6 +11,7 @@ import os
 import re
 import matplotlib.pyplot as plt
 from matplotlib.cm import get_cmap
+from matplotlib.transforms import Bbox #for getting plot bounding boxes
 import numpy as np
 from scipy.interpolate import interp1d
 
@@ -139,11 +140,18 @@ bigmarkers = ['o', 'v', 'd', 's', '*', 'D', 'p', '>', 'H', '8']
 scattermarkers = ['o', 'v', 'd', 's', 'p']
 
 #GLOBAL INITIAL FONT SIZES
+#default font sizes
 Ttl = 24
-Lbl = 32
-Box = 28
-Leg = 24
-Tck = 22
+Lbl = 24
+Box = 22
+Leg = 20
+Tck = 18
+
+#big font sizes
+Lbl_big = 32
+Leg_big = 24
+Box_big = 28
+Tck_big = 22
 
 #MAKE FONT DICT GLOBAL SO IT CAN BE MADE AND USED IN DIFFERENT FUNCTIONS
 global font_ttl, font_lbl, font_box, font_tck, font_leg
@@ -204,7 +212,6 @@ params = {
         'axes.titlesize' : Ttl,
         # 'text.fontsize' : Box,
         'font.size' : Box,
-        'legend.fontsize'       : Leg,
         # 'xtick.major.pad' :
         # 'text.usetex': True,
         'figure.figsize': [6,6],
@@ -217,6 +224,7 @@ params = {
         'axes.titlepad'  : 2*6.0, #title spacing from axis
         'axes.grid'      : True,  #grid on plot
         #LEGEND PROPERTIES
+        'legend.fontsize'       : Leg,
         'legend.framealpha'     : 0.5,
         'legend.fancybox'       : True,
         'legend.frameon'        : True,
@@ -576,6 +584,7 @@ def PlotLegend(ax, loc='best', alpha=0.5, title=None, fontsize=None, outside=Non
     """General legend command.  Use given handles and labels in plot
     commands.  Curved edges, semi-transparent, given title, single markers
     """
+    #default fontsize is already font_leg, but this allows unique user input
     if fontsize == None: fontsize = font_leg
 
     if outside != None:
@@ -682,16 +691,47 @@ def PlotColorbar(ax, contours, label, pad=25, form=None, horzy='horizontal'):
     cb.set_label(label, rotation=horzy, labelpad=pad) #label colorbar
     return cb
 
-def SavePlot(savename, overwrite=1, trans=False):
+def SavePlot(savename, overwrite=1, trans=False, bbox='tight', pad=0.5):
     """Save file given save path.  Do not save if file exists
-    or if variable overwrite is 1"""
+    or if variable overwrite is 1
+    trans --> tranparent background if True
+    bbox --> 'tight' for tight border (best for individual plots)
+             'fixed' for fixed-size border (best for plots that need to be same size)
+             'fixedsquare' same as 'fixed' but final shape is square, not rect
+    pad  --> lower left corner padding for 'fixed' bbox (inches)
+    """
     if os.path.isfile(savename):
         if overwrite == 0:
             print('     Overwrite is off')
             return
         else: os.remove(savename)
+    #Make figure save directory if it does not exist
     MakeOutputDir(GetParentDir(savename))
-    plt.savefig(savename, bbox_inches='tight', transparent=trans)
+
+    #Pad bbox with this value to accomodate specific axis label fontsize
+    shft = 0.1
+
+    if bbox == 'fixedsquare':
+        #SAVE WITH FIXED BBOX, AXIS LABELS PADDED, FINAL SHAPE IS SQUARE
+        fig = plt.gcf()
+        size = fig.get_size_inches() #figsize
+        #Make bounding box that is same width/height as values in 'size'
+            #pad left and bottom size so axis labels aren't cut off
+        bbox = Bbox.from_bounds(-pad-shft, -pad-shft, size[0]+shft, size[1]+shft)
+            #1st two entries are index (in inches) of lower left corner of bbox
+            #2nd two entries are width and height (in inches) of bbox
+    elif bbox == 'fixed':
+        #SAVE WITH FIXED BBOX, AXIS LABELS PADDED, FINAL SHAPE IS RECTANGLE
+        fig = plt.gcf()
+        size = fig.get_size_inches() #figsize
+        #Make bounding box that is same width/height as values in 'size'
+            #pad left side so axis labels aren't cut off
+            #bottom side is already ok, don't pad to reduce whitespace
+            #top is too high, subtrack some height
+        bbox = Bbox.from_bounds(-pad-shft, 0-shft, size[0]+shft, size[1]+shft-0.5)
+
+    plt.savefig(savename, bbox_inches=bbox, transparent=trans)
+    # plt.savefig(savename, bbox_inches='tight', transparent=trans)
     # plt.close()
 
 def ShowPlot(showplot=1):
