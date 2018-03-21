@@ -428,7 +428,7 @@ def YlabelOnTop(ax, ylbl, x=0.0, y=1.01):
     y --> relative y coordinate of text label center (1: top of fig, goes <0)
     """
     #rotate ylabel
-    plt.ylabel(ylbl, rotation='horizontal')
+    ax.set_ylabel(ylbl, rotation=0)
     #set new center coordinates of label
     ax.yaxis.set_label_coords(x, y)
 
