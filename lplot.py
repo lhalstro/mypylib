@@ -422,6 +422,17 @@ def MakeTwiny(ax, xlbl=''):
     plt.xticks(fontsize=font_tck) #set tick font size
     return ax2
 
+def YlabelOnTop(ax, ylbl, x=0.0, y=1.01):
+    """Place horizontally oriented y-label on top of y-axis.
+    x --> relative x coordinate of text label center (0: right of fig, goes <0)
+    y --> relative y coordinate of text label center (1: top of fig, goes <0)
+    """
+    #rotate ylabel
+    plt.ylabel(ylbl, rotation='horizontal')
+    #set new center coordinates of label
+    ax.yaxis.set_label_coords(x, y)
+
+    return ax
 
 def MakeSecondaryXaxis(ax, xlbl, tickfunc, locs=5):
     """Make an additional x-axis for the data already plotted
@@ -691,6 +702,25 @@ def PlotColorbar(ax, contours, label, pad=25, form=None, horzy='horizontal'):
     cb.set_label(label, rotation=horzy, labelpad=pad) #label colorbar
     return cb
 
+def GetPlotBbox(ypad=0.5, xpad=0, shft=0.1, offtop=0.5):
+    """Get bounding box of a plot. Used for saving figures.
+    ypad --> inches to pad left side with
+    xpad --> inches to pad bottom with
+    shft --> genearl padding for all sides, based on axis label font size
+    offtop --> inches to remove from top (when no title)
+
+    for square bbox: ypad=xpad, offtop=0
+    """
+
+    fig = plt.gcf()
+    size = fig.get_size_inches() #figsize
+    #Make bounding box that is same width/height as values in 'size'
+    bbox = Bbox.from_bounds(-ypad-shft, -xpad-shft, size[0]+shft, size[1]+shft-offtop)
+        #1st two entries are index (in inches) of lower left corner of bbox
+        #2nd two entries are width and height (in inches) of bbox
+
+    return bbox
+
 def SavePlot(savename, overwrite=1, trans=False, bbox='tight', pad=0.5):
     """Save file given save path.  Do not save if file exists
     or if variable overwrite is 1
@@ -713,22 +743,33 @@ def SavePlot(savename, overwrite=1, trans=False, bbox='tight', pad=0.5):
 
     if bbox == 'fixedsquare':
         #SAVE WITH FIXED BBOX, AXIS LABELS PADDED, FINAL SHAPE IS SQUARE
-        fig = plt.gcf()
-        size = fig.get_size_inches() #figsize
         #Make bounding box that is same width/height as values in 'size'
             #pad left and bottom size so axis labels aren't cut off
-        bbox = Bbox.from_bounds(-pad-shft, -pad-shft, size[0]+shft, size[1]+shft)
-            #1st two entries are index (in inches) of lower left corner of bbox
-            #2nd two entries are width and height (in inches) of bbox
+        bbox = GetPlotBbox(ypad=pad, xpad=pad, shft=shft, offtop=0)
+
+        # fig = plt.gcf()
+        # size = fig.get_size_inches() #figsize
+        # #Make bounding box that is same width/height as values in 'size'
+        #     #pad left and bottom size so axis labels aren't cut off
+        # GetPlotBbox(ypad=pad, xpad=pad, shft=shft, offtop=0)
+        # # bbox = Bbox.from_bounds(-pad-shft, -pad-shft, size[0]+shft, size[1]+shft)
+        # #     #1st two entries are index (in inches) of lower left corner of bbox
+        # #     #2nd two entries are width and height (in inches) of bbox
     elif bbox == 'fixed':
         #SAVE WITH FIXED BBOX, AXIS LABELS PADDED, FINAL SHAPE IS RECTANGLE
-        fig = plt.gcf()
-        size = fig.get_size_inches() #figsize
         #Make bounding box that is same width/height as values in 'size'
             #pad left side so axis labels aren't cut off
             #bottom side is already ok, don't pad to reduce whitespace
             #top is too high, subtrack some height
-        bbox = Bbox.from_bounds(-pad-shft, 0-shft, size[0]+shft, size[1]+shft-0.5)
+        bbox = GetPlotBbox(ypad=pad, xpad=0, shft=shft, offtop=0.5)
+
+        # fig = plt.gcf()
+        # size = fig.get_size_inches() #figsize
+        # #Make bounding box that is same width/height as values in 'size'
+        #     #pad left side so axis labels aren't cut off
+        #     #bottom side is already ok, don't pad to reduce whitespace
+        #     #top is too high, subtrack some height
+        # bbox = Bbox.from_bounds(-pad-shft, 0-shft, size[0]+shft, size[1]+shft-0.5)
 
     plt.savefig(savename, bbox_inches=bbox, transparent=trans)
     # plt.savefig(savename, bbox_inches='tight', transparent=trans)
