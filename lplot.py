@@ -434,6 +434,52 @@ def YlabelOnTop(ax, ylbl, x=0.0, y=1.01):
 
     return ax
 
+def RemoveAxisTicks(ax, axis='both'):
+    """Remove numbers and grid lines for axis ticks
+    Use to declassify sensitive info
+    axis --> Which axis to remove ticks ('x', 'y', 'both')
+    """
+    if axis == 'both' or axis == 'x':
+        ax.get_xaxis().set_ticks([])
+
+    if axis == 'both' or axis == 'y':
+        ax.get_yaxis().set_ticks([])
+
+    return ax
+
+def RemoveAxisTickLabels(ax, axis='both', prettygrid=True):
+    """Remove numbers from axis tick labels, keep ticks and gridlines
+    Use to declassify sensitive info
+    NOTE: Call after setting axis limits
+    axis --> Which axis to remove ticks ('x', 'y', 'both')
+    prettygrid --> set axis ticks to square grid if True
+    """
+    if axis == 'both' or axis == 'x':
+        #remove axis tick labels
+        ax.set_xticklabels([])
+
+        #space grid lines nicely
+        if prettygrid:
+            #get current axis limits
+            lim = ax.get_xlim()
+            #space grid lines with desired number
+            ticks = np.linspace(lim[0], lim[1], 6)
+            ax.set_xticks(ticks)
+
+    if axis == 'both' or axis == 'y':
+        #remove axis tick labels
+        ax.set_yticklabels([])
+
+        #space grid lines nicely
+        if prettygrid:
+            #get current y limits
+            lim = ax.get_ylim()
+            #space grid lines with desired number
+            ticks = np.linspace(lim[0], lim[1], 6)
+            ax.set_yticks(ticks)
+
+    return ax
+
 def MakeSecondaryXaxis(ax, xlbl, tickfunc, locs=5):
     """Make an additional x-axis for the data already plotted
     ax       --> original axes object for plot
