@@ -141,6 +141,60 @@ def dfInterp(df, key, vals, method='linear', fill=np.nan):
         newdf[k] = f(vals) #Interp each column to desired values
     return newdf
 
+def dfWriteFixedWidth(df, savename, index=True, datatype='f', wid=16, prec=6):
+    """Write dataframe to file with fixed-width format
+    Requires string column headers, integer indices
+    index    --> write index to file
+    datatype --> 'f' for float data, 's' for string data
+    wid      --> column width in spaces
+    prec     --> decimal precision (number of decimal places for floats)
+
+    ':<16.6f' = FORMAT STATEMENT FOR 16-WIDE COLUMNS
+    <  : left-aligned,
+    16 : 16 spaces reserved in column,
+    .6 : 6 spaces reserved after decimal point,
+    f  : float
+    """
+
+    ofile = open(savename, 'w')
+
+    #WRITE HEADER ROW
+    #get column headers
+    cols = list(df.columns.values)
+    #first column is empty (full column spaces) if index, otherwise nothing
+    line = '{1:<{0}}'.format(wid, ' ') if index else ''
+    #concatenate column headers in fixed-width format
+    for c in cols:
+        #0 indicates 1st format entry goes in this {} (number of column spaces)
+        #1: indicates 2nd format entry goes in this {} (column name)
+        line += '{1:<{0}}'.format(wid, c)
+        # line += '{:<16}'.format(c)
+    #write header to file
+    ofile.write('{}\n'.format(line))
+
+    #WRITE EACH ROW
+    for i, r in df.iterrows():
+        #first column is index if index, otherwise nothing
+        line = '{1:<{0}}'.format(wid, str(i)) if index else ''
+        # line = '{:<16}'.format(str(i)) if index else ''
+
+        #concatenate row values in fixed-width format
+        if datatype == 'f':
+            #float formatting
+            for c in cols:
+                line += '{2:<{0}.{1}f}'.format(wid, prec, r[c])
+                # line += '{:<16.6f}'.format(r[c])
+        else:
+            #every other type formatting
+            for c in cols:
+                line += '{1:<{0}}'.format(wid, r[c])
+                # line += '{:<16}'.format(r[c])
+        #write header to file
+        ofile.write('{}\n'.format(line))
+
+    #CLOSE FILE
+    ofile.close()
+
 
 
 ########################################################################

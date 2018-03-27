@@ -80,6 +80,7 @@ def UseSeaborn(palette='deep', ncycle=6):
     ncycle  --> number of colors in color palette cycle
     """
     import seaborn as sns
+    global sns
     global colors
     #No Background fill, legend font scale, frame on legend
     sns.set(style='whitegrid', font_scale=1, rc={'legend.frameon': True})
@@ -735,6 +736,18 @@ def PlotContourFill(ax, X, Y, data, Ncontour=100, lmin=None, lmax=None,
     #PLOT CONTOURS
     contours = ax.contourf(X, Y, data, levels=np.linspace(lmin, lmax, Ncontour), cmap=cmap)
     return contours
+
+def SetColormapGrayscale(nplot):
+    """For data sets with too many cases to color individually,
+    make grayscale colormap
+    REQUIREMENTS: must call 'UseSeaborn' before use
+    nplot --> number of cases to plot
+    """
+    global sns
+    #Use divergining color map if more cases than xkcd colors
+    sns.set_palette('gray', int(nplot * 1.5))
+    colors = sns.color_palette()
+    return colors
 
 def PlotColorbar(ax, contours, label, pad=25, form=None, horzy='horizontal'):
     """Add a colorbar to a plot that corresponds to the provided contour data.
