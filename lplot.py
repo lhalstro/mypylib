@@ -144,7 +144,7 @@ scattermarkers = ['o', 'v', 'd', 's', 'p']
 #default font sizes
 Ttl = 24
 Lbl = 24
-Box = 22
+Box = 20
 Leg = 20
 Tck = 18
 
