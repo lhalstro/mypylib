@@ -195,7 +195,7 @@ def dfWriteFixedWidth(df, savename, index=True, datatype='f', wid=16, prec=6):
     #CLOSE FILE
     ofile.close()
 
-    def ReadCdatFile2Pandas(path):
+def ReadCdatFile2Pandas(path):
     """Read Phil Robinson cdat savefile format into a Pandas Dataframe
     with no cdat dependencies.
     """
