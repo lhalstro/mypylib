@@ -195,6 +195,31 @@ def dfWriteFixedWidth(df, savename, index=True, datatype='f', wid=16, prec=6):
     #CLOSE FILE
     ofile.close()
 
+    def ReadCdatFile2Pandas(path):
+    """Read Phil Robinson cdat savefile format into a Pandas Dataframe
+    with no cdat dependencies.
+    """
+    #GET COLUMN HEADERS
+    with open(path) as f:
+        #Read file lines into list
+        content = f.readlines()
+        #strip newline \n characters
+        content = [x.strip() for x in content]
+        #Second line is header row
+        keys = content[1]
+        #split by whitespace
+        keys = keys.split()
+        #drop leading '#'
+        keys = keys[1:]
+
+    #READ DATA
+        #data separated in fixed-width format
+        #stip 1st info row and 2nd header row
+        #supply header names manually
+    df = pd.read_fwf(path, skiprows=2, names=keys )
+
+    return df
+
 
 
 ########################################################################
