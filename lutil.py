@@ -195,9 +195,11 @@ def dfWriteFixedWidth(df, savename, index=True, datatype='f', wid=16, prec=6):
     #CLOSE FILE
     ofile.close()
 
-def ReadCdatFile2Pandas(path):
+def ReadCdatFile2Pandas(path, nskip=2):
     """Read Phil Robinson cdat savefile format into a Pandas Dataframe
     with no cdat dependencies.
+    path --> path to file
+    nskip --> number of header rows to skip. 2 for cdat, 1 for jpowell
     """
     #GET COLUMN HEADERS
     with open(path) as f:
@@ -206,7 +208,7 @@ def ReadCdatFile2Pandas(path):
         #strip newline \n characters
         content = [x.strip() for x in content]
         #Second line is header row
-        keys = content[1]
+        keys = content[nskip-1]
         #split by whitespace
         keys = keys.split()
         #drop leading '#'
@@ -216,7 +218,8 @@ def ReadCdatFile2Pandas(path):
         #data separated in fixed-width format
         #stip 1st info row and 2nd header row
         #supply header names manually
-    df = pd.read_fwf(path, skiprows=2, names=keys )
+    # df = pd.read_fwf(path, skiprows=nskip, names=keys )
+    df = pd.read_csv(path, skiprows=nskip, names=keys, delim_whitespace=True)
 
     return df
 

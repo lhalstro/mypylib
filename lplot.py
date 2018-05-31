@@ -69,8 +69,8 @@ def FindBetween(str, before, after=None):
 ### PLOTTING ###########################################################
 ########################################################################
 
-xkcdcolors = ["windows blue", "dusty purple", "leaf green", "macaroni and cheese",  "cherry" , "greyish", "charcoal", "salmon pink", "sandstone",      "tangerine",]
-xkcdhex =    ['#3778bf',      '#825f87',      '#5ca904',    '#efb435',              '#cf0234', '#a8a495', "#343837" , "#fe7b7c"     , "#c9ae74"  ,      "#ff9408"   ,]
+xkcdcolors = ["windows blue", "dusty purple",  "leaf green", "macaroni and cheese", "cherry" , "greyish", "charcoal", "salmon pink", "sandstone",      "tangerine",  ]
+xkcdhex =    ['#3778bf',      '#825f87',       '#5ca904',    '#efb435',             '#cf0234', '#a8a495', "#343837" , "#fe7b7c"     , "#c9ae74"  ,      "#ff9408"   ,]
 global colors
 colors = xkcdhex
 
