@@ -1,6 +1,8 @@
 """PYTHON PLOTTING UTILITIES
 Logan Halstrom
-07 OCTOBER 2015
+CREATED:  07 OCT 2015
+MODIFIED: 06 AUG 2018
+
 
 DESCRIPTION:  File manipulation, matplotlib plotting and saving.  A subset of
 lutil.py simply for plotting.
@@ -16,11 +18,16 @@ import lplot
 import subprocess
 import os
 import re
+import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib.cm import get_cmap
 from matplotlib.transforms import Bbox #for getting plot bounding boxes
 import numpy as np
 from scipy.interpolate import interp1d
+
+########################################################################
+### UTILITIES
+########################################################################
 
 def MakeOutputDir(savedir):
     """make results output directory if it does not already exist.
@@ -73,7 +80,7 @@ def FindBetween(str, before, after=None):
 
 
 ########################################################################
-### PLOTTING ###########################################################
+### PLOTTING DEFAULTS
 ########################################################################
 
 #new matplotlib default color cycle (use to reset seaborn default)
@@ -81,69 +88,7 @@ mplcolors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '
 #custom color cycle I like make with xkcd colors
 xkcdcolors = ["windows blue", "dusty purple",  "leaf green", "macaroni and cheese", "cherry" , "greyish", "charcoal", "salmon pink", "sandstone",      "tangerine",  ]
 xkcdhex =    ['#3778bf',      '#825f87',       '#5ca904',    '#efb435',             '#cf0234', '#a8a495', "#343837" , "#fe7b7c"     , "#c9ae74"  ,      "#ff9408"   ,]
-global colors
-colors = xkcdhex
 
-def UseSeaborn(palette=None, ncycle=6):
-    """Call to use seaborn plotting package
-    palette --> keyword for default color palette
-    ncycle  --> number of colors in color palette cycle
-    """
-    import seaborn as sns
-    global sns
-    global colors
-    #No Background fill, legend font scale, frame on legend
-    sns.set(style='whitegrid', font_scale=1, rc={'legend.frameon': True})
-    #Mark ticks with border on all four sides (overrides 'whitegrid')
-    sns.set_style('ticks')
-    #ticks point in
-    sns.set_style({"xtick.direction": "in","ytick.direction": "in"})
-
-    # sns.choose_colorbrewer_palette('q')
-
-    #Nice Blue,green,Red
-    # sns.set_palette('colorblind')
-    if palette == 'xkcd':
-        #Nice blue, purple, green
-        sns.set_palette(sns.xkcd_palette(xkcdcolors))
-    elif palette is not None:
-        #set specified color palette
-        sns.set_palette(palette, ncycle)
-        #Nice blue, green red
-        # sns.set_palette('deep')
-
-        # sns.set_palette('Accent_r')
-        # sns.set_palette('Set2')
-        # sns.set_palette('Spectral_r')
-        # sns.set_palette('spectral')
-    else:
-        #Reset color cycle back to matplotlib defaults
-        sns.set_palette(mplcolors)
-
-    #FIX INVISIBLE MARKER BUG
-    sns.set_context(rc={'lines.markeredgewidth': 0.1})
-
-    colors = sns.color_palette() #Save new color palette to variable
-
-    #CALL MATPLOTLIB DEFAULTS AGAIN, AFTER SEABORN CHANGED THEM
-    matplotlib.rcParams.update(params)
-    matplotlib.rcParams.update(tickparams) #DONT CALL THIS IF YOU WANT TIGHT TICK SPACING
-
-    #return color cycle
-    return colors
-
-#################
-#PLOT FORMATTING
-# Configure figures for production
-WIDTH = 495.0  # width of one column
-FACTOR = 1.0   # the fraction of the width the figure should occupy
-fig_width_pt  = WIDTH * FACTOR
-
-inches_per_pt = 1.0 / 72.27
-golden_ratio  = (np.sqrt(5) - 1.0) / 2.0      # because it looks good
-fig_width_in  = fig_width_pt * inches_per_pt  # figure width in inches
-fig_height_in = fig_width_in * golden_ratio   # figure height in inches
-fig_dims      = [fig_width_in, fig_height_in] # fig dims as a list
 
 #Line Styles
 mark = 5
@@ -170,58 +115,58 @@ Leg_big = 24
 Box_big = 28
 Tck_big = 22
 
-#MAKE FONT DICT GLOBAL SO IT CAN BE MADE AND USED IN DIFFERENT FUNCTIONS
-global font_ttl, font_lbl, font_box, font_tck, font_leg
+# #MAKE FONT DICT GLOBAL SO IT CAN BE MADE AND USED IN DIFFERENT FUNCTIONS
+# global font_ttl, font_lbl, font_box, font_tck, font_leg
 
-def SetFontDictSize(ttl=None, lbl=None, box=None, tck=None, leg=None):
-    """Set font size in styling dictionaries.  Global dictionaries to use for
-    font styles in all functions.
-    To change a single parameter, call function like: SetFontDictSize(lbl=18)
-    ttl --> title, lbl --> axis label, box --> textbox,
-    tck --> axis tick labels, leg --> legend text
-    """
-    global font_ttl, font_lbl, font_box, font_tck, font_leg
+# def SetFontDictSize(ttl=None, lbl=None, box=None, tck=None, leg=None):
+#     """Set font size in styling dictionaries.  Global dictionaries to use for
+#     font styles in all functions.
+#     To change a single parameter, call function like: SetFontDictSize(lbl=18)
+#     ttl --> title, lbl --> axis label, box --> textbox,
+#     tck --> axis tick labels, leg --> legend text
+#     """
+#     global font_ttl, font_lbl, font_box, font_tck, font_leg
 
-    #DEFAULT FONT SIZES
-    # if ttl == None: ttl = 18
-    # if lbl == None: lbl = 18
-    # if box == None: box = 12
-    # if tck == None: tck = 16
-    # if leg == None: leg = 16
+#     #DEFAULT FONT SIZES
+#     # if ttl == None: ttl = 18
+#     # if lbl == None: lbl = 18
+#     # if box == None: box = 12
+#     # if tck == None: tck = 16
+#     # if leg == None: leg = 16
 
-    if ttl == None: ttl = Ttl
-    if lbl == None: lbl = Lbl
-    if box == None: box = Box
-    if tck == None: tck = Tck
-    if leg == None: leg = Leg
+#     if ttl == None: ttl = Ttl
+#     if lbl == None: lbl = Lbl
+#     if box == None: box = Box
+#     if tck == None: tck = Tck
+#     if leg == None: leg = Leg
 
-    #Font Styles
-    font_ttl = {'family' : 'serif',
-                'color'  : 'black',
-                'weight' : 'normal',
-                'size'   : ttl,
-                }
-    font_lbl = {'family' : 'serif',
-                'color'  : 'black',
-                'weight' : 'normal',
-                'size'   : lbl,
-                }
-    font_box = {'family' : 'arial',
-                'color'  : 'black',
-                'weight' : 'normal',
-                'size'   : box,
-                }
-    font_tck = tck
-    font_leg = leg
-
-
-#INITIAL FONT DICT SETTINGS
-SetFontDictSize()
-
-#Textbox Properties
-textbox_props = dict(boxstyle='round', facecolor='white', alpha=0.5)
+#     #Font Styles
+#     font_ttl = {'family' : 'serif',
+#                 'color'  : 'black',
+#                 'weight' : 'normal',
+#                 'size'   : ttl,
+#                 }
+#     font_lbl = {'family' : 'serif',
+#                 'color'  : 'black',
+#                 'weight' : 'normal',
+#                 'size'   : lbl,
+#                 }
+#     font_box = {'family' : 'arial',
+#                 'color'  : 'black',
+#                 'weight' : 'normal',
+#                 'size'   : box,
+#                 }
+#     font_tck = tck
+#     font_leg = leg
 
 
+# #INITIAL FONT DICT SETTINGS
+# SetFontDictSize()
+
+# #Textbox Properties
+# textbox_props = dict(boxstyle='round', facecolor='white', alpha=0.5)
+
+#MATPLOTLIB DEFAULTS
 params = {
 
         #FONT SIZES
@@ -265,32 +210,94 @@ tickparams = {
 #UPDATE MATPLOTLIB DEFAULT PREFERENCES
     #These commands are called again in UseSeaborn since Seaborn resets defaults
      #If you want tight tick spacing, don't update tick size default, just do manually
-import matplotlib
 matplotlib.rcParams.update(params)
 matplotlib.rcParams.update(tickparams)
 
 
-import matplotlib.ticker as ticker
 
+#USE SEABORN SETTINGS WITH SOME CUSTOMIZATION
+def UseSeaborn(palette=None, ncycle=6):
+    """Call to use seaborn plotting package defaults, then customize
+    palette --> keyword for default color palette
+    ncycle  --> number of colors in color palette cycle
+    """
+    import seaborn as sns
+    # global sns
+    # global colors
+    #No Background fill, legend font scale, frame on legend
+    sns.set(style='whitegrid', font_scale=1, rc={'legend.frameon': True})
+    #Mark ticks with border on all four sides (overrides 'whitegrid')
+    sns.set_style('ticks')
+    #ticks point in
+    sns.set_style({"xtick.direction": "in","ytick.direction": "in"})
+
+    # sns.choose_colorbrewer_palette('q')
+
+    #Nice Blue,green,Red
+    # sns.set_palette('colorblind')
+    if palette == 'xkcd':
+        #Nice blue, purple, green
+        sns.set_palette(sns.xkcd_palette(xkcdcolors))
+    elif palette is not None:
+        #set specified color palette
+        sns.set_palette(palette, ncycle)
+        #Nice blue, green red
+        # sns.set_palette('deep')
+
+        # sns.set_palette('Accent_r')
+        # sns.set_palette('Set2')
+        # sns.set_palette('Spectral_r')
+        # sns.set_palette('spectral')
+    else:
+        #Reset color cycle back to matplotlib defaults
+        sns.set_palette(mplcolors)
+
+    #FIX INVISIBLE MARKER BUG
+    sns.set_context(rc={'lines.markeredgewidth': 0.1})
+
+    colors = sns.color_palette() #Save new color palette to variable
+
+    #CALL MATPLOTLIB DEFAULTS AGAIN, AFTER SEABORN CHANGED THEM
+    matplotlib.rcParams.update(params)
+    matplotlib.rcParams.update(tickparams) #DONT CALL THIS IF YOU WANT TIGHT TICK SPACING
+
+    #return color cycle
+    return colors
+
+#################
+#PLOT FORMATTING
+
+def LaTeXPlotSize():
+    # Get figure size for figures for production in LaTeX documents
+    WIDTH = 495.0  # width of one column
+    FACTOR = 1.0   # the fraction of the width the figure should occupy
+    fig_width_pt  = WIDTH * FACTOR
+
+    inches_per_pt = 1.0 / 72.27
+    golden_ratio  = (np.sqrt(5) - 1.0) / 2.0      # because it looks good
+    fig_width_in  = fig_width_pt * inches_per_pt  # figure width in inches
+    fig_height_in = fig_width_in * golden_ratio   # figure height in inches
+    fig_dims      = [fig_width_in, fig_height_in] # fig dims as a list
+    return fig_dims
+
+
+
+########################################################################
+### PLOTTING UTILITIES
+########################################################################
 
 
 
 def PlotStart(title, xlbl, ylbl, horzy='vertical', figsize='square',
                 ttl=None, lbl=None, tck=None, leg=None, box=None,
-                grid=True, rc=True):
+                grid=True):
     """Begin plot with title and axis labels.  Space title above plot.
     horzy --> vertical or horizontal y axis label
     figsize --> set figure size. None for autosizing, 'tex' for latex
                     formatting, or 2D list for user specification.
     ttl,lbl,tck --> title, label, and axis font sizes
     grid --> show grid
-    rc --> use matplotlib rc params default
     """
-
-    # if not rc:
-        # #Reset default tick fontsize to get desired tick spacing
-        # matplotlib.rcParams.update({'xtick.labelsize': 12,
-        #                             'ytick.labelsize': 12,})
 
     #SET FIGURE SIZE
     if figsize == None:
@@ -299,6 +306,7 @@ def PlotStart(title, xlbl, ylbl, horzy='vertical', figsize='square',
     else:
         if figsize == 'tex':
             #Plot with latex 2-column figure sizing
+            fig_dims = LaTeXPlotSize()
             figsize = fig_dims
         elif figsize == 'square':
             figsize = [6, 6]
@@ -308,36 +316,11 @@ def PlotStart(title, xlbl, ylbl, horzy='vertical', figsize='square',
     #PLOT FIGURE
     ax = fig.add_subplot(1, 1, 1)
 
-    if rc:
-        #USE MATPLOTLIB RC PARAMS SETTINGS
-        if title != None:
-            plt.title(title)
-        plt.xlabel(xlbl)
-        plt.ylabel(ylbl)
-    else:
-
-
-
-        #USE FONT DICT SETTINGS
-
-        #Set font sizes
-        if ttl != None or lbl != None or tck != None or leg != None or box != None:
-            #Set any given font sizes
-            SetFontDictSize(ttl=ttl, lbl=lbl, tck=tck, leg=leg, box=box)
-        else:
-            #Reset default font dictionaries
-            SetFontDictSize()
-
-        if title != None:
-            plt.title(title, fontdict=font_ttl)
-        plt.xlabel(xlbl, fontdict=font_lbl)
-        plt.xticks(fontsize=font_tck)
-        plt.ylabel(ylbl, fontdict=font_lbl, rotation=horzy)
-        plt.yticks(fontsize=font_tck)
-
-        # #Return Matplotlib Defaults
-        # matplotlib.rcParams.update({'xtick.labelsize': Tck,
-        #                             'ytick.labelsize': Tck,})
+    #USING MATPLOTLIB RC PARAMS SETTINGS
+    if title != None:
+        plt.title(title)
+    plt.xlabel(xlbl)
+    plt.ylabel(ylbl)
 
     # #INCREASE TITLE SPACING
     # if title != None:
@@ -423,8 +406,7 @@ def MakeTwinx(ax, ylbl='', horzy='vertical'):
     horzy --> set orientation of y-axis label
     """
     ax2 = ax.twinx()
-    ax2.set_ylabel(ylbl, fontdict=font_lbl, rotation=horzy)
-    plt.yticks(fontsize=font_tck)
+    ax2.set_ylabel(ylbl)
     return ax2
 
 def MakeTwiny(ax, xlbl=''):
@@ -435,9 +417,9 @@ def MakeTwiny(ax, xlbl=''):
     """
     ax2 = ax.twiny() #get separte x-axis for labeling trajectory Mach
     # ax2.set_xlabel(xlbl) #label new x-axis
-    plt.xticks(fontsize=font_tck) #set tick font size
-    ax2.set_xlabel(xlbl, fontdict=font_lbl) #label new x-axis
-    plt.xticks(fontsize=font_tck) #set tick font size
+    plt.xticks() #set tick font size
+    ax2.set_xlabel(xlbl) #label new x-axis
+    plt.xticks() #set tick font size
     return ax2
 
 def YlabelOnTop(ax, ylbl, x=0.0, y=1.01):
@@ -624,7 +606,7 @@ def Plot(ax, x, y, color, label, linestyle='-',
     return ax.plot(x, y, color=color, label=label, linestyle=linestyle,
                     linewidth=line, marker=marker, markersize=mark)
 
-def ScatPlot(ax, df, X, Y, lbl, clr=colors[0], mkr='o', plottype='mark'):
+def ScatPlot(ax, df, X, Y, lbl, clr='black', mkr='o', plottype='mark'):
     """Make a scatter plot using various styling techniques.
     Plot using data in provided dataframe according to provided keys
     ax --> matplotlib axis object
@@ -660,7 +642,8 @@ def PlotLegend(ax, loc='best', alpha=0.5, title=None, fontsize=None, outside=Non
     commands.  Curved edges, semi-transparent, given title, single markers
     """
     #default fontsize is already font_leg, but this allows unique user input
-    if fontsize == None: fontsize = font_leg
+    if fontsize == None:
+        fontsize = matplotlib.rcParams['legend.fontsize']
 
     if outside != None:
         #Legend outside plot
@@ -692,7 +675,7 @@ def PlotLegendLabels(ax, handles, labels, loc='best', title=None, alpha=0.5,
     Curved edges, semi-transparent, given title, single markers
     """
     if fontsize == None:
-        fontsize = font_leg
+        fontsize = matplotlib.rcParams['legend.fontsize']
     if outside != None:
         #Legend outside plot
         if outside == 'top':
@@ -714,12 +697,7 @@ def PlotLegendLabels(ax, handles, labels, loc='best', title=None, alpha=0.5,
                         )
     else:
         leg = ax.legend(handles, labels, loc=loc, title=title, ncol=ncol,
-                    framealpha=alpha,
-                    # fancybox=True, frameon=True,
-                    # numpoints=1, scatterpoints=1,
-                    prop={'size':fontsize},
-                    # borderpad=0.1, borderaxespad=0.1, handletextpad=0.2,
-                    # handlelength=1.0, labelspacing=0
+                    framealpha=alpha, prop={'size':fontsize},
                     )
 
 
@@ -865,8 +843,8 @@ def GridLines(ax, linestyle='--', color='k', which='major'):
     """
     ax.grid(True, which=which, linestyle=linestyle, color=color)
 
-def TextBox(ax, boxtext, x=0.005, y=0.95, fontsize=font_box['size'],
-                alpha=0.5, props=None, color=None, relcoord=True,
+def TextBox(ax, boxtext, x=0.005, y=0.95, fontsize=None,
+                alpha=1.0, props=None, color=None, relcoord=True,
                 vert='top', horz='left'):
     """Add text box.
     (Anchor position is upper left corner of text box)
@@ -876,6 +854,8 @@ def TextBox(ax, boxtext, x=0.005, y=0.95, fontsize=font_box['size'],
                     e.g. center/center places box centered on point
                          top/center places box with point on top center
     """
+    if fontsize == None:
+        fontsize = matplotlib.rcParams['font.size']
     if props == None:
         #Default textbox properties
         props = dict(boxstyle='round', facecolor='white', alpha=alpha)
