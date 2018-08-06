@@ -4,6 +4,13 @@ Logan Halstrom
 
 DESCRIPTION:  File manipulation, matplotlib plotting and saving.  A subset of
 lutil.py simply for plotting.
+
+TO IMPORT:
+import sys
+import os
+HOME = os.path.expanduser('~')
+sys.path.append('{}/lib/python'.format(HOME))
+import lplot
 """
 
 import subprocess
@@ -69,12 +76,15 @@ def FindBetween(str, before, after=None):
 ### PLOTTING ###########################################################
 ########################################################################
 
+#new matplotlib default color cycle (use to reset seaborn default)
+mplcolors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf']
+#custom color cycle I like make with xkcd colors
 xkcdcolors = ["windows blue", "dusty purple",  "leaf green", "macaroni and cheese", "cherry" , "greyish", "charcoal", "salmon pink", "sandstone",      "tangerine",  ]
 xkcdhex =    ['#3778bf',      '#825f87',       '#5ca904',    '#efb435',             '#cf0234', '#a8a495', "#343837" , "#fe7b7c"     , "#c9ae74"  ,      "#ff9408"   ,]
 global colors
 colors = xkcdhex
 
-def UseSeaborn(palette='deep', ncycle=6):
+def UseSeaborn(palette=None, ncycle=6):
     """Call to use seaborn plotting package
     palette --> keyword for default color palette
     ncycle  --> number of colors in color palette cycle
@@ -96,7 +106,8 @@ def UseSeaborn(palette='deep', ncycle=6):
     if palette == 'xkcd':
         #Nice blue, purple, green
         sns.set_palette(sns.xkcd_palette(xkcdcolors))
-    else:
+    elif palette is not None:
+        #set specified color palette
         sns.set_palette(palette, ncycle)
         #Nice blue, green red
         # sns.set_palette('deep')
@@ -105,6 +116,9 @@ def UseSeaborn(palette='deep', ncycle=6):
         # sns.set_palette('Set2')
         # sns.set_palette('Spectral_r')
         # sns.set_palette('spectral')
+    else:
+        #Reset color cycle back to matplotlib defaults
+        sns.set_palette(mplcolors)
 
     #FIX INVISIBLE MARKER BUG
     sns.set_context(rc={'lines.markeredgewidth': 0.1})
@@ -115,7 +129,8 @@ def UseSeaborn(palette='deep', ncycle=6):
     matplotlib.rcParams.update(params)
     matplotlib.rcParams.update(tickparams) #DONT CALL THIS IF YOU WANT TIGHT TICK SPACING
 
-
+    #return color cycle
+    return colors
 
 #################
 #PLOT FORMATTING
@@ -138,6 +153,7 @@ line = 1.5
 #dot, start, x, tri-line, plus
 smallmarkers = ['.', '*', 'd', '1', '+']
 bigmarkers = ['o', 'v', 'd', 's', '*', 'D', 'p', '>', 'H', '8']
+bigdotmarkers = ['$\\odot$', 'v', 'd', '$\\boxdot$', '*', 'D', 'p', '>', 'H', '8']
 scattermarkers = ['o', 'v', 'd', 's', 'p']
 
 #GLOBAL INITIAL FONT SIZES
@@ -207,26 +223,27 @@ textbox_props = dict(boxstyle='round', facecolor='white', alpha=0.5)
 
 
 params = {
-        # 'backend': 'ps',
-        # 'text.latex.preamble': ['\usepackage{gensymb}'],
-        'axes.labelsize' : Lbl,
-        'axes.titlesize' : Ttl,
-        # 'text.fontsize' : Box,
-        'font.size' : Box,
-        # 'xtick.major.pad' :
-        # 'text.usetex': True,
-        'figure.figsize': [6,6],
-        # 'font.family': 'Helvetica',
-        'font.family': 'serif',
-        'font.fantasy': 'xkcd',
-        'font.sans-serif': 'Helvetica', #default font for font.family=serif
-        'font.monospace': 'Courier',
+
+        #FONT SIZES
+        'axes.labelsize' : Lbl, #Axis Labels
+        'axes.titlesize' : Ttl, #Title
+        'font.size'      : Box, #Textbox
+        'xtick.labelsize': 20, #Axis tick labels
+        'ytick.labelsize': 20, #Axis tick labels
+        'legend.fontsize': Leg, #Legend font size
+        # 'font.family': 'helvetica' #Font family
+        'font.family'    : 'serif',
+        'font.fantasy'   : 'xkcd',
+        'font.sans-serif': 'Helvetica',
+        'font.monospace' : 'Courier',
         #AXIS PROPERTIES
         'axes.titlepad'  : 2*6.0, #title spacing from axis
         'axes.grid'      : True,  #grid on plot
+        #FIGURE PROPERTIES
+        'figure.figsize' : (6,6),   #square plots
+        'savefig.bbox'   : 'tight', #reduce whitespace in saved figures
         #LEGEND PROPERTIES
-        'legend.fontsize'       : Leg,
-        'legend.framealpha'     : 0.5,
+        'legend.framealpha'     : 0.75,
         'legend.fancybox'       : True,
         'legend.frameon'        : True,
         'legend.numpoints'      : 1,
