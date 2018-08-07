@@ -84,10 +84,11 @@ def FindBetween(str, before, after=None):
 ########################################################################
 
 #new matplotlib default color cycle (use to reset seaborn default)
+#            dark blue,   orange,   green,      red,      purple,    brown,      pink,     gray,      yellow,   light blue
 mplcolors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf']
 #custom color cycle I like make with xkcd colors
-xkcdcolors = ["windows blue", "dusty purple",  "leaf green", "macaroni and cheese", "cherry" , "greyish", "charcoal", "salmon pink", "sandstone",      "tangerine",  ]
-xkcdhex =    ['#3778bf',      '#825f87',       '#5ca904',    '#efb435',             '#cf0234', '#a8a495', "#343837" , "#fe7b7c"     , "#c9ae74"  ,      "#ff9408"   ,]
+xkcdcolors = ["windows blue", "tangerine",  "dusty purple",  "leaf green",    "cherry" , "puke yellow", "salmon pink",   "greyish",   'light brown', "sky blue", "aqua"     ]
+xkcdhex =    ['#3778bf',       "#ff9408" ,  '#825f87',       '#5ca904',       '#cf0234', '#c2be0e',      "#fe7b7c"     ,  '#a8a495',   '#ad8150',    "#75bbfd" , "#13eac9"    ]
 
 
 #Line Styles
@@ -845,7 +846,7 @@ def GridLines(ax, linestyle='--', color='k', which='major'):
 
 def TextBox(ax, boxtext, x=0.005, y=0.95, fontsize=None,
                 alpha=1.0, props=None, color=None, relcoord=True,
-                vert='top', horz='left'):
+                vert='top', horz='left', rotation=0):
     """Add text box.
     (Anchor position is upper left corner of text box)
     relcoord --> Use relative coordinate achor points (0 --> 1) if true,
@@ -853,6 +854,7 @@ def TextBox(ax, boxtext, x=0.005, y=0.95, fontsize=None,
     vert/horz --> vertical and horizontal alignment of box about given point
                     e.g. center/center places box centered on point
                          top/center places box with point on top center
+    rotation --> text rotation in degrees
     """
     if fontsize == None:
         fontsize = matplotlib.rcParams['font.size']
@@ -867,12 +869,15 @@ def TextBox(ax, boxtext, x=0.005, y=0.95, fontsize=None,
         #Use relative coordinates to anchor textbox
         ax.text(x, y, boxtext, fontsize=fontsize, bbox=props,
                 verticalalignment=vert, horizontalalignment=horz,
+                rotation=rotation,
                 transform=ax.transAxes, #makes coordinate relative
                 )
     else:
         #Use absolute coordinates to anchor textbox
         ax.text(x, y, boxtext, fontsize=fontsize, bbox=props,
-                verticalalignment=vert, horizontalalignment=horz,)
+                verticalalignment=vert, horizontalalignment=horz,
+                rotation=rotation,
+                )
 
 
 def TightLims(ax, tol=0.0):
@@ -1028,3 +1033,35 @@ def PolyFit(x, y, order, n, showplot=0):
     if showplot == 1:
         plt.show()
     return polyfit
+
+
+def main():
+    #TEST COLORMAPS
+
+    def PlotColorCycle(ax, colors, title=''):
+        x = np.linspace(0,100,101)
+        for i, c in enumerate(colors):
+            y = -i*500 + x ** 2
+            ax.plot(x, y, color=c, label=str(i+1))
+        ax.legend()
+        ax.set_title(title)
+
+    nrow = 1
+    ncol = 2
+    fig, axs = plt.subplots(nrow,ncol, figsize=[7*ncol, 6*nrow])
+
+
+    #Plot Matplotlib Defaults
+    PlotColorCycle(axs[0], mplcolors, 'Matplotlib Default Color Cycle')
+    #Plot My Custom Colors
+    colors = UseSeaborn('xkcd')
+    PlotColorCycle(axs[1], colors, 'Custom XKCD Color Cycle:')
+
+    plt.show()
+
+
+
+if __name__ == "__main__":
+    main()
+
+
