@@ -87,8 +87,8 @@ def FindBetween(str, before, after=None):
 #            dark blue,   orange,   green,      red,      purple,    brown,      pink,     gray,      yellow,   light blue
 mplcolors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf']
 #custom color cycle I like make with xkcd colors
-xkcdcolors = ["windows blue", "tangerine",  "dusty purple",  "leaf green",    "cherry" , "puke yellow", "salmon pink",   "greyish",   'light brown', "sky blue", "aqua"     ]
-xkcdhex =    ['#3778bf',       "#ff9408" ,  '#825f87',       '#5ca904',       '#cf0234', '#c2be0e',      "#fe7b7c"     ,  '#a8a495',   '#ad8150',    "#75bbfd" , "#13eac9"    ]
+xkcdcolors = ["windows blue", "tangerine",  "dusty purple",  "leaf green",    "cherry" ,  'light brown',  "salmon pink",   "greyish",   "puke yellow",  "sky blue", "aqua"     ]
+xkcdhex =    ['#3778bf',       "#ff9408" ,  '#825f87',       '#5ca904',       '#cf0234',   '#ad8150',      "#fe7b7c"     ,  '#a8a495',  '#c2be0e',      "#75bbfd" , "#13eac9"    ]
 
 
 #Line Styles
