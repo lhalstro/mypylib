@@ -908,7 +908,9 @@ def TightLims(ax, tol=0.0):
     return xlim, ylim
 
 def PadBounds(axes, tol=0):
-    """Add tolerance to axes bounds to pad with whitespace"""
+    """Add tolerance to axes bounds to pad with whitespace
+    Axis bounds are extended by the length of the axis times tol
+    """
 
     xtol = (axes[1] - axes[0]) * tol
     ytol = (axes[3] - axes[2]) * tol
