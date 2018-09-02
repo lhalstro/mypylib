@@ -7,6 +7,7 @@ DESCRIPTION:  File manipulation, matplotlib plotting and saving
 
 import subprocess
 import os
+import errno
 import re
 import matplotlib.pyplot as plt
 import numpy as np
@@ -29,19 +30,27 @@ def command(cmd):
     proc_stdout = process.communicate()[0].strip()
     return process, proc_stdout
 
-def MakeOutputDir(savedir):
-    """make results output directory if it does not already exist.
-    instring --> directory path from script containing folder
+def MakeOutputDir(filename):
+    """ Makes output directories in filename that do not already exisi
+    filename --> save file path, used to determine parent directories
     """
-    #split individual directories
-    splitstring = savedir.split('/')
-    prestring = ''
-    for string in splitstring:
-        prestring += string + '/'
+
+    # #split individual directories
+    # splitstring = savedir.split('/')
+    # prestring = ''
+    # for string in splitstring:
+    #     prestring += string + '/'
+    #     try:
+    #         os.mkdir(prestring)
+    #     except Exception:
+    #         pass
+
+    if not os.path.exists(os.path.dirname(filename)):
         try:
-            os.mkdir(prestring)
-        except Exception:
-            pass
+            os.makedirs(os.path.dirname(filename))
+        except OSError as exc: # Guard against race condition
+            if exc.errno != errno.EEXIST:
+                raise
 
 def GetRootDir(savename):
     """Get root path from a string, local or global.
