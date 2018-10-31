@@ -450,7 +450,7 @@ def RemoveAxisTicks(ax, axis='both'):
 
 def RemoveAxisTickLabels(ax, axis='both', prettygrid=True):
     """Remove numbers from axis tick labels, keep ticks and gridlines
-    Use to declassify sensitive info
+    Use to declassify sensitive info (e.g. ITAR, SBU)
     NOTE: Call after setting axis limits
     axis --> Which axis to remove ticks ('x', 'y', 'both')
     prettygrid --> set axis ticks to square grid if True
