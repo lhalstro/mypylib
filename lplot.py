@@ -437,7 +437,7 @@ def YlabelOnTop(ax, ylbl, x=0.0, y=1.01):
 
 def RemoveAxisTicks(ax, axis='both'):
     """Remove numbers and grid lines for axis ticks
-    Use to declassify sensitive info
+    Use to declassify sensitive info (e.g. ITAR, SBU)
     axis --> Which axis to remove ticks ('x', 'y', 'both')
     """
     if axis == 'both' or axis == 'x':
