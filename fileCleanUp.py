@@ -20,6 +20,8 @@ HOME = os.path.expanduser('~')
 sys.path.append('{}/lib/python'.format(HOME))
 from lutil import cmd
 
+dryrun = False
+
 def range_inclusive(start, stop, step=1):
     """ Like 'range' but includes 'stop' in interval.
     (Basically, just add one to the stop value)
@@ -28,7 +30,8 @@ def range_inclusive(start, stop, step=1):
 
 def Delete(filename):
     """Delete a given file"""
-    cmd('rm {}'.format(filename))
+    if not dryrun:
+        cmd('rm {}'.format(filename))
     # #debug:
     # cmd( 'ls {}'.format(filename) )
 
@@ -84,7 +87,12 @@ def MakeFilesToDelete(path, header, istart, iend, incr=1):
 
 
 
-def main(path, headers, istart, iend, incr=1, allbut=False,):
+def main(path, headers, istart, iend, incr=1, allbut=False, setdryrun=False):
+
+    global dryrun
+    dryrun=setdryrun
+    if dryrun:
+        print("DRY RUN, NOT ACTUALLY DELETING FILES")
 
     #DELETE SERIES FOR EACH FILE HEADER
     for head in headers:
@@ -101,7 +109,12 @@ def main(path, headers, istart, iend, incr=1, allbut=False,):
 if __name__ == "__main__":
 
 
+
+
+
     #TEST CASE
+    import glob
+
     testdir = 'test_deletefiles'
     cmd('rm -rf {}'.format(testdir))
 
@@ -110,15 +123,17 @@ if __name__ == "__main__":
     MakeFilesToDelete(testdir, 'b', 1, 10, incr=1)
 
     #Deletes all 'b.' files except b.2, b.5, b.8
-    DeleteExcept(testdir, 'b', 2, 10, 3)
-
-    import glob
+    # DeleteExcept(testdir, 'b', 2, 10, 3)
+    main(testdir, 'b', 2, 10, 3, allbut=True, setdryrun=True)
     print(glob.glob('{}/b.*'.format(testdir)))
 
+    #Delete all a files up to and including a.7
+    # DeleteSeries(testdir, 'a', 1, 8)
+    main(testdir, 'a', 1, 8)
+    print(glob.glob('{}/a.*'.format(testdir)))
 
 
 
-    sys.exit()
     #CLEANUP TEST CASE
     cmd('rm -rf {}'.format(testdir))
 
