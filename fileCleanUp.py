@@ -7,6 +7,9 @@ MODIFIED: 19 JUL 2019
 
 DESCRIPTION:  Used to clean up numbered file series.  Delete numbered ranges
 or ordered series of files.
+
+ToDo:
+    Function that deletes all files of given header except specified iterations
 """
 import numpy as np
 
@@ -17,23 +20,8 @@ HOME = os.path.expanduser('~')
 sys.path.append('{}/lib/python'.format(HOME))
 from lutil import cmd
 
-# runlocal = 0
-# import sys
-# if runlocal == 1:
-#     sys.path.append('/Users/Logan/lib/python')
-# else:
-#     sys.path.append('/home/lhalstro/lib/python')
-# from lutil import cmd
-# from lutil import MakeOutputDir
-# from lutil import GetParentDir
-
-# import re
-# import glob
-# import subprocess
-# import numpy as np
-
-def range_inclusive(start, stop, step):
-    """ Like 'range' but includes 'stop'.
+def range_inclusive(start, stop, step=1):
+    """ Like 'range' but includes 'stop' in interval.
     (Basically, just add one to the stop value)
     """
     return range(start, (stop + 1) if step >= 0 else (stop - 1), step)
@@ -62,7 +50,8 @@ def DeleteSeries(path, header, istart, iend, incr=1):
     istart, iend --> numbers of beginning and end of series to delete
     incr --> number increment to delete within series range.  Default, delete all
     """
-    todelete = np.append( np.arange(istart, iend, incr), iend )
+    # todelete = np.append( np.arange(istart, iend, incr), iend )
+    todelete = list( range_inclusive(istart, iend, incr) )
     for i in todelete:
         DeleteIth(path, header, i)
 
@@ -73,10 +62,14 @@ def DeleteExcept(path, header, istart, iend, incr=1):
         print('\nNO FILES WILL BE DELETED IN THIS SERIES\n')
         return
     #DELETE EVERY FILE NOT WITHIN GIVEN SERIES TO SAVE
-    tosave = np.append( np.arange(istart, iend, incr), iend )
-    for i in np.append( np.arange(istart, iend, 1), iend ):
+    tosave = list( range_inclusive(istart, iend, incr) )
+    for i in range_inclusive(istart, iend, 1):
         if not i in tosave:
             DeleteIth(path, header, i)
+    # tosave = np.append( np.arange(istart, iend, incr), iend )
+    # for i in np.append( np.arange(istart, iend, 1), iend ):
+    #     if not i in tosave:
+    #         DeleteIth(path, header, i)
 
 def MakeFilesToDelete(path, header, istart, iend, incr=1):
     """ Make series of empty files to test deleting functions
@@ -91,7 +84,7 @@ def MakeFilesToDelete(path, header, istart, iend, incr=1):
 
 
 
-def main(path, headers, istart, iend, incr=1, allbut=False):
+def main(path, headers, istart, iend, incr=1, allbut=False,):
 
     #DELETE SERIES FOR EACH FILE HEADER
     for head in headers:
@@ -116,12 +109,18 @@ if __name__ == "__main__":
     MakeFilesToDelete(testdir, 'a', 1, 12, incr=2)
     MakeFilesToDelete(testdir, 'b', 1, 10, incr=1)
 
+    #Deletes all 'b.' files except b.2, b.5, b.8
+    DeleteExcept(testdir, 'b', 2, 10, 3)
+
+    import glob
+    print(glob.glob('{}/b.*'.format(testdir)))
 
 
 
 
-
-
+    sys.exit()
+    #CLEANUP TEST CASE
+    cmd('rm -rf {}'.format(testdir))
 
 
 
