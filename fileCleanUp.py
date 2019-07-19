@@ -32,6 +32,11 @@ from lutil import cmd
 # import subprocess
 # import numpy as np
 
+def range_inclusive(start, stop, step):
+    """ Like 'range' but includes 'stop'.
+    (Basically, just add one to the stop value)
+    """
+    return range(start, (stop + 1) if step >= 0 else (stop - 1), step)
 
 def Delete(filename):
     """Delete a given file"""
@@ -80,7 +85,7 @@ def MakeFilesToDelete(path, header, istart, iend, incr=1):
     #Make empty directory
     os.makedirs(path, exist_ok=True)
     #Fill with files
-    for i in np.append( np.arange(istart, iend, incr), iend ):
+    for i in range_inclusive(istart, iend, incr):
         curfile = '{}/{}.{}'.format(path, header, i)
         cmd('touch {}'.format(curfile))
 
@@ -105,10 +110,13 @@ if __name__ == "__main__":
 
     #TEST CASE
     testdir = 'test_deletefiles'
+    cmd('rm -rf {}'.format(testdir))
 
     #Make a directory full of empty files to delete
     MakeFilesToDelete(testdir, 'a', 1, 12, incr=2)
     MakeFilesToDelete(testdir, 'b', 1, 10, incr=1)
+
+
 
 
 
