@@ -2,47 +2,55 @@
 """FILE CLEAN-UP TOOL
 Logan Halstrom
 CREATED:  09 FEB 2016
-MODIFIED: 09 FEB 2016
+MODIFIED: 19 JUL 2019
 
 
 DESCRIPTION:  Used to clean up numbered file series.  Delete numbered ranges
 or ordered series of files.
 """
-
-runlocal = 0
-import sys
-if runlocal == 1:
-    sys.path.append('/Users/Logan/lib/python')
-else:
-    sys.path.append('/home/lhalstro/lib/python')
-from lutil import cmd
-from lutil import MakeOutputDir
-from lutil import GetParentDir
-
-import re
-import glob
-import os
-import subprocess
 import numpy as np
+
+import sys
+import os
+#Get path to home directory
+HOME = os.path.expanduser('~')
+sys.path.append('{}/lib/python'.format(HOME))
+from lutil import cmd
+
+# runlocal = 0
+# import sys
+# if runlocal == 1:
+#     sys.path.append('/Users/Logan/lib/python')
+# else:
+#     sys.path.append('/home/lhalstro/lib/python')
+# from lutil import cmd
+# from lutil import MakeOutputDir
+# from lutil import GetParentDir
+
+# import re
+# import glob
+# import subprocess
+# import numpy as np
 
 
 def Delete(filename):
     """Delete a given file"""
     cmd('rm {}'.format(filename))
+    # #debug:
     # cmd( 'ls {}'.format(filename) )
 
-def DeleteIth(dir, header, i):
+def DeleteIth(path, header, i):
     """Within a loop, delete file in given directory with given header
     for given number"""
     #Create filename to delete ('header.number')
     filename = '{}.{}'.format(header, i)
-    pathtodelete = '{}/{}'.format(dir, filename)
+    pathtodelete = '{}/{}'.format(path, filename)
     #DELETE FILE
     if os.path.isfile(pathtodelete):
         print('Deleting: {}'.format(filename))
         Delete(pathtodelete)
 
-def DeleteSeries(dir, header, istart, iend, incr=1):
+def DeleteSeries(path, header, istart, iend, incr=1):
     """Delete a series of files of given file header withing the number range
     specified.
     header --> filename header
@@ -51,9 +59,9 @@ def DeleteSeries(dir, header, istart, iend, incr=1):
     """
     todelete = np.append( np.arange(istart, iend, incr), iend )
     for i in todelete:
-        DeleteIth(dir, header, i)
+        DeleteIth(path, header, i)
 
-def DeleteExcept(dir, header, istart, iend, incr=1):
+def DeleteExcept(path, header, istart, iend, incr=1):
     """Within given range, delete everything EXCEPT the specified range"""
     #GIVEN INPUTS SAVE ALL FILES WITHIN RANGE
     if incr == 1:
@@ -63,26 +71,55 @@ def DeleteExcept(dir, header, istart, iend, incr=1):
     tosave = np.append( np.arange(istart, iend, incr), iend )
     for i in np.append( np.arange(istart, iend, 1), iend ):
         if not i in tosave:
-            DeleteIth(dir, header, i)
+            DeleteIth(path, header, i)
+
+def MakeFilesToDelete(path, header, istart, iend, incr=1):
+    """ Make series of empty files to test deleting functions
+    """
+
+    #Make empty directory
+    os.makedirs(path, exist_ok=True)
+    #Fill with files
+    for i in np.append( np.arange(istart, iend, incr), iend ):
+        curfile = '{}/{}.{}'.format(path, header, i)
+        cmd('touch {}'.format(curfile))
 
 
 
-def main(dir, headers, istart, iend, incr=1, allbut=False):
+def main(path, headers, istart, iend, incr=1, allbut=False):
 
     #DELETE SERIES FOR EACH FILE HEADER
     for head in headers:
         if allbut:
             #DELETE ALL FILES WITHIN RANGE EXCEPT SPECIFIED SERIES
-            DeleteExcept(dir, head, istart, iend, incr)
+            DeleteExcept(path, head, istart, iend, incr)
         else:
             #DELETE ONLY FILES IN SPECIFIED SERIES
-            DeleteSeries(dir, head, istart, iend, incr)
+            DeleteSeries(path, head, istart, iend, incr)
 
 
 
 
 if __name__ == "__main__":
 
+
+    #TEST CASE
+    testdir = 'test_deletefiles'
+
+    #Make a directory full of empty files to delete
+    MakeFilesToDelete(testdir, 'a', 1, 12, incr=2)
+    MakeFilesToDelete(testdir, 'b', 1, 10, incr=1)
+
+
+
+
+
+
+
+
+
+
+    sys.exit()
     #RUN DIRECTORY
     dir = '/lustre2/work/lhalstro/parachuteProject/solutions/pendulum/dev1/dynamicRuns/m15/m0.15a180.0_wtt'
     # dir = '/lustre2/work/lhalstro/parachuteProject/solutions/pendulum/dev1/dynamicRuns/m15/m0.15a180.0_10deg'
