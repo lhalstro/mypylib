@@ -1,6 +1,7 @@
 """GENERAL PYTHON UTILITIES
 Logan Halstrom
-25 JULY 2015
+CREATED:  25 JULY 2015
+MODIFIED: 26 JULY 2019
 
 DESCRIPTION:  File manipulation, matplotlib plotting and saving
 """
@@ -21,7 +22,8 @@ def cmd(command):
     process = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
     #print proc_stdout
     proc_stdout = process.communicate()[0].strip()
-    return proc_stdout
+    #In python3, output is byte-encoded, so need to use decode to turn to string
+    return proc_stdout.decode()
 
 def command(cmd):
     """Execute shell command and return subprocees and subprocess output"""
