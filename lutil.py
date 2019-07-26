@@ -17,7 +17,9 @@ import pandas as pd
 
 def cmd(command):
     """Execute a shell command.
-    Execute multiple commands by separating with semicolon+space: '; '
+    TIPS:
+    - Execute multiple commands by separating with semicolon+space: '; '
+    - Execute commands containing single and double quotes by enclosing in '''cmd'''
     """
     process = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
     #print proc_stdout
@@ -35,6 +37,10 @@ def command(cmd):
 def MakeOutputDir(filename):
     """ Makes output directories in filename that do not already exisi
     filename --> save file path, used to determine parent directories
+    NOTE: If specifying an empty directory name, 'filename' must end in '/'
+    e.g. To make the directory 'test', specify either:
+        path/to/test/filename.dat
+        paht/to/test/
     """
 
     # #split individual directories
@@ -57,6 +63,7 @@ def MakeOutputDir(filename):
 def GetRootDir(savename):
     """Get root path from a string, local or global.
     (ORIGINAL FUNCTIONALITY OF GETPARENTDIR)
+    TODO: I'm pretty sure this can be replaced with os.path.dirname
     """
     splitstring = savename.split('/')
     parent = '/'.join(splitstring[:-1])
