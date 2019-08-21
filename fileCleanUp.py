@@ -2,7 +2,7 @@
 """FILE CLEAN-UP TOOL
 Logan Halstrom
 CREATED:  09 FEB 2016
-MODIFIED: 19 JUL 2019
+MODIFIED: 21 AUG 2019
 
 
 DESCRIPTION:  Used to clean up numbered file series.  Delete numbered ranges
@@ -29,24 +29,31 @@ def range_inclusive(start, stop, step=1):
     return range(start, (stop + 1) if step >= 0 else (stop - 1), step)
 
 def Delete(filename):
-    """Delete a given file"""
+    """ Delete a given file
+    """
+
     if not dryrun:
         cmd('rm {}'.format(filename))
     # #debug:
     # cmd( 'ls {}'.format(filename) )
 
-def DeleteIth(path, header, i):
-    """Within a loop, delete file in given directory with given header
-    for given number"""
+def DeleteIth(path, header, i, iwriteprotects=[]):
+    """ Within a loop, delete file in given directory with given header
+    for given number
+    writeprotects --> list of filenames that will not be deleted, even if in series
+    """
     #Create filename to delete ('header.number')
     filename = '{}.{}'.format(header, i)
     pathtodelete = '{}/{}'.format(path, filename)
+    if i in iwriteprotects:
+        print('NOT Deleting (Write Protected): {}'.format(filename))
     #DELETE FILE
-    if os.path.isfile(pathtodelete):
+    elif os.path.isfile(pathtodelete):
         print('Deleting: {}'.format(filename))
         Delete(pathtodelete)
 
-def DeleteSeries(path, header, istart, iend, incr=1):
+
+def DeleteSeries(path, header, istart, iend, incr=1, iprotect=[]):
     """Delete a series of files of given file header withing the number range
     specified.
     header --> filename header
@@ -56,9 +63,9 @@ def DeleteSeries(path, header, istart, iend, incr=1):
     # todelete = np.append( np.arange(istart, iend, incr), iend )
     todelete = list( range_inclusive(istart, iend, incr) )
     for i in todelete:
-        DeleteIth(path, header, i)
+        DeleteIth(path, header, i, iwriteprotects=iprotect)
 
-def DeleteExcept(path, header, istart, iend, incr=1):
+def DeleteExcept(path, header, istart, iend, incr=1, iprotect=[]):
     """Within given range, delete everything EXCEPT the specified range"""
     #GIVEN INPUTS SAVE ALL FILES WITHIN RANGE
     if incr == 1:
@@ -68,7 +75,7 @@ def DeleteExcept(path, header, istart, iend, incr=1):
     tosave = list( range_inclusive(istart, iend, incr) )
     for i in range_inclusive(istart, iend, 1):
         if not i in tosave:
-            DeleteIth(path, header, i)
+            DeleteIth(path, header, i, iwriteprotects=iprotect)
     # tosave = np.append( np.arange(istart, iend, incr), iend )
     # for i in np.append( np.arange(istart, iend, 1), iend ):
     #     if not i in tosave:
@@ -87,7 +94,7 @@ def MakeFilesToDelete(path, header, istart, iend, incr=1):
 
 
 
-def main(path, headers, istart, iend, incr=1, allbut=False, setdryrun=False):
+def main(path, headers, istart, iend, incr=1, allbut=False, setdryrun=False, iprotect=[]):
 
     global dryrun
     dryrun=setdryrun
@@ -98,10 +105,10 @@ def main(path, headers, istart, iend, incr=1, allbut=False, setdryrun=False):
     for head in headers:
         if allbut:
             #DELETE ALL FILES WITHIN RANGE EXCEPT SPECIFIED SERIES
-            DeleteExcept(path, head, istart, iend, incr)
+            DeleteExcept(path, head, istart, iend, incr, iprotect=iprotect)
         else:
             #DELETE ONLY FILES IN SPECIFIED SERIES
-            DeleteSeries(path, head, istart, iend, incr)
+            DeleteSeries(path, head, istart, iend, incr, iprotect=iprotect)
 
 
 
@@ -122,14 +129,15 @@ if __name__ == "__main__":
     MakeFilesToDelete(testdir, 'a', 1, 12, incr=2)
     MakeFilesToDelete(testdir, 'b', 1, 10, incr=1)
 
-    #Deletes all 'b.' files except b.2, b.5, b.8
+    #Deletes all 'b.' files except b.2, b.5, b.8, and b.3
     # DeleteExcept(testdir, 'b', 2, 10, 3)
-    main(testdir, 'b', 2, 10, 3, allbut=True, setdryrun=True)
+    saveiters = [3]
+    main(testdir, 'b', 2, 10, 3, allbut=True, setdryrun=True, iprotect=saveiters)
     print(glob.glob('{}/b.*'.format(testdir)))
 
-    #Delete all a files up to and including a.7
+    #Delete all a files up to and including a.7, save a.3
     # DeleteSeries(testdir, 'a', 1, 8)
-    main(testdir, 'a', 1, 8)
+    main(testdir, 'a', 1, 8, iprotect=saveiters)
     print(glob.glob('{}/a.*'.format(testdir)))
 
 
