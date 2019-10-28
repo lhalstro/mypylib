@@ -215,6 +215,7 @@ matplotlib.rcParams.update(params)
 matplotlib.rcParams.update(tickparams)
 
 
+global sns
 
 #USE SEABORN SETTINGS WITH SOME CUSTOMIZATION
 def UseSeaborn(palette=None, ncycle=6):
@@ -223,7 +224,7 @@ def UseSeaborn(palette=None, ncycle=6):
     ncycle  --> number of colors in color palette cycle
     """
     import seaborn as sns
-    # global sns
+    global sns
     # global colors
     #No Background fill, legend font scale, frame on legend
     sns.set(style='whitegrid', font_scale=1, rc={'legend.frameon': True})
