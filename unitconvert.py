@@ -11,7 +11,7 @@ import sys
 import os
 HOME = os.path.expanduser('~')
 sys.path.append('{}/lib/python'.format(HOME))
-import unitconverter as uc
+import unitconvert as uc
 """
 
 
@@ -30,4 +30,4 @@ ft2mi = 1/mi2ft
 
 #kilograms/pounds
 kg2lb = 2.20462
-
+lb2kg = 1/kg2lb
