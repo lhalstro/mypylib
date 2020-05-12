@@ -147,6 +147,9 @@ if __name__ == "__main__":
 
 
 
+    
+
+
 
 
     sys.exit()
@@ -178,5 +181,13 @@ if __name__ == "__main__":
     istart = 20000
     iend = 160000
     incr = 10000
+
+    main(dir, headers, istart, iend, incr, allbut=True)
+
+    
+    dir = '/home/lhalstro/projects/ucd/aeropendulum/runs/bob/phystest/gravpend_stillair_2_StatStart' 
+    istart = 1000
+    iend = 2000
+    incr = 10
 
     main(dir, headers, istart, iend, incr, allbut=True)
