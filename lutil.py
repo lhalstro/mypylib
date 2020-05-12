@@ -217,7 +217,10 @@ def ReadCdatFile2Pandas(path, nskip=2, hashspace=True):
     """Read Phil Robinson cdat savefile format into a Pandas Dataframe
     with no cdat dependencies.
     path --> path to file
-    nskip --> number of header rows to skip. 2 for cdat, 1 for jpowell
+    nskip --> number of header rows to skip to reach data (header row index is nskip-1) 
+                2 for cdat with no variable information, 
+                1 for jpowell, 
+               -1 for automatic (standard cdat format). hashspace must be True
     hashspace --> True if space between # and first header
     """
     #GET COLUMN HEADERS
@@ -226,9 +229,17 @@ def ReadCdatFile2Pandas(path, nskip=2, hashspace=True):
         content = f.readlines()
         #strip newline \n characters
         content = [x.strip() for x in content]
-        #Second line is header row
+        #Get column title keys from header row
+        if nskip < 0:
+            #Automatically find row with header keys, find 1st row with numbers
+                #Only works if header section is prepended with '#'
+            for i, l in enumerate(content):
+                if l[0] != '#':
+                    #this is the first line of data, previous line was header
+                    nskip = i
+                    break
         keys = content[nskip-1]
-        #split by whitespace
+        #split column titles by whitespace
         keys = keys.split()
         #drop leading '#'
         if hashspace:
