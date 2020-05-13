@@ -174,6 +174,20 @@ def dfWriteFixedWidth(df, savename, index=True, datatype='f', wid=16, prec=6):
     f  : float
     """
 
+    def format_float(wid, val, prec):
+        #float formatting
+        return '{2:<{0}.{1}f}'.format(wid, prec, val)
+
+    def format_other(wid, val, prec=None):
+        #every other type formatting
+        return '{1:<{0}}'.format(wid, val)
+
+    if datatype == 'f':
+        formatfunc = format_float
+    else:
+        formatfunc = format_other
+
+
     ofile = open(savename, 'w')
 
     #WRITE HEADER ROW
@@ -197,16 +211,20 @@ def dfWriteFixedWidth(df, savename, index=True, datatype='f', wid=16, prec=6):
         # line = '{:<16}'.format(str(i)) if index else ''
 
         #concatenate row values in fixed-width format
-        if datatype == 'f':
-            #float formatting
-            for c in cols:
-                line += '{2:<{0}.{1}f}'.format(wid, prec, r[c])
-                # line += '{:<16.6f}'.format(r[c])
-        else:
-            #every other type formatting
-            for c in cols:
-                line += '{1:<{0}}'.format(wid, r[c])
-                # line += '{:<16}'.format(r[c])
+        for c in cols:
+            line += formatfunc(wid, r[c], prec)
+
+        # if datatype == 'f':
+        #     #float formatting
+        #     for c in cols:
+        #         line += '{2:<{0}.{1}f}'.format(wid, prec, r[c])
+        #         # line += '{:<16.6f}'.format(r[c])
+        # else:
+        #     #every other type formatting
+        #     for c in cols:
+        #         line += '{1:<{0}}'.format(wid, r[c])
+        #         # line += '{:<16}'.format(r[c])
+
         #write header to file
         ofile.write('{}\n'.format(line))
 
@@ -217,9 +235,9 @@ def ReadCdatFile2Pandas(path, nskip=2, hashspace=True):
     """Read Phil Robinson cdat savefile format into a Pandas Dataframe
     with no cdat dependencies.
     path --> path to file
-    nskip --> number of header rows to skip to reach data (header row index is nskip-1) 
-                2 for cdat with no variable information, 
-                1 for jpowell, 
+    nskip --> number of header rows to skip to reach data (header row index is nskip-1)
+                2 for cdat with no variable information,
+                1 for jpowell,
                -1 for automatic (standard cdat format). hashspace must be True
     hashspace --> True if space between # and first header
     """
