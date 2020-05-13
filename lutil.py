@@ -173,19 +173,23 @@ def dfWriteFixedWidth(df, savename, index=True, datatype='f', wid=16, prec=6):
     .6 : 6 spaces reserved after decimal point,
     f  : float
     """
+    
+    #stop pandas from complaining about changing the original df
+    df = df.copy() 
 
-    # def format_float(wid, val, prec):
-    #     #float formatting
-    #     return '{2:<{0}.{1}f}'.format(wid, prec, val)
+    #set string formatting type
+    def format_float(wid, val, prec):
+        #float formatting
+        return '{2:<{0}.{1}f}'.format(wid, prec, val)
 
-    # def format_other(wid, val, prec=None):
-    #     #every other type formatting
-    #     return '{1:<{0}}'.format(wid, val)
+    def format_other(wid, val, prec=None):
+        #every other type formatting
+        return '{1:<{0}}'.format(wid, val)
 
-    # if datatype == 'f':
-    #     formatfunc = format_float
-    # else:
-    #     formatfunc = format_other
+    if datatype == 'f':
+        formatfunc = format_float
+    else:
+        formatfunc = format_other
 
 
     ofile = open(savename, 'w')
@@ -205,28 +209,43 @@ def dfWriteFixedWidth(df, savename, index=True, datatype='f', wid=16, prec=6):
     ofile.write('{}\n'.format(line))
 
     #WRITE EACH ROW
-    for i, r in df.iterrows():
-        #first column is index if index, otherwise nothing
-        line = '{1:<{0}}'.format(wid, str(i)) if index else ''
-        # line = '{:<16}'.format(str(i)) if index else ''
+    #start text of each row
+    if index:
+        # df['line'] = ['{1:<{0}}'.format(wid, str(i)) for i in df.index.values]
+        df['line'] = df.apply(lambda row: '{1:<{0}}'.format(wid, str(row.name)), axis = 1) 
+    else:
+        df['line'] = ''
+    #rest of text for each row
+    df['line'] = df.apply(lambda row: row.line + ''.join([formatfunc(wid, row[c], prec) for c in cols]), axis = 1)
 
-        # #concatenate row values in fixed-width format
-        # for c in cols:
-        #     line += formatfunc(wid, r[c], prec)
-
-        if datatype == 'f':
-            #float formatting
-            for c in cols:
-                line += '{2:<{0}.{1}f}'.format(wid, prec, r[c])
-                # line += '{:<16.6f}'.format(r[c])
-        else:
-            #every other type formatting
-            for c in cols:
-                line += '{1:<{0}}'.format(wid, r[c])
-                # line += '{:<16}'.format(r[c])
-
-        #write header to file
+    for line in df.line:
+        #write current data line to file
         ofile.write('{}\n'.format(line))
+
+
+    # #WRITE EACH ROW
+    # for i, r in df.iterrows():
+    #     #first column is index if index, otherwise nothing
+    #     line = '{1:<{0}}'.format(wid, str(i)) if index else ''
+    #     # line = '{:<16}'.format(str(i)) if index else ''
+
+    #     # #concatenate row values in fixed-width format
+    #     # for c in cols:
+    #     #     line += formatfunc(wid, r[c], prec)
+
+    #     if datatype == 'f':
+    #         #float formatting
+    #         for c in cols:
+    #             line += '{2:<{0}.{1}f}'.format(wid, prec, r[c])
+    #             # line += '{:<16.6f}'.format(r[c])
+    #     else:
+    #         #every other type formatting
+    #         for c in cols:
+    #             line += '{1:<{0}}'.format(wid, r[c])
+    #             # line += '{:<16}'.format(r[c])
+
+    #     #write current data line to file
+    #     ofile.write('{}\n'.format(line))
 
     #CLOSE FILE
     ofile.close()
