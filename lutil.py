@@ -1,7 +1,7 @@
 """GENERAL PYTHON UTILITIES
 Logan Halstrom
-CREATED:  25 JULY 2015
-MODIFIED: 26 JULY 2019
+CREATED:  25 JUL 2015
+MODIFIED: 12 MAY 2020
 
 DESCRIPTION:  File manipulation, matplotlib plotting and saving
 """
@@ -159,13 +159,15 @@ def dfInterp(df, key, vals, method='linear', fill=np.nan):
         newdf[k] = f(vals) #Interp each column to desired values
     return newdf
 
-def dfWriteFixedWidth(df, savename, index=True, datatype='f', wid=16, prec=6):
+def dfWriteFixedWidth(df, savename, index=True, datatype='f', wid=16, prec=6,
+                        writemode='w'):
     """Write dataframe to file with fixed-width format
     Requires string column headers, integer indices
     index    --> write index to file
     datatype --> 'f' for float data, 's' for string data
     wid      --> column width in spaces
     prec     --> decimal precision (number of decimal places for floats)
+    writemode --> option to append to existing file
 
     ':<16.6f' = FORMAT STATEMENT FOR 16-WIDE COLUMNS
     <  : left-aligned,
@@ -173,11 +175,11 @@ def dfWriteFixedWidth(df, savename, index=True, datatype='f', wid=16, prec=6):
     .6 : 6 spaces reserved after decimal point,
     f  : float
     """
-    
-    #stop pandas from complaining about changing the original df
-    df = df.copy() 
 
-    #set string formatting type
+    #STOP PANDAS FROM COMPLAINING ABOUT CHANGING THE ORIGINAL DF
+    df = df.copy()
+
+    #SET STRING FORMATTING TYPE
     def format_float(wid, val, prec):
         #float formatting
         return '{2:<{0}.{1}f}'.format(wid, prec, val)
@@ -185,34 +187,41 @@ def dfWriteFixedWidth(df, savename, index=True, datatype='f', wid=16, prec=6):
     def format_other(wid, val, prec=None):
         #every other type formatting
         return '{1:<{0}}'.format(wid, val)
-
+    #pointer for string formatting function
     if datatype == 'f':
         formatfunc = format_float
     else:
         formatfunc = format_other
 
 
-    ofile = open(savename, 'w')
-
-    #WRITE HEADER ROW
-    #get column headers
+    #GET COLUMN HEADERS
     cols = list(df.columns.values)
-    #first column is empty (full column spaces) if index, otherwise nothing
-    line = '{1:<{0}}'.format(wid, ' ') if index else ''
-    #concatenate column headers in fixed-width format
-    for c in cols:
-        #0 indicates 1st format entry goes in this {} (number of column spaces)
-        #1: indicates 2nd format entry goes in this {} (column name)
-        line += '{1:<{0}}'.format(wid, c)
-        # line += '{:<16}'.format(c)
-    #write header to file
-    ofile.write('{}\n'.format(line))
 
-    #WRITE EACH ROW
+    #OPEN FILE
+    if writemode == 'a':
+        #APPEND TO EXISTING FILE
+        ofile = open(savename, 'a')
+    else:
+        #WRITE TO NEW FILE
+        ofile = open(savename, 'w')
+
+        #WRITE HEADER ROW
+        #first column is empty (full column spaces) if index, otherwise nothing
+        line = '{1:<{0}}'.format(wid, ' ') if index else ''
+        #concatenate column headers in fixed-width format
+        for c in cols:
+            #0 indicates 1st format entry goes in this {} (number of column spaces)
+            #1: indicates 2nd format entry goes in this {} (column name)
+            line += '{1:<{0}}'.format(wid, c)
+            # line += '{:<16}'.format(c)
+        #write header to file
+        ofile.write('{}\n'.format(line))
+
+    #WRITE EACH ROW (slightly faster version)
     #start text of each row
     if index:
         # df['line'] = ['{1:<{0}}'.format(wid, str(i)) for i in df.index.values]
-        df['line'] = df.apply(lambda row: '{1:<{0}}'.format(wid, str(row.name)), axis = 1) 
+        df['line'] = df.apply(lambda row: '{1:<{0}}'.format(wid, str(row.name)), axis = 1)
     else:
         df['line'] = ''
     #rest of text for each row
