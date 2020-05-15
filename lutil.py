@@ -302,6 +302,18 @@ def ReadCdatFile2Pandas(path, nskip=2, hashspace=True):
 
     return df
 
+def SeriesToFile(s, filename):
+    """How to write a pd.Series to a text file that can be read again as a series
+    Must set header false since expected default is different from DataFrame defaul
+    see SeriesFromFile to read
+    """
+    s.to_csv(filename, header=False)
+
+def SeriesFromFile(filename):
+    """How to read a pd.Series from a text file
+    """
+    s = pd.read_csv(filename, header=None, index_col=0, squeeze=True)
+    return s
 
 
 ########################################################################
