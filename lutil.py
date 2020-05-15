@@ -159,6 +159,30 @@ def dfInterp(df, key, vals, method='linear', fill=np.nan):
         newdf[k] = f(vals) #Interp each column to desired values
     return newdf
 
+def dfTimeSubset(df, tstart=None, tend=None, tevery=1, reindex=True):
+    """Get time interval subset of provided dataframe
+
+    df     --> dataframe with trajectory data
+    tstart --> subset start time
+    tend   --> subset end time
+    everyt --> time step size (sample rate of 40Hz)
+    reindex --> reset dataframe index after resizing timeseries
+    """
+    #Trim time series to specified interval
+    if tstart != None:
+        df = df[df.time >= tstart]
+    if tend != None:
+        df = df[df.time <= tend]
+    #Reduce points by interval
+    if tevery > 1:
+        #keep every 'everyt'-th row
+        df = df.loc[::tevery,:]
+    #reset df index
+    if reindex:
+        df = df.reset_index(drop=True)
+
+    return df
+
 def dfWriteFixedWidth(df, savename, index=True, datatype='f', wid=16, prec=6,
                         writemode='w'):
     """Write dataframe to file with fixed-width format
