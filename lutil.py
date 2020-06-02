@@ -335,8 +335,14 @@ def SeriesToFile(s, filename):
 
 def SeriesFromFile(filename):
     """How to read a pd.Series from a text file
+    Manually convert list strings to actual lists
     """
     s = pd.read_csv(filename, header=None, index_col=0, squeeze=True)
+    #convert lists from string to lists (items will still be strings)
+    for i, val in s.items():
+        if val[0] == '[':
+            #convert to list
+            s[i] = list(val.strip('][').split(', '))
     return s
 
 
