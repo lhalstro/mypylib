@@ -23,4 +23,4 @@ Changelog:
   * Coordiante rotations
   * Isentropic flow relations
 * cdat2pandas.py
-  * Convert between pandas dataframe objects and Phil Robinson's cdat objects
+  * Convert between pandas dataframe objects and cdat objects
