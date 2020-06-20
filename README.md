@@ -4,6 +4,10 @@
 
 Custom library for general python processes including enhanced plotting, file manipulation, aerodyanmics calculations, etc.
 
+Changelog:
+- Originally called `python` and stored in `~/lib`
+- Renamed to `mypylib` and stored in `~/lib/python`
+
 ### Code
 * lutil.py - Python Utilities
   * Shell command interfacing ('cmd')
@@ -19,4 +23,4 @@ Custom library for general python processes including enhanced plotting, file ma
   * Coordiante rotations
   * Isentropic flow relations
 * cdat2pandas.py
-  *Convert detween pandas dataframe objects and Phil Robinson's cdat objects
+  * Convert between pandas dataframe objects and Phil Robinson's cdat objects
