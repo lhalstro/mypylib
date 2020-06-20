@@ -650,9 +650,13 @@ def PlotLegend(ax, loc='best', alpha=0.5, title=None, fontsize=None, outside=Non
     if outside != None:
         #Legend outside plot
         if outside == 'top':
-            #legend on top of lpot
-            bbox = (0.5,1)
-            loc = 'center'
+            #legend on top of plot
+            bbox = (0.5,1)       #location of anchor point
+            loc = 'lower center' #anchor point on legend
+        elif outside == 'bottom':
+            #legend on bottom of plot
+            bbox = (0.5,-0.15)
+            loc = 'upper center'
         else:
             #Legend to right of plot
             bbox = (1,0.5)
@@ -712,6 +716,19 @@ def ColorMap(ncolors, colormap='jet'):
     cmap = plt.get_cmap(colormap)
     colors = [cmap(i) for i in np.linspace(0, 1, ncolors)]
     return colors
+
+def GetSequentialCmap(colormap='Blues', ncolors=8, cutoffstart=0.25):
+    """ Like `ColorMap`, but for single color
+    don't include region where color is white.
+    reverse so colors start darkest
+    colormap --> name of Sequential colormap (e.g. Blues, Oranges, Greens, Purples, OrRd)
+    ncolors  --> number of colors to sample
+    cutoffstart --> sequential colormaps start white. Higher cutoffstart means darker end color (gets reversed)
+    """
+    cmap = plt.get_cmap(colormap)
+    colors = [cmap(i) for i in np.linspace(cutoffstart, 1, ncolors)][::-1]
+    return colors
+
 
 def PlotContourFill(ax, X, Y, data, Ncontour=100, lmin=None, lmax=None,
                            cmap=plt.cm.viridis):
