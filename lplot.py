@@ -726,7 +726,8 @@ def GetSequentialCmap(colormap='Blues', ncolors=8, cutoffstart=0.25):
     cutoffstart --> sequential colormaps start white. Higher cutoffstart means darker end color (gets reversed)
     """
     cmap = plt.get_cmap(colormap)
-    colors = [cmap(i) for i in np.linspace(cutoffstart, 1, ncolors)][::-1]
+    direction = int(-1 * np.sign(cutoffstart)) #default dir is reverse for dark colors first
+    colors = [cmap(i) for i in np.linspace(cutoffstart, 1, ncolors)][::direction]
     return colors
 
 
