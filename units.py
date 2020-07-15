@@ -2,6 +2,17 @@
 Class-based solution for converting units and tracking the units of
 individual variables
 
+LOGAN HALSTROM
+CREATED:  7/14/2020
+MODIFIED: 7/15/2020
+
+To Convert Units of `unconverted` from feet to meters without using classes:
+    import units
+    converted = units.convert('ft', 'm', unconverted)
+
+To get list of available units to convert:
+    units.gethelp()
+
 ToDo:
     class-based
 
@@ -9,7 +20,6 @@ ToDo:
         keys are
     provide object that tracks units, other info about each variable
     able to convert units without classes
-    check function to make sure units are correct
 """
 
 import pandas as pd
@@ -183,7 +193,7 @@ def convert(curunit, newunit, value = 1.0):
 
     return value
 
-def help():
+def gethelp():
     """ Provide usage help. Print out all available units for conversion.
     """
     print('EVENTUALLY ADD THIS AS A -h OPTION')
@@ -257,15 +267,10 @@ def checkout(tol=1e-16):
 
 def main():
 
-    print('TO DO:\n')
-    print('COMPLETE "conversions" dict')
+    #Print available conversions
+    gethelp()
 
-    print('PRINT OUT AVAILABLE CONVERSIONS')
-    help()
-
-    print('CHECKOUT FUNCTIONALITY HERE')
-
-
+    #checkout functionality
     checkout()
 
 if __name__ == "__main__":
