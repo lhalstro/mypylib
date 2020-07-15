@@ -22,6 +22,7 @@ ToDo:
     able to convert units without classes
 """
 
+import numpy as np
 import pandas as pd
 
 class Units():
@@ -29,7 +30,7 @@ class Units():
     """
 
     def __init__(self,
-                name="Test",
+                name="",
                 ):
         """ Constructor for OVERFLOW case object
 
@@ -39,6 +40,8 @@ class Units():
         """
 
         self.name = name
+
+        self.units
 
 
     def __repr__(self):
@@ -63,43 +66,91 @@ class Units():
 
 
 
+    def AddVariable(self, var, unit, info=''):
+        """ Add a unit to
+        Args:
+            var  (:obj:`str`): Name of variable key
+            unit (:obj:`str`): Units of the variable
+            info (:obj:`str`): Optional information about the variable ['']
+        """
+
+        self.units.append(
+            pd.Series(name=var, data={'unit':unit,'info':info}),
+            # ignore_index=True
+            )
+
+
+    def Convert(self,):
+        """ Mass-convert a dataset between standard imperial and metric (SI)
+        """
+
+
+
+
+
 #UNIT CONVERSIONS
     #enter conversions relative to standard imperial units.
     #conversions will be acheived by dimensional analysis
         #e.g. in2m: 1in * ft2m/ft2in = (0.3048m/1ft)/(12.0in/1ft) = 0.254m/in
+    #sys: which system the units belong to (e.g. 'SI' for metric, 'USCS' for United States customary system)
+    #std: boolean flag if these units are the standard for their system (use for batch conversion)
 
 convdf = pd.DataFrame([
     #DISTANCE
-    pd.Series(name='m' ,  data={'conv':1.0,           'info':'meters' }),
-    pd.Series(name='ft',  data={'conv':1/0.3048,      'info':'feet'   }),
-    pd.Series(name='in',  data={'conv':1/0.3048*12.0, 'info':'inches' }),
-    pd.Series(name='mi' , data={'conv':1/0.3048/5280,          'info':'miles' }),
-    pd.Series(name='nmi', data={'conv':1/0.3048/6076.11548556, 'info':'nautical miles' }),
+    pd.Series(name='m' ,  data={'conv':1.0,           'info':'meters', 'sys':'SI',   'std':1, 'type':'length'}),
+    pd.Series(name='ft',  data={'conv':1/0.3048,      'info':'feet'  , 'sys':'USCS', 'std':1, 'type':'length'}),
+    pd.Series(name='in',  data={'conv':1/0.3048*12.0, 'info':'inches', 'sys':'USCS', 'std':0, 'type':'length'}),
+    pd.Series(name='mi' , data={'conv':1/0.3048/5280, 'info':'miles' , 'sys':'USCS', 'std':0, 'type':'length'}),
+    pd.Series(name='nmi', data={'conv':1/0.3048/6076.11548556, 'info':'nautical miles', 'sys':'USCS', 'std':0, 'type':'length'}),
+
+    #SPEED
 
     #MASS
-    pd.Series(name='kg'  , data={'conv':1.0,          'info':'kilograms'        }),
-    pd.Series(name='lb'  , data={'conv':2.20462,      'info':'Pounds-mass'      }),
-    pd.Series(name='slug', data={'conv':1/14.5939029, 'info':'slugs=lbf*s^2/ft' }),
+    pd.Series(name='kg'  , data={'conv':1.0,          'info':'kilograms',        'sys':'SI',   'std':1, 'type':'mass' }),
+    pd.Series(name='lb'  , data={'conv':2.20462,      'info':'Pounds-mass'     , 'sys':'USCS', 'std':0, 'type':'mass' }),
+    pd.Series(name='slug', data={'conv':1/14.5939029, 'info':'slugs=lbf*s^2/ft', 'sys':'USCS', 'std':1, 'type':'mass' }),
+    # pd.Series(name='slug', data={'conv':0.068521765561961, 'info':'slugs=lbf*s^2/ft', 'sys':'USCS', 'std':1 }),
 
-    #DENSITY
+
 
     #FORCE
-    pd.Series(name='N'  , data={'conv':1.0,        'info':'Newtons'      }),
-    pd.Series(name='lbf', data={'conv':1/4.448221, 'info':'Pounds-force' }),
+    pd.Series(name='N'  , data={'conv':1.0,        'info':'Newtons',      'sys':'SI',   'std':1, 'type':'force' }),
+    pd.Series(name='lbf', data={'conv':1/4.448221, 'info':'Pounds-force', 'sys':'USCS', 'std':1, 'type':'force' }),
 
     #PRESSURE
-    pd.Series(name='Pa' , data={'conv':1.0,                  'info':'pascals, N/m^2' }),
-    pd.Series(name='psf', data={'conv':1/47.880258889,       'info':'pounds per square foot' }),
-    pd.Series(name='psi', data={'conv':1/47.880258889*144.0, 'info':'pounds per square inch' }),
+    pd.Series(name='Pa' , data={'conv':1.0,                  'info':'pascals, N/m^2',         'sys':'SI',   'std':1, 'type':'pressure' }),
+    pd.Series(name='psf', data={'conv':1/47.880258889,       'info':'pounds per square foot', 'sys':'USCS', 'std':1, 'type':'pressure' }),
+    pd.Series(name='psi', data={'conv':1/47.880258889*144.0, 'info':'pounds per square inch', 'sys':'USCS', 'std':0, 'type':'pressure' }),
 
     #ABSOLUTE TEMPERATURE
-    pd.Series(name='K', data={'conv':1.0, 'info':'Kelvin' }),
-    pd.Series(name='R', data={'conv':1.8, 'info':'Degrees Rankine (K=5/9degR)' }),
+    pd.Series(name='K', data={'conv':1.0, 'info':'Kelvin',                      'sys':'SI',   'std':1, 'type':'temperature' }),
+    pd.Series(name='R', data={'conv':1.8, 'info':'Degrees Rankine (K=5/9degR)', 'sys':'USCS', 'std':1, 'type':'temperature' }),
+
+
+    # #for checkout only
+    # pd.Series(name='inps', data={'conv':1.8, 'info':'test', 'sys':'USCS', 'std':1, 'type':'speed' }),
+    # pd.Series(name='ftps', data={'conv':1.8, 'info':'test', 'sys':'USCS', 'std':1, 'type':'speed' }),
+    # pd.Series(name='mps',  data={'conv':1.8, 'info':'test', 'sys':'SI', 'std':1, 'type':'speed' }),
 ])
 
 #dict to simplify conversion syntax
 conversions = dict(convdf['conv'])
 
+#MORE CONVERSIONS (DERIVATIVE)
+
+#DENSITY
+convdf = convdf.append(pd.Series(name='kgpm3',    data={'conv':1.0, 'info':'Density (kg/m^3)',    'sys':'SI',   'std':1, 'type':'density' }))
+convdf = convdf.append(pd.Series(name='slugpft3', data={'conv':conversions['slug']/conversions['ft']**3, 'info':'Density (slug/ft^3)', 'sys':'USCS', 'std':1 , 'type':'density'}))
+
+#dict to simplify conversion syntax
+conversions = dict(convdf['conv'])
+
+
+
+
+
+
+print(convdf)
 print(conversions)
 
 
@@ -136,7 +187,7 @@ print(conversions)
 # #     units[k2] = 1/units[k]
 
 
-# conversions_dict = {
+# conversions = {
 #     #DISTANCE
 #     'm'   : 1.0,
 #     'ft'  : 1/0.3048,
@@ -167,6 +218,9 @@ print(conversions)
 #     #ABSOLUTE TEMPERATURE
 #     'K'  : 1.0,
 #     'R'  : 1.8, #K = 5/9 deg R
+
+#     'kgpm3':1.0,
+#     'slugpft3':conversions['slug']/conversions['ft']**3,
 # }
 
 
@@ -192,6 +246,49 @@ def convert(curunit, newunit, value = 1.0):
     value = value * conversions[newunit] / conversions[curunit]
 
     return value
+
+def massconvert(df, units, convto=None, verbose=False):
+    """ Convert a data set from metric to USCS or vice versa.
+    Args:
+        df :dataset
+        units: dict of units corresponding to each key
+    """
+
+    if convto is None or convto.lower() == 'metric' or convto.lower() == 'si':
+        #convert to metric
+        convto   = 'SI'
+        convfrom = 'USCS'
+    elif convto.lower() == 'imperial' or convto.lower() == 'uscs':
+        #convert to US units
+        convto   = 'USCS'
+        convfrom = 'SI'
+    else:
+        raise ValueError('"{}" is not a recognized standard unit system'.format(convto))
+
+    if verbose:
+        print('Mass converting to {} units'.format(convto))
+
+    for key in list(df.columns):
+
+        #current units
+        cur = units[key]
+
+        #type of units (e.g. 'length')
+        typ = convdf.loc[cur,'type']
+
+        #Get standard unit in convert to system for appropriate unit type
+            #assumes one standard value per unit type and system (check this with `checkout`)
+        new = convdf[(convdf['std']==1) & (convdf['sys']==convto) & (convdf['type']==typ)]
+        new = new.index.values[0]
+
+        #convert data
+        df[key] = convert(cur, new, df[key])
+        #record new units
+        units[key] = new
+
+    return df, units
+
+
 
 def gethelp():
     """ Provide usage help. Print out all available units for conversion.
@@ -229,6 +326,10 @@ def checkout(tol=1e-16):
         {'cur':'Pa',  'new':'psi' , 'expect': 1/47.880258889*144.0 },
         {'cur':'K',   'new':'K'   , 'expect': 1.0 },
         {'cur':'K',   'new':'R'   , 'expect': 1.8 },
+        # {'cur':'kgpm3', 'new':'slugpft3' , 'expect': 0.0019403203259304 },
+        {'cur':'kgpm3', 'new':'slugpft3' , 'expect': 0.3048**3/14.5939029 },
+        # {'cur':'slugpft3', 'new':'kgpm3' , 'expect': 515.3788199999872 },
+
         ])
 
 
@@ -253,6 +354,8 @@ def checkout(tol=1e-16):
 
     t2 = pd.DataFrame(t2)
 
+    # print(t2)
+
     t2['diffexp'] = t2.got - t2.expect
     t2['diffinv'] = t2.gotinv - t2.expectinv
 
@@ -261,8 +364,41 @@ def checkout(tol=1e-16):
     if not bad.empty:
         print('    CONVERSION ERRORS EXCEEDED TOLERANCE HERE:')
         print(bad)
+
+        print('\n(density conversion is bad precision because of fixed value for slugs)')
     else:
         print('    CHECKS OUT!')
+
+
+    # #precison loss check
+    # new = 1.4857848
+    # for i in range(10):
+    #     print(i, new)
+    #     new = convert('kgpm3', 'slugpft3', new)
+    #     new = convert('slugpft3', 'kgpm3', new)
+
+
+    print('')
+
+
+    #UNIQUE STANDARD SYSTEMS CHECK
+    #Get standard unit in convert to system for appropriate unit type
+    tmp = convdf[convdf['std']==1]
+
+    #loop through systems
+    for sys in tmp.sys:
+        tmp1 = tmp[tmp['sys']==sys]
+        if len(tmp1) > len(tmp1.drop_duplicates('type')):
+            raise ValueError('"convdf" unit conversions dataframe has non-unique entries for standard units:\n' \
+                             '    in {} units system'.format(sys))
+        for typ in convdf['type'].drop_duplicates():
+            if typ not in tmp1['type'].values:
+                raise ValueError('"convdf" unit conversions dataframe is missing a standard value for:\n' \
+                                 '    {} unit in the {} system'.format(typ, sys))
+
+
+
+
 
 
 def main():
@@ -272,6 +408,25 @@ def main():
 
     #checkout functionality
     checkout()
+
+
+
+    #test mass convert
+    dd = pd.DataFrame({'x':np.array(range(10)),
+                        'y':np.array(range(10))/0.3048,
+                        'p':np.array(range(10)),
+
+                        })
+    uu = {'x':'mi', 'p':'psi', 'y': 'ft'}
+
+
+    d2, u2 = massconvert(dd.copy(), uu.copy(), convto='metric', verbose=True)
+
+    print(dd)
+    print(d2)
+    print('')
+    print(uu)
+    print(u2)
 
 if __name__ == "__main__":
 
