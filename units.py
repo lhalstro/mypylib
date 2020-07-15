@@ -110,3 +110,20 @@ def convert(curunit, newunit, value = 1.0):
     value *= conversions[newunit] / conversion[curunit]
 
     return value
+
+
+
+
+def main():
+
+    print('TO DO:\n')
+    print('COMPLETE "conversions" dict')
+    print('SWITCH "conversions" FROM IMPERIAL TO METRIC TO HANDLE SLUGS/LBS UNIQUELY')
+
+    print('PRINT OUT AVAILABLE CONVERSIONS')
+
+
+if __name__ == "__main__":
+
+    main()
+
