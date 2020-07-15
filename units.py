@@ -12,6 +12,7 @@ ToDo:
     check function to make sure units are correct
 """
 
+import pandas as pd
 
 class Units():
     """ Class definition for unit tracker
@@ -57,7 +58,7 @@ class Units():
     #conversions will be acheived by dimensional analysis
         #e.g. in2m: 1in * ft2m/ft2in = (0.3048m/1ft)/(12.0in/1ft) = 0.254m/in
 
-conversions = {
+conversions_imp = {
     #DISTANCE
     'ft'  : 1.0,
     'in'  : 12.0,
@@ -79,6 +80,69 @@ conversions = {
     #TEMPERATURE
     'R2K': 5/9,
 }
+
+conversions_dict = {
+    #DISTANCE
+    'm'   : 1.0,
+    'ft'  : 1/0.3048,
+    'in'  : 1/0.3048*12.0,
+    'mi'  : 1/0.3048/5280, #miles
+    'nmi' : 1/0.3048/6076.11548556, #nautical mile
+
+    #SPEED
+    'mps' : 1.0, #meters per second
+    'fps' : 1/0.3048,
+
+    #MASS
+    'kg'   : 1.0,
+    'lb'   : 2.20462, #pounds-mass
+    'slug' : 1/14.5939029, #slug=lbf*s^2/ft
+
+    #DENSITY
+
+    #FORCE
+    'N'    : 1.0
+    'lbf'  : 1/4.448221,
+
+    #PRESSURE
+    'Pa'  : 1.0, #pascals, N/m^2
+    'psf' : 1/47.880258889, #pounds per square foot
+    'psi' : 1/47.880258889*144.0,
+
+    #ABSOLUTE TEMPERATURE
+    'K'  : 1.0
+    'R'  : 1.8, #K = 5/9 deg R
+}
+
+conversions = pd.DataFrame([
+    #DISTANCE
+    pd.Series(name='m' ,  data={'conv':1.0,           'info':'meters' }),
+    pd.Series(name='ft',  data={'conv':1/0.3048,      'info':'feet'   }),
+    pd.Series(name='in',  data={'conv':1/0.3048*12.0, 'info':'inches' }),
+    pd.Series(name='mi' , data={'conv':1/0.3048/5280,          'info':'miles' }),
+    pd.Series(name='nmi', data={'conv':1/0.3048/6076.11548556, 'info':'nautical miles' }),
+
+    #MASS
+    pd.Series(name='kg'  , data={'conv':1.0,          'info':'kilograms'        }),
+    pd.Series(name='lb'  , data={'conv':2.20462,      'info':'Pounds-mass'      }),
+    pd.Series(name='slug', data={'conv':1/14.5939029, 'info':'slugs=lbf*s^2/ft' }),
+
+    #DENSITY
+
+    #FORCE
+    pd.Series(name='N'  , data={'conv':1.0,        'info':'Newtons'      }),
+    pd.Series(name='lbf', data={'conv':1/4.448221, 'info':'Pounds-force' }),
+
+    #PRESSURE
+    pd.Series(name='Pa' , data={'conv':1.0,                  'info':'pascals, N/m^2' }),
+    pd.Series(name='psf', data={'conv':1/47.880258889,       'info':'pounds per square foot' }),
+    pd.Series(name='psi', data={'conv':1/47.880258889*144.0, 'info':'pounds per square inch' }),
+
+    #ABSOLUTE TEMPERATURE
+    pd.Series(name='K', data={'conv':1.0  'info':'Kelvin' }),
+    pd.Series(name='R', data={'conv':1.8, 'info':'Degrees Rankine (K = 5/9 deg R)' }),
+])
+
 
 # #get inverse conversions
 # for k in list(units.keys()):
@@ -118,7 +182,6 @@ def main():
 
     print('TO DO:\n')
     print('COMPLETE "conversions" dict')
-    print('SWITCH "conversions" FROM IMPERIAL TO METRIC TO HANDLE SLUGS/LBS UNIQUELY')
 
     print('PRINT OUT AVAILABLE CONVERSIONS')
 
