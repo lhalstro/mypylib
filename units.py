@@ -122,6 +122,8 @@ def main():
 
     print('PRINT OUT AVAILABLE CONVERSIONS')
 
+    print('CHECKOUT FUNCTIONALITY HERE')
+
 
 if __name__ == "__main__":
 
