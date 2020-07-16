@@ -25,7 +25,7 @@ ToDo:
 import numpy as np
 import pandas as pd
 
-class Units():
+class UnitTracker():
     """ Class definition for unit tracker
     """
 
@@ -47,9 +47,11 @@ class Units():
 
         self.name = name
 
-        self.data = data
-        if self.data is None:
+
+        if data is None:
             self.data = pd.DataFrame()
+        else:
+            self.data = data.copy()
 
         self.pars = pars
         if self.pars is None:
@@ -82,14 +84,14 @@ class Units():
     def SetData(self, df):
         """ Set dataset DataFrame
         Args:
-            df (:obj:`~pandas.DataFrame`): dataset
+            df (:obj:`~pandas.DataFrame` or :obj:`~pandas.Series`): dataset
         """
         self.data = df.copy()
 
     def GetData(self,):
         """ Get a copy of DataFrame of contained dataset
         Returns:
-            (:obj:`~pandas.DataFrame`): dataset
+            (:obj:`~pandas.DataFrame` or :obj:`~pandas.Series`): dataset
         """
         return self.data.copy()
 
@@ -120,7 +122,7 @@ class Units():
             # ignore_index=True
             )
 
-    def Convert(self, convto='SI', verbose=False):
+    def ConvertUnits(self, convto='SI', verbose=False):
         """ Batch-convert a dataset between standard imperial and metric (SI)
         Args:
             convto (:obj:`str`): standard system of units to convert to ['SI']
@@ -190,6 +192,10 @@ convdf = convdf.append(pd.Series(name='ftps', data={'conv':conversions['ft'],  '
 #DENSITY
 convdf = convdf.append(pd.Series(name='kgpm3',    data={'conv':1.0, 'info':'Density (kg/m^3)',    'sys':'SI',   'std':1, 'type':'density' }))
 convdf = convdf.append(pd.Series(name='slugpft3', data={'conv':conversions['slug']/conversions['ft']**3, 'info':'Density (slug/ft^3)', 'sys':'USCS', 'std':1 , 'type':'density'}))
+
+#DYNAMIC VISCOSITY
+convdf = convdf.append(pd.Series(name='kgspm',    data={'conv':1.0, 'info':'Dynamic Viscosity (mu) [kg*s/m]',    'sys':'SI',   'std':1, 'type':'dvisc' }))
+convdf = convdf.append(pd.Series(name='slugspft', data={'conv':conversions['slug']/conversions['ft'], 'info':'Dynamic Viscosity (mu) [slug*s/ft]', 'sys':'USCS', 'std':1 , 'type':'dvisc'}))
 
 #dict to simplify conversion syntax
 conversions = dict(convdf['conv'])
@@ -321,7 +327,9 @@ def batchconvert(df, units, convto=None, verbose=False):
     if verbose:
         print('Mass converting to {} units'.format(convto))
 
-    for key in list(df.columns):
+    keys = list(df.index) if type(df) == type(pd.Series()) else list(df.columns)
+
+    for key in keys:
 
         #skip parameters that dont have units tracked
         if key not in units: continue
@@ -486,7 +494,7 @@ def main():
 
     #Make a unit object
 
-    dat = Units()
+    dat = UnitTracker()
 
     print(dat.GetData())
     print(dat.GetUnits())
@@ -505,7 +513,7 @@ def main():
     print(dat.GetData())
     print(dat.GetUnits())
 
-    dat.Convert()
+    dat.ConvertUnits()
 
     print(dat.GetData())
     print(dat.GetUnits())
