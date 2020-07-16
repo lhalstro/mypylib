@@ -31,17 +31,34 @@ class Units():
 
     def __init__(self,
                 name="",
+                data=None,
+                # unit=None,
+                pars=None,
                 ):
         """ Constructor for OVERFLOW case object
 
         Args:
             name (:obj:`str`): Name of set. Used as unique identifier for save files/plots ["TestCase"]
+            data (:obj:`~pandas.DataFrame`): Storage for dataset [Empty DataFrame]
+            pars (:obj:`~pandas.DataFrame`): Storage for information about parameters (e.g. units, description) [Empty DataFrame]
+
 
         """
 
         self.name = name
 
-        self.units
+        self.data = data
+        if self.data is None:
+            self.data = pd.DataFrame()
+
+        self.pars = pars
+        if self.pars is None:
+            self.pars = pd.DataFrame(columns=['unit', 'info'])
+
+        # #Might want to make this a dataframe to cross-correlate units,labels,etc with keys**********************************
+        # self.unit = unit
+        # if self.unit is None:
+        #     self.unit = {}
 
 
     def __repr__(self):
@@ -64,29 +81,53 @@ class Units():
 
         return string
 
+    def GetData(self,):
+        """ Get a copy of DataFrame of contained dataset
+        Returns:
+            (:obj:`~pandas.DataFrame`): dataset
+        """
+        return self.data.copy()
 
-
-    def AddVariable(self, var, unit, info=''):
-        """ Add a unit to
+    def SetUnits(self, units):
+        """ Set units that map to dataset
         Args:
-            var  (:obj:`str`): Name of variable key
+            units (:obj:`dict`): units mapping
+        """
+        self.pars['unit'] = pd.Series(units)
+
+    def GetUnits(self,):
+        """ Get units that map to dataset
+        Returns:
+            (:obj:`dict`): units mapping
+        """
+        return dict(self.pars['unit'])
+
+    def AddParameter(self, par, unit='-', info=''):
+        """ Add a parameter to the tracker
+        Args:
+            par  (:obj:`str`): Name of variable key
             unit (:obj:`str`): Units of the variable
             info (:obj:`str`): Optional information about the variable ['']
         """
 
-        self.units.append(
-            pd.Series(name=var, data={'unit':unit,'info':info}),
+        self.pars = self.pars.append(
+            pd.Series(name=par, data={'unit':unit,'info':info}),
             # ignore_index=True
             )
 
-
-    def Convert(self,):
-        """ Mass-convert a dataset between standard imperial and metric (SI)
+    def Convert(self, convto='SI', verbose=False):
+        """ Batch-convert a dataset between standard imperial and metric (SI)
+        Args:
+            convto (:obj:`str`): standard system of units to convert to ['SI']
         """
-
-
-
-
+        print('\n\n')
+        print(self.GetUnits())
+        self.data, units = batchconvert(self.GetData(), self.GetUnits(), convto=convto, verbose=verbose)
+        print(self.GetUnits())
+        print(units)
+        self.SetUnits(units)
+        print(self.GetUnits())
+        print('\n\n')
 
 #UNIT CONVERSIONS
     #enter conversions relative to standard imperial units.
@@ -125,6 +166,10 @@ convdf = pd.DataFrame([
     #ABSOLUTE TEMPERATURE
     pd.Series(name='K', data={'conv':1.0, 'info':'Kelvin',                      'sys':'SI',   'std':1, 'type':'temperature' }),
     pd.Series(name='R', data={'conv':1.8, 'info':'Degrees Rankine (K=5/9degR)', 'sys':'USCS', 'std':1, 'type':'temperature' }),
+
+    # #NON-DIMENSIONAL OR NO UNITS
+    # pd.Series(name='-', data={'conv':1.0, 'info':'no unit', 'sys':'SI',  'std':1,'type':'None' }),
+    # pd.Series(name='-', data={'conv':1.0, 'info':'no unit', 'sys':'USCS','std':1,'type':'None' }),
 
 
     # #for checkout only
@@ -235,6 +280,10 @@ def convert(curunit, newunit, value = 1.0):
         (:obj:`float` or :obj:`numpy.array`):
     """
 
+    if curunit == '-':
+        #skip, no units
+        return value
+
     if curunit not in conversions:
         raise NotImplementedError('"{}" is not currently a unit option'.format(curunit))
     if newunit not in conversions:
@@ -247,11 +296,15 @@ def convert(curunit, newunit, value = 1.0):
 
     return value
 
-def massconvert(df, units, convto=None, verbose=False):
+def batchconvert(df, units, convto=None, verbose=False):
     """ Convert a data set from metric to USCS or vice versa.
     Args:
         df :dataset
         units: dict of units corresponding to each key
+        convto: str standard system of units to convert to ['SI']
+    Returns:
+        converted dataframe
+        updated units dict
     """
 
     if convto is None or convto.lower() == 'metric' or convto.lower() == 'si':
@@ -270,8 +323,14 @@ def massconvert(df, units, convto=None, verbose=False):
 
     for key in list(df.columns):
 
+        #skip parameters that dont have units tracked
+        if key not in units: continue
+
         #current units
         cur = units[key]
+
+        #skip unitless parameters
+        if cur == '-': continue
 
         #type of units (e.g. 'length')
         typ = convdf.loc[cur,'type']
@@ -396,6 +455,21 @@ def checkout(tol=1e-16):
                 raise ValueError('"convdf" unit conversions dataframe is missing a standard value for:\n' \
                                  '    {} unit in the {} system'.format(typ, sys))
 
+    #test mass convert
+    dd = pd.DataFrame({'x':np.array(range(10)),
+                        'y':np.array(range(10))/0.3048,
+                        'p':np.array(range(10)),
+                        })
+    uu = {'x':'mi', 'p':'psi', 'y': 'ft'}
+
+
+    d2, u2 = batchconvert(dd.copy(), uu.copy(), convto='metric', verbose=True)
+
+    print(dd)
+    print(d2)
+    print('')
+    print(uu)
+    print(u2)
 
 
 
@@ -410,23 +484,37 @@ def main():
     checkout()
 
 
+    #Make a unit object
 
-    #test mass convert
-    dd = pd.DataFrame({'x':np.array(range(10)),
-                        'y':np.array(range(10))/0.3048,
-                        'p':np.array(range(10)),
+    dat = Units()
 
+    print(dat.GetData())
+    print(dat.GetUnits())
+
+    dd = pd.DataFrame({
+                        'xcg':np.array(range(10)),
+                        'Vinf':np.array(range(10))/0.3048,
+                        'Vref':np.array(range(10)),
                         })
-    uu = {'x':'mi', 'p':'psi', 'y': 'ft'}
+    dat.data = dd.copy()
+
+    dat.AddParameter('xcg', 'm', 'x location of cg')
+    dat.AddParameter('Vinf', 'ft')
+    dat.AddParameter('Vref', info='Reference velocity in gridunits (in/s)')
+
+    print(dat.GetData())
+    print(dat.GetUnits())
+
+    dat.Convert()
+
+    print(dat.GetData())
+    print(dat.GetUnits())
+
+    print(dat.pars)
 
 
-    d2, u2 = massconvert(dd.copy(), uu.copy(), convto='metric', verbose=True)
 
-    print(dd)
-    print(d2)
-    print('')
-    print(uu)
-    print(u2)
+
 
 if __name__ == "__main__":
 
