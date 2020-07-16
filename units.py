@@ -65,21 +65,26 @@ class Units():
         """ Return the representation of this object.
         Result of 'type(obj)'
         """
-        return "units tracker"
+        return "units tracker/converter"
 
     def __str__(self):
         """ Print out this object's information to text
         call with: 'print(obj)' or 'str(obj)'
         """
 
-        string  = "Unit Tracking Object: {}\n\n".format(self.name)
-        string += " - name: {}\n".format(self.name)
-        string += " - workdir: {}\n".format(self.workdir)
+        string  = "Unit Tracking Object: {}\n".format(self.name)
 
-        string += "\nVariables:\n"
-        string += "    PRINT EACH VARIABLE AND CORRESPONDING UNIT HERE\n"
+        string += "\nParameters:\n"
+        string += "{}\n".format(self.pars)
 
         return string
+
+    def SetData(self, df):
+        """ Set dataset DataFrame
+        Args:
+            df (:obj:`~pandas.DataFrame`): dataset
+        """
+        self.data = df.copy()
 
     def GetData(self,):
         """ Get a copy of DataFrame of contained dataset
@@ -120,14 +125,9 @@ class Units():
         Args:
             convto (:obj:`str`): standard system of units to convert to ['SI']
         """
-        print('\n\n')
-        print(self.GetUnits())
-        self.data, units = batchconvert(self.GetData(), self.GetUnits(), convto=convto, verbose=verbose)
-        print(self.GetUnits())
-        print(units)
+        self.data, units = batchconvert(self.GetData(), self.GetUnits(),
+                                        convto=convto, verbose=verbose)
         self.SetUnits(units)
-        print(self.GetUnits())
-        print('\n\n')
 
 #UNIT CONVERSIONS
     #enter conversions relative to standard imperial units.
@@ -183,6 +183,10 @@ conversions = dict(convdf['conv'])
 
 #MORE CONVERSIONS (DERIVATIVE)
 
+#SPEED
+convdf = convdf.append(pd.Series(name='mps',  data={'conv':1.0,                'info':'m/s',  'sys':'SI',   'std':1, 'type':'speed' }))
+convdf = convdf.append(pd.Series(name='ftps', data={'conv':conversions['ft'],  'info':'ft/s', 'sys':'USCS', 'std':1, 'type':'speed'}))
+
 #DENSITY
 convdf = convdf.append(pd.Series(name='kgpm3',    data={'conv':1.0, 'info':'Density (kg/m^3)',    'sys':'SI',   'std':1, 'type':'density' }))
 convdf = convdf.append(pd.Series(name='slugpft3', data={'conv':conversions['slug']/conversions['ft']**3, 'info':'Density (slug/ft^3)', 'sys':'USCS', 'std':1 , 'type':'density'}))
@@ -190,13 +194,9 @@ convdf = convdf.append(pd.Series(name='slugpft3', data={'conv':conversions['slug
 #dict to simplify conversion syntax
 conversions = dict(convdf['conv'])
 
+# print(convdf)
+# print(conversions)
 
-
-
-
-
-print(convdf)
-print(conversions)
 
 
 # conversions_imp = {
@@ -510,8 +510,7 @@ def main():
     print(dat.GetData())
     print(dat.GetUnits())
 
-    print(dat.pars)
-
+    print(dat)
 
 
 
