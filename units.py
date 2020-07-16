@@ -185,6 +185,10 @@ conversions = dict(convdf['conv'])
 
 #MORE CONVERSIONS (DERIVATIVE)
 
+#AREA
+convdf = convdf.append(pd.Series(name='m2',  data={'conv':1.0,                  'info':'m^2',  'sys':'SI',   'std':1, 'type':'area' }))
+convdf = convdf.append(pd.Series(name='ft2', data={'conv':conversions['ft']**2, 'info':'ft^2', 'sys':'USCS', 'std':1, 'type':'area'}))
+
 #SPEED
 convdf = convdf.append(pd.Series(name='mps',  data={'conv':1.0,                'info':'m/s',  'sys':'SI',   'std':1, 'type':'speed' }))
 convdf = convdf.append(pd.Series(name='ftps', data={'conv':conversions['ft'],  'info':'ft/s', 'sys':'USCS', 'std':1, 'type':'speed'}))
