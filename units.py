@@ -1,25 +1,32 @@
 """ UNIT TRACKING AND CONVERSIONS
-Class-based solution for converting units and tracking the units of
-individual variables
+A light-weight, class-based solution for converting and tracking dataset units.
+
+DESCRIPTION:
+Provides single and batch unit conversions without classes
+Also provies UnitTracker class to track and convert the units of entire datasets.
 
 LOGAN HALSTROM
 CREATED:  7/14/2020
-MODIFIED: 7/15/2020
+MODIFIED: 7/16/2020
 
-To Convert Units of `unconverted` from feet to meters without using classes:
+HOW TO USE:
+To convert units of `unconverted` from feet to meters without using classes:
     import units
     converted = units.convert('ft', 'm', unconverted)
 
 To get list of available units to convert:
     units.gethelp()
 
-ToDo:
-    class-based
+To create a unit-tracking object for DataFrame `df`:
+    dat = units.UnitTracker(name='Example')
+    dat.SetData(df)
+    dat.AddParameter('var1', 'ft', 'first length variable')
+    df = dat.GetData()
+    units = dat.GetUnits()
 
-    help print should say all of the unit conversions it can do and what the
-        keys are
-    provide object that tracks units, other info about each variable
-    able to convert units without classes
+
+ToDo:
+    Clean up, make doc-strings
 """
 
 import numpy as np
