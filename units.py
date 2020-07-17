@@ -1,5 +1,5 @@
 """ UNIT TRACKING AND CONVERSIONS
-A light-weight, class-based solution for converting and tracking dataset units.
+A light-weight, class-based, fail-safe to for converting and tracking units.
 
 DESCRIPTION:
 Provides single and batch unit conversions without classes
