@@ -101,9 +101,13 @@ def GetGlobalParentDir(savename):
 
 def GetFilename(path):
     """Get filename from path of file"""
-    parent = GetParentDir(path)
-    filename = FindBetween(path, parent)
-    filename = filename.replace('/', '') #remove slashes
+    # parent = GetParentDir(path)
+    # filename = FindBetween(path, parent)
+    # filename = filename.replace('/', '') #remove slashes
+    print('USING BUILT-IN FOR GETFILENAME') 
+    import ntpath
+    filename = ntpath.basename(path)
+    
     return filename
 
 def NoWhitespace(str):

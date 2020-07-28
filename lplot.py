@@ -29,19 +29,31 @@ from scipy.interpolate import interp1d
 ### UTILITIES
 ########################################################################
 
-def MakeOutputDir(savedir):
-    """make results output directory if it does not already exist.
-    instring --> directory path from script containing folder
+def MakeOutputDir(filename):
+    """ Makes output directories in filename that do not already exisi
+    filename --> save file path, used to determine parent directories
+    NOTE: If specifying an empty directory name, 'filename' must end in '/'
+    e.g. To make the directory 'test', specify either:
+        path/to/test/filename.dat
+        paht/to/test/
     """
-    #split individual directories
-    splitstring = savedir.split('/')
-    prestring = ''
-    for string in splitstring:
-        prestring += string + '/'
+
+    # #split individual directories
+    # splitstring = savedir.split('/')
+    # prestring = ''
+    # for string in splitstring:
+    #     prestring += string + '/'
+    #     try:
+    #         os.mkdir(prestring)
+    #     except Exception:
+    #         pass
+
+    if not os.path.exists(os.path.dirname(filename)):
         try:
-            os.mkdir(prestring)
-        except Exception:
-            pass
+            os.makedirs(os.path.dirname(filename))
+        except OSError as exc: # Guard against race condition
+            if exc.errno != errno.EEXIST:
+                raise
 
 def GetParentDir(savename):
     """Get parent directory from path of file"""
@@ -63,20 +75,23 @@ def NoWhitespace(str):
     """Return given string with all whitespace removed"""
     return str.replace(' ', '')
 
-def FindBetween(str, before, after=None):
-    """Returns search for characters between 'before' and 'after characters
-    If after=None, return everything after 'before'"""
-    # value_regex = re.compile('(?<=' + before + ')(?P<value>.*?)(?='
-    #                                 + after + ')')
-    if after==None:
-        match = re.search(before + '(.*)$', str)
-        if match != None: return match.group(1)
-        else: return 'No Match'
+def FindBetween(string, before='^', after=None):
+    """Search 'string' for characters between 'before' and 'after' characters
+    If after=None, return everything after 'before'
+    Default before is beginning of line
+    """
+    if after == None and before != None:
+        match = re.search('{}(.*)$'.format(before), string)
+        if match != None:
+            return match.group(1)
+        else:
+            return None
     else:
-        match = re.search('(?<=' + before + ')(?P<value>.*?)(?='
-                                    + after + ')', str)
-        if match != None: return match.group('value')
-        else: return 'No Match'
+        match = re.search('(?<={})(?P<value>.*?)(?={})'.format(before, after), string)
+        if match != None:
+            return match.group('value')
+        else:
+            return None
 
 
 ########################################################################
