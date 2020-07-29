@@ -826,7 +826,8 @@ def SavePlot(savename, overwrite=1, trans=False, bbox='tight', pad=0.5):
         if overwrite == 0:
             print('     Overwrite is off')
             return
-        else: os.remove(savename)
+        else:
+            os.remove(savename)
     #Make figure save directory if it does not exist
     MakeOutputDir(GetParentDir(savename))
 
