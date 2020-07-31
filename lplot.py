@@ -48,12 +48,25 @@ def MakeOutputDir(filename):
     #     except Exception:
     #         pass
 
-    if not os.path.exists(os.path.dirname(filename)):
+    #below is equivalent of 'GetRootDir'
+    rootpath = os.path.dirname(filename)
+    if rootpath == '': rootpath=None
+
+    if rootpath is not None and not os.path.exists(rootpath):
+        #there are parent dirs and they don't exist, so make them
         try:
-            os.makedirs(os.path.dirname(filename))
+            os.makedirs(rootpath)
         except OSError as exc: # Guard against race condition
             if exc.errno != errno.EEXIST:
                 raise
+
+
+    # if not os.path.exists(os.path.dirname(filename)):
+    #     try:
+    #         os.makedirs(os.path.dirname(filename))
+    #     except OSError as exc: # Guard against race condition
+    #         if exc.errno != errno.EEXIST:
+    #             raise
 
 def GetParentDir(savename):
     """Get parent directory from path of file"""
@@ -105,6 +118,8 @@ mplcolors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '
 xkcdcolors = ["windows blue", "tangerine",  "dusty purple",  "leaf green",    "cherry" ,  'light brown',  "salmon pink",   "greyish",   "puke yellow",  "sky blue", "aqua"     ]
 xkcdhex =    ['#3778bf',       "#ff9408" ,  '#825f87',       '#5ca904',       '#cf0234',   '#ad8150',      "#fe7b7c"     ,  '#a8a495',  '#c2be0e',      "#75bbfd" , "#13eac9"    ]
 
+xkcdrainbow =       ["cherry" ,   "tangerine",    "puke yellow",  "leaf green",  "windows blue",  "dusty purple",  'light brown',  "greyish",   "salmon pink",     "sky blue", "aqua"     ]
+xkcdrainbowhex =    ['#cf0234',    "#ff9408" ,    '#c2be0e',      '#5ca904',     '#3778bf',       '#825f87',        '#ad8150',      '#a8a495',   "#fe7b7c"     ,   "#75bbfd" , "#13eac9"    ]
 
 #Line Styles
 mark = 5
@@ -255,6 +270,9 @@ def UseSeaborn(palette=None, ncycle=6):
     if palette == 'xkcd':
         #Nice blue, purple, green
         sns.set_palette(sns.xkcd_palette(xkcdcolors))
+    elif palette == 'xkcdrainbow':
+        #my colors in rainbow cycle
+        sns.set_palette(sns.xkcd_palette(xkcdrainbow))
     elif palette is not None:
         #set specified color palette
         sns.set_palette(palette, ncycle)
@@ -303,12 +321,18 @@ def LaTeXPlotSize():
 ### PLOTTING UTILITIES
 ########################################################################
 
+def PlotStart(nrow=1, ncol=1):
+    """ Start a plot for a single figure or a variable layout for subplots
+    Default is one subplot
+    """
+    fig, ax = plt.subplots(nrow, ncol, figsize=[7*ncol, 6*nrow])
+    return fig, ax
 
-
-def PlotStart(title, xlbl, ylbl, horzy='vertical', figsize='square',
+def PlotStartOld(title, xlbl, ylbl, horzy='vertical', figsize='square',
                 ttl=None, lbl=None, tck=None, leg=None, box=None,
                 grid=True):
     """Begin plot with title and axis labels.  Space title above plot.
+    DEPRICATED: 7/31/2020
     horzy --> vertical or horizontal y axis label
     figsize --> set figure size. None for autosizing, 'tex' for latex
                     formatting, or 2D list for user specification.

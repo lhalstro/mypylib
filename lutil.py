@@ -53,9 +53,21 @@ def MakeOutputDir(filename):
     #     except Exception:
     #         pass
 
-    if not os.path.exists(os.path.dirname(filename)):
+    # if not os.path.exists(os.path.dirname(filename)):
+    #     try:
+    #         os.makedirs(os.path.dirname(filename))
+    #     except OSError as exc: # Guard against race condition
+    #         if exc.errno != errno.EEXIST:
+    #             raise
+
+    #below is equivalent of 'GetRootDir'
+    rootpath = os.path.dirname(filename)
+    if rootpath == '': rootpath=None
+
+    if rootpath is not None and not os.path.exists(rootpath):
+        #there are parent dirs and they don't exist, so make them
         try:
-            os.makedirs(os.path.dirname(filename))
+            os.makedirs(rootpath)
         except OSError as exc: # Guard against race condition
             if exc.errno != errno.EEXIST:
                 raise
@@ -63,11 +75,16 @@ def MakeOutputDir(filename):
 def GetRootDir(savename):
     """Get root path from a string, local or global.
     (ORIGINAL FUNCTIONALITY OF GETPARENTDIR)
-    TODO: I'm pretty sure this can be replaced with os.path.dirname
+    Returns None if no root path
     """
-    splitstring = savename.split('/')
-    parent = '/'.join(splitstring[:-1])
-    return parent
+
+    # splitstring = savename.split('/')
+    # parent = '/'.join(splitstring[:-1])
+    # return parent
+
+    rootpath = os.path.dirname(filename)
+    if rootpath == '': rootpath=None
+    return rootpath
 
 def GetParentDir(savename):
     """Original functionality (DEPRICATED).
@@ -104,10 +121,10 @@ def GetFilename(path):
     # parent = GetParentDir(path)
     # filename = FindBetween(path, parent)
     # filename = filename.replace('/', '') #remove slashes
-    print('USING BUILT-IN FOR GETFILENAME') 
+    print('USING BUILT-IN FOR GETFILENAME')
     import ntpath
     filename = ntpath.basename(path)
-    
+
     return filename
 
 def NoWhitespace(str):
