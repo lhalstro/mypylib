@@ -1100,6 +1100,37 @@ def PolyFit(x, y, order, n, showplot=0):
 
 
 def main():
+
+
+    x = np.linspace(0,100,101)
+    y1 = -1 * 500 + x ** 2
+    y2 = -2 * 500 + x ** 2
+
+
+
+    #PASS KEYWORD ARGUMENTS THROUGH TO MATPLOTLIB
+    #test args and kwargs
+    mykwargs = {'linestyle' : '--', 'linewidth' : 5}
+
+    import pandas as pd
+    cases = pd.DataFrame([
+        pd.Series({'name' : 'y1', 'x': x, 'y': y1, 'mplkwargs' : {} }), #default: no keyword args
+        pd.Series({'name' : 'y2', 'x': x, 'y': y2, 'mplkwargs' : mykwargs }),
+        ])
+
+
+    fig, ax = PlotStart()
+    for ind, row in cases.iterrows():
+        ax.plot(row.x, row.y, label=row.name, **row.mplkwargs)
+
+    plt.show()
+
+
+
+
+
+
+
     #TEST COLORMAPS
 
     def PlotColorCycle(ax, colors, title=''):
