@@ -678,6 +678,14 @@ def ScatPlot(ax, df, X, Y, lbl, clr='black', mkr='o', plottype='mark'):
 
     return ax
 
+
+#Params for locating legend outside of figure (bbox: loc of anchor point, loc: anchor point on legend)
+legboxdict = {
+    'top'    : {'bbox' : (0.5,1),     'loc' : 'lower center'},
+    'bottom' : {'bbox' : (0.5,-0.15), 'loc' : 'upper center'}
+    'right'  : {'bbox' : (1,0.5),     'loc' : 'center left'}
+}
+
 def PlotLegend(ax, loc='best', alpha=0.5, title=None, fontsize=None, outside=None, ncol=1):
     """General legend command.  Use given handles and labels in plot
     commands.  Curved edges, semi-transparent, given title, single markers
@@ -747,6 +755,29 @@ def PlotLegendLabels(ax, handles, labels, loc='best', title=None, alpha=0.5,
 
 
     return leg
+
+def NumberMarkers(i, first=True, last=False, offset=False):
+    """ Use integer number as marker.
+    Option to mark only first/last point as a visual legend
+    """
+
+    marker = '${}$'.format(i+1)
+
+    #indices to offset
+    ioff = i if offset else 0
+
+    markevery = []
+    if first:
+        #marker on first point (offset if desired)
+        markevery = [0+ioff]
+    if last:
+        #marker on last point (offset if desired)
+        markevery.append(-1-ioff)
+    if len(markevery) == 0:
+        #if marking more than endpoints
+        markevery = 1
+
+    return marker, markevery
 
 def ColorMap(ncolors, colormap='jet'):
     """return array of colors given number of plots and colormap name
@@ -968,6 +999,14 @@ def TightLims(ax, tol=0.0):
     ylim = [ymin-tol, ymax+tol]
 
     return xlim, ylim
+
+def SetTightLims(ax, tol=0.0):
+    """ Set axis limits to tightly bound data
+    """
+    xlim, ylim = TightLims(ax, tol)
+    ax.set_xlimit(xlim)
+    ax.set_ylimit(ylim)
+    return ax
 
 def PadBounds(axes, tol=0):
     """Add tolerance to axes bounds to pad with whitespace
