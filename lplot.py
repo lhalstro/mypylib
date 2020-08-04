@@ -681,80 +681,94 @@ def ScatPlot(ax, df, X, Y, lbl, clr='black', mkr='o', plottype='mark'):
 
 #Params for locating legend outside of figure (bbox: loc of anchor point, loc: anchor point on legend)
 legboxdict = {
-    'top'    : {'bbox' : (0.5,1),     'loc' : 'lower center'},
-    'bottom' : {'bbox' : (0.5,-0.15), 'loc' : 'upper center'}
-    'right'  : {'bbox' : (1,0.5),     'loc' : 'center left'}
+    'top'    : {'bbox' : (0.5,1),     'loc' : 'lower center',}, #legend on top of plot
+    'bottom' : {'bbox' : (0.5,-0.15), 'loc' : 'upper center',}, #legend on bottom of plot
+    'right'  : {'bbox' : (1,0.5),     'loc' : 'center left' ,}, #Legend to right of plot [default]
 }
 
-def PlotLegend(ax, loc='best', alpha=0.5, title=None, fontsize=None, outside=None, ncol=1):
-    """General legend command.  Use given handles and labels in plot
-    commands.  Curved edges, semi-transparent, given title, single markers
-    """
-    #default fontsize is already font_leg, but this allows unique user input
-    if fontsize == None:
-        fontsize = matplotlib.rcParams['legend.fontsize']
+def LegendOutside(ax, *args, outside=None, **kwargs):
+    """General legend command, with option to locate outside fig frame with simple commands
+    Use handle/label args like matplotlib legend
+    Lplot legend defaults: Curved edges, semi-transparent, single markers, 'best' location
 
-    if outside != None:
-        #Legend outside plot
-        if outside == 'top':
-            #legend on top of plot
-            bbox = (0.5,1)       #location of anchor point
-            loc = 'lower center' #anchor point on legend
-        elif outside == 'bottom':
-            #legend on bottom of plot
-            bbox = (0.5,-0.15)
-            loc = 'upper center'
-        else:
-            #Legend to right of plot
-            bbox = (1,0.5)
-            loc = 'center left'
-        leg = ax.legend(title=title, framealpha=alpha,
-                        prop={'size':fontsize},
-                        bbox_to_anchor=bbox, loc=loc, ncol=ncol,
-                        )
-    else:
-        leg = ax.legend(loc=loc, title=title, framealpha=alpha, ncol=ncol,
-                        # fancybox=True, frameon=True,
-                        # numpoints=1, scatterpoints=1,
-                        prop={'size':fontsize},
-                        # borderpad=0.1, borderaxespad=0.1, handletextpad=0.2,
-                        # handlelength=1.0, labelspacing=0
-                        )
+    Args:
+        ax: matplotlib axis object
+        *args: nothing, labels, or handles and labels (just like ax.legend)
+        outside: `str` locate legend outside of plot frame. Default: inside. Options: 'top', 'bottom', 'right'
+        **kwargs: matplotlib.legend kwargs
+
+    Useful matplotlib kwargs that you can passthru:
+        loc: `str` legend anchor location [best]
+        title: `str` Title for legend
+        framealpha: `float` Legend transparency (1: opaque, 0: fully transparent)
+        ncol: `int` number of columns in legend (spread it out horizontally)
+        fontsize:
+
+    Old Args: loc='best', alpha=0.5, title=None, fontsize=None,  ncol=1
+    """
+
+    newkwargs = {} #store new keyword args for matplotlib
+
+    #Legend outside plot frame
+    if outside is not None:
+        if outside not in legboxdict.keys():
+            raise ValueError("'{}' is not an option for outside legend location".format(outside))
+        newkwargs['bbox_to_anchor'] = legboxdict[outside]['bbox'] #loc of achor point
+        newkwargs['loc']            = legboxdict[outside]['loc'] #anchor point on leg
+
+    #Add keys in newkwargs to kwargs, but don't replace existing keys
+    mykwargs = {**newkwargs, **kwargs}
+
+    leg = ax.legend(*args, **mykwargs)
+
+    # #DEBUG
+    # print('\n\nargs')
+    # print(args)
+    # print('\nkwargs')
+    # # print(kwargs)
+    # # print(newkwargs)
+    # print(mykwargs)
+
     return leg
 
-def PlotLegendLabels(ax, handles, labels, loc='best', title=None, alpha=0.5,
-                        fontsize=None, outside=None, ncol=1):
-    """Plot legend specifying labels.
-    Curved edges, semi-transparent, given title, single markers
-    """
-    if fontsize == None:
-        fontsize = matplotlib.rcParams['legend.fontsize']
-    if outside != None:
-        #Legend outside plot
-        if outside == 'top':
-            #legend on top of plot
-            # bbox = (0.5,1)
-            bbox = (0.5,1.1)
-            loc = 'center'
-        elif outside == 'bottom':
-            #legend on top of plot
-            bbox = (0.5,-0.1)
-            loc = 'center'
-        else:
-            #Legend to right of plot
-            bbox = (1,0.5)
-            loc = 'center left'
-        leg = ax.legend(handles, labels, title=title, framealpha=alpha,
-                        prop={'size':fontsize},
-                        bbox_to_anchor=bbox, loc=loc, ncol=ncol,
-                        )
-    else:
-        leg = ax.legend(handles, labels, loc=loc, title=title, ncol=ncol,
-                    framealpha=alpha, prop={'size':fontsize},
-                    )
+#For compatibility. These functions are now identical
+PlotLegend = PlotLegendOutside
+#For compatibility. These functions are now identical
+PlotLegendLabels = PlotLegend
+
+# def PlotLegendLabels(ax, handles, labels, loc='best', title=None, alpha=0.5,
+#                         fontsize=None, outside=None, ncol=1):
+#     """Plot legend specifying labels.
+#     Curved edges, semi-transparent, given title, single markers
+#     """
+#     if fontsize == None:
+#         fontsize = matplotlib.rcParams['legend.fontsize']
+#     if outside != None:
+#         #Legend outside plot
+#         if outside == 'top':
+#             #legend on top of plot
+#             # bbox = (0.5,1)
+#             bbox = (0.5,1.1)
+#             loc = 'center'
+#         elif outside == 'bottom':
+#             #legend on top of plot
+#             bbox = (0.5,-0.1)
+#             loc = 'center'
+#         else:
+#             #Legend to right of plot
+#             bbox = (1,0.5)
+#             loc = 'center left'
+#         leg = ax.legend(handles, labels, title=title, framealpha=alpha,
+#                         prop={'size':fontsize},
+#                         bbox_to_anchor=bbox, loc=loc, ncol=ncol,
+#                         )
+#     else:
+#         leg = ax.legend(handles, labels, loc=loc, title=title, ncol=ncol,
+#                     framealpha=alpha, prop={'size':fontsize},
+#                     )
 
 
-    return leg
+#     return leg
 
 def NumberMarkers(i, first=True, last=False, offset=False):
     """ Use integer number as marker.
