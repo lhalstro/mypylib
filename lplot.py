@@ -754,15 +754,25 @@ def AddlLegend(ax, leg1, *args, outside=None, **kwargs):
     ax.add_artist(leg1)
     return leg2
 
-def NumberMarkers(i, first=True, last=False, offset=False):
+def NumberMarkers(i, first=True, last=False, offset=None):
     """ Use integer number as marker.
     Option to mark only first/last point as a visual legend
+
+    Args:
+        i: `int`: index count of plot item (marker number will be i+1)
+        first: `bool`: marker at the first index [True]
+        last:  `bool`: marker at the last index [False]
+        offset: `int`: offset markers by this many indices to they don't overlap [don't offset]
+
+    Returns:
+        `str`: marker string which is '$i+1$'
+        `int`: value to use for for matplotlib `markevery`
     """
 
     marker = '${}$'.format(i+1)
 
     #indices to offset
-    ioff = i if offset else 0
+    ioff = int(offset * i) if offset is not None else 0
 
     markevery = []
     if first:
@@ -1002,8 +1012,8 @@ def SetTightLims(ax, tol=0.0):
     """ Set axis limits to tightly bound data
     """
     xlim, ylim = TightLims(ax, tol)
-    ax.set_xlimit(xlim)
-    ax.set_ylimit(ylim)
+    ax.set_xlim(xlim)
+    ax.set_ylim(ylim)
     return ax
 
 def PadBounds(axes, tol=0):
