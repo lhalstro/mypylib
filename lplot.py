@@ -686,7 +686,7 @@ legboxdict = {
     'right'  : {'bbox' : (1,0.5),     'loc' : 'center left' ,}, #Legend to right of plot [default]
 }
 
-def LegendOutside(ax, *args, outside=None, **kwargs):
+def Legend(ax, *args, outside=None, **kwargs):
     """General legend command, with option to locate outside fig frame with simple commands
     Use handle/label args like matplotlib legend
     Lplot legend defaults: Curved edges, semi-transparent, single markers, 'best' location
@@ -732,43 +732,27 @@ def LegendOutside(ax, *args, outside=None, **kwargs):
     return leg
 
 #For compatibility. These functions are now identical
-PlotLegend = PlotLegendOutside
+PlotLegend = Legend
 #For compatibility. These functions are now identical
 PlotLegendLabels = PlotLegend
 
-# def PlotLegendLabels(ax, handles, labels, loc='best', title=None, alpha=0.5,
-#                         fontsize=None, outside=None, ncol=1):
-#     """Plot legend specifying labels.
-#     Curved edges, semi-transparent, given title, single markers
-#     """
-#     if fontsize == None:
-#         fontsize = matplotlib.rcParams['legend.fontsize']
-#     if outside != None:
-#         #Legend outside plot
-#         if outside == 'top':
-#             #legend on top of plot
-#             # bbox = (0.5,1)
-#             bbox = (0.5,1.1)
-#             loc = 'center'
-#         elif outside == 'bottom':
-#             #legend on top of plot
-#             bbox = (0.5,-0.1)
-#             loc = 'center'
-#         else:
-#             #Legend to right of plot
-#             bbox = (1,0.5)
-#             loc = 'center left'
-#         leg = ax.legend(handles, labels, title=title, framealpha=alpha,
-#                         prop={'size':fontsize},
-#                         bbox_to_anchor=bbox, loc=loc, ncol=ncol,
-#                         )
-#     else:
-#         leg = ax.legend(handles, labels, loc=loc, title=title, ncol=ncol,
-#                     framealpha=alpha, prop={'size':fontsize},
-#                     )
+def AddlLegend(ax, leg1, *args, outside=None, **kwargs):
+    """ Add a second legend, keeping the first visible1
+    See `~lplot.Legend` for general legend instructions
 
+    Args:
+        ax: matplotlib axis object
+        leg1: legend that exists before this one (need to make it reappear after it hides)
+        *args: nothing, labels, or handles and labels (just like ax.legend)
+        outside: `str` locate legend outside of plot frame. Default: inside. Options: 'top', 'bottom', 'right'
+        **kwargs: matplotlib.legend kwargs
+    """
 
-#     return leg
+    #plot second legend
+    leg2 = Legend(ax, *args, outside=outside, **kwargs)
+    #make first legend visible
+    ax.add_artist(leg1)
+    return leg2
 
 def NumberMarkers(i, first=True, last=False, offset=False):
     """ Use integer number as marker.
