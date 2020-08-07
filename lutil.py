@@ -72,7 +72,7 @@ def MakeOutputDir(filename):
             if exc.errno != errno.EEXIST:
                 raise
 
-def GetRootDir(savename):
+def GetRootDir(filename):
     """Get root path from a string, local or global.
     (ORIGINAL FUNCTIONALITY OF GETPARENTDIR)
     Returns None if no root path

@@ -23,6 +23,7 @@ import matplotlib.pyplot as plt
 from matplotlib.cm import get_cmap
 from matplotlib.transforms import Bbox #for getting plot bounding boxes
 import numpy as np
+import pandas as pd
 from scipy.interpolate import interp1d
 
 ########################################################################
@@ -587,12 +588,104 @@ def GetRelativeTicksX(ax):
     # ticks = [(tick - xmin)/(xmax - xmin) for tick in ax.get_xticks()]
     # return ticks
 
-def GetRelativeTicksY(ax):
-    """Get relative tick locations for an y-axis, use to match shared axes
+def GetRelativeTicks(ax, whichax='x'):
+    """Get relative tick locations for a specified axis, use to match shared axes.
+    (Generalized `GetRelativeTicksX`).
+    Use linear interpolation, leave out endpoints if they exceede the data bounds
+    Return relative tick locations and corresponding tick values
     """
-    xmin, xmax = ax.get_ylim()
-    ticks = [(tick - xmin)/(xmax - xmin) for tick in ax.get_yticks()]
-    return ticks
+
+    if whichax.lower() == 'y':
+        axmin, axmax = ax.get_ylim()
+        tickvals = ax.get_yticks()
+    else:
+        #Get bounds of axis values
+        axmin, axmax = ax.get_xlim()
+        #Get values at each tick
+        tickvals = ax.get_xticks()
+
+    #if exterior ticks are outside bounds of data, drop them
+    if tickvals[0] < axmin:
+        tickvals = tickvals[1:]
+    if tickvals[-1] > axmax:
+        tickvals = tickvals[:-1]
+    #Interopolate relative tick locations for bounds 0 to 1
+    relticks = np.interp(tickvals, np.linspace(axmin, axmax), np.linspace(0, 1))
+    return relticks, tickvals
+
+    # #old method, wasnt reliable
+    # xmin, xmax = ax.get_xlim()
+    # ticks = [(tick - xmin)/(xmax - xmin) for tick in ax.get_xticks()]
+    # return ticks
+
+
+
+def SecondAxisSameGrid(ax1, olddata, newdata, dupax='x'):
+    """Make a secondary x-axis with the same tick locations as the original
+    for a specific second parameter. Tick values are interpolated to match original
+    ax1  --> original axis handle
+    olddata --> dupax-data used when plotting with ax1
+    newdata --> new dupax-data to be mapped to second x-axis
+    lbl  --> optional axis label for new dup-axis
+    rot  --> angle to rotate new tick labels, default none
+    """
+
+    #Compatibility
+    xold = olddata
+    xnew = newdata
+
+    if dupax.lower() == 'y':
+        #Make second axis
+        ax2 = ax1.twinx()
+
+        ax1reltcks, ax1vals = GetRelativeTicks(ax1, 'y')
+        # print(tcks1, vals1)
+
+        ax2min = min(newdata)
+        ax2max = max(newdata)
+
+        # #this doesnt work if your data is non-monontonic
+        # vals2 = interp1d(xold, xnew, fill_value='extrapolate' )(vals1)
+
+
+
+        ax2vals = np.interp(ax1reltcks, np.linspace(0, 1), np.linspace(ax2min, ax2max), )
+
+        # #plot data to get limits, but then remove the plot
+        # xx = olddata
+        # yy = newdata
+
+        # hh, = ax2.plot(xx, yy)
+        # tcks2, vals2old = GetRelativeTicks(ax2, 'y')
+        # hh.remove()
+        # vals2 = interp1d(vals1, vals2old, fill_value='extrapolate' )(vals1)
+
+
+        print(ax2vals)
+        # sys.exit()
+        ax2.set_yticks(ax1reltcks)
+
+        ax2.set_yticklabels(ax2vals)
+
+    else:
+        #Make second x-axis
+        ax2 = MakeTwiny(ax1)
+        #Get relative tick locations of first axis
+        tcks1, vals1 = GetRelativeTicksX(ax1)
+        #interpolate new x-axis values at these locations
+        vals2 = interp1d(xold, xnew, fill_value='extrapolate' )(vals1)
+        #set new ticks to specificed increment
+        ax2.set_xticks(tcks1)
+        #label new ticks
+        ax2.set_xticklabels(vals2)
+        # #rotate new ticks, if specified
+        # for tk in ax2.get_xticklabels():
+        #     tk.set_rotation(rot)
+
+
+
+    return ax2
+
 
 def OffsetTicks(ax, whichax='x', offset=1.5):
     """Offset tick labels so that alternating labels are at different distances
@@ -623,6 +716,22 @@ def OffsetTicks(ax, whichax='x', offset=1.5):
     for i in range(1, len(tks), 2):
         tks[i].set_pad(offset*pad)
 
+    return ax
+
+def RotateTicks(ax, rot=0, whichax='xy',):
+    """ Rotate axis tick labels (makes them fit better)
+
+    Args:
+        rot  --> angle to rotate new tick labels, default none
+        whichax --> which axes to rotate labels for ['xy'] xy: both axes, x: x-axis, y: y-axis
+    """
+
+    if 'x' in whichax.lower():
+        for tk in ax.get_xticklabels():
+            tk.set_rotation(rot)
+    if 'y' in whichax.lower():
+        for tk in ax.get_yticklabels():
+            tk.set_rotation(rot)
     return ax
 
 
@@ -1061,10 +1170,34 @@ def LineShrinker(i, width=1.5, factor=0.15):
     """
     return width * (1 - factor * i)
 
-def VectorMark(ax, x, y, nmark, color='k'):
+
+def VectorMark(ax, x, y, nmark, **kw):
     """Mark line with arrow pointing in direction of x+.
-    Show nmark arrows
+
+    Args:
+        ax: matplotlib axis object
+        x: `~numpy.array`: x-axis data to plot
+        y: `~numpy.array`: y-axis data to plot
+        nmark: `int`: Number of arrow markers to show
+        **kw: keyword arguments for quiver
+
+    To Do:
+        Only plot arrow head, not shaft. head params scale head to cover shaft, but then too big
+
     """
+
+    #delta x,y
+    u = np.diff(x)
+    v = np.diff(y)
+    #half-step locations (to put arrow markers halfway between point markers)
+    pos_x = x[:-1] + u/2
+    pos_y = y[:-1] + v/2
+    #distance between x,y points (delta s)
+    norm = np.sqrt(u**2+v**2)
+
+    df = pd.DataFrame({'x' : x[:-1], 'y' : y[:-1], 'dx': u, 'dy': v, 'norm': norm})
+
+    #GET DATA INDICES TO PLOT FOR DESIRED NUMBER OF MARKERS
     n = len(y)
     dm = int(len(y) / nmark)
     # indicies = np.linspace(1, n-2, nmark)
@@ -1072,11 +1205,17 @@ def VectorMark(ax, x, y, nmark, color='k'):
     while indicies[-1]+dm < len(y)-1:
         indicies.append(indicies[-1] + dm)
 
-    for ind in indicies:
-        #entries are x, y, dx, dy
-        xbase, ybase = x[ind], y[ind]
-        dx, dy = x[ind+1] - x[ind], y[ind+1] - y[ind]
-        ax.quiver(xbase, ybase, dx, dy ,angles='xy',scale_units='xy',scale=1)
+    #downselect to only markers that we will plot
+    df = df.iloc[indicies]
+
+    #PLOT
+    ax.quiver(df['x'], df['y'], df['dx']/df['norm'], df['dy']/df['norm'],
+                pivot='mid', angles='xy',
+                headwidth=3, headlength=3, headaxislength=3,#triangle head
+            # scale_units='xy',scale=1,
+            # units='xy', width=0.001, headwidth=1000000, headlength=1000000,
+            **kw)
+
 
 def PlotArrow(ax, x1, y1, x2, y2, label, head1='<', head2='>',
                 color='grey', sz=10):
@@ -1106,6 +1245,7 @@ def PlotVelProfile(ax, y, u, color='green', narrow=4):
     vertlinex = np.zeros(len(y))
     ax.plot(vertlinex, y, color=color, linewidth=line)
     ax.fill_betweenx(y, vertlinex, u, facecolor=color, alpha=0.2)
+    #plot arrow markers showing directionality
     wd, ln = 0.03, 0.03
     for i in range(0, len(y), narrow):
         if abs(u[i]) < ln:
