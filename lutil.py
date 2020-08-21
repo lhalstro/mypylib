@@ -40,7 +40,7 @@ def MakeOutputDir(filename):
     NOTE: If specifying an empty directory name, 'filename' must end in '/'
     e.g. To make the directory 'test', specify either:
         path/to/test/filename.dat
-        paht/to/test/
+        path/to/test/
     """
 
     # #split individual directories

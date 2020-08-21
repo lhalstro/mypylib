@@ -1,7 +1,7 @@
 """PYTHON PLOTTING UTILITIES
 Logan Halstrom
 CREATED:  07 OCT 2015
-MODIFIED: 06 AUG 2018
+MODIFIED: 21 AUG 2020
 
 
 DESCRIPTION:  File manipulation, matplotlib plotting and saving.  A subset of
@@ -13,6 +13,9 @@ import os
 HOME = os.path.expanduser('~')
 sys.path.append('{}/lib/python'.format(HOME))
 import lplot
+
+To Do:
+    Potentially navigate rcparams to matplotlibrc file?
 """
 
 import subprocess
@@ -1327,6 +1330,8 @@ def main():
             ax.plot(x, y, color=c, label=str(i+1))
         ax.legend()
         ax.set_title(title)
+        ax.set_xlabel('x')
+        ax.set_ylabel('y')
 
     nrow = 1
     ncol = 2
