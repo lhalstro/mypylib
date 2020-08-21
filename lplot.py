@@ -144,62 +144,17 @@ Box = 20
 Leg = 20
 Tck = 18
 
+Ttl = 24-4
+Lbl = 24-4
+Box = 20-4
+Leg = 20-4
+Tck = 13 #13: max size that allows dense tick spacing (smaller doesnt help if whole numbers are weird)
+
 #big font sizes
 Lbl_big = 32
 Leg_big = 24
 Box_big = 28
 Tck_big = 22
-
-# #MAKE FONT DICT GLOBAL SO IT CAN BE MADE AND USED IN DIFFERENT FUNCTIONS
-# global font_ttl, font_lbl, font_box, font_tck, font_leg
-
-# def SetFontDictSize(ttl=None, lbl=None, box=None, tck=None, leg=None):
-#     """Set font size in styling dictionaries.  Global dictionaries to use for
-#     font styles in all functions.
-#     To change a single parameter, call function like: SetFontDictSize(lbl=18)
-#     ttl --> title, lbl --> axis label, box --> textbox,
-#     tck --> axis tick labels, leg --> legend text
-#     """
-#     global font_ttl, font_lbl, font_box, font_tck, font_leg
-
-#     #DEFAULT FONT SIZES
-#     # if ttl == None: ttl = 18
-#     # if lbl == None: lbl = 18
-#     # if box == None: box = 12
-#     # if tck == None: tck = 16
-#     # if leg == None: leg = 16
-
-#     if ttl == None: ttl = Ttl
-#     if lbl == None: lbl = Lbl
-#     if box == None: box = Box
-#     if tck == None: tck = Tck
-#     if leg == None: leg = Leg
-
-#     #Font Styles
-#     font_ttl = {'family' : 'serif',
-#                 'color'  : 'black',
-#                 'weight' : 'normal',
-#                 'size'   : ttl,
-#                 }
-#     font_lbl = {'family' : 'serif',
-#                 'color'  : 'black',
-#                 'weight' : 'normal',
-#                 'size'   : lbl,
-#                 }
-#     font_box = {'family' : 'arial',
-#                 'color'  : 'black',
-#                 'weight' : 'normal',
-#                 'size'   : box,
-#                 }
-#     font_tck = tck
-#     font_leg = leg
-
-
-# #INITIAL FONT DICT SETTINGS
-# SetFontDictSize()
-
-# #Textbox Properties
-# textbox_props = dict(boxstyle='round', facecolor='white', alpha=0.5)
 
 #MATPLOTLIB DEFAULTS
 params = {
@@ -208,20 +163,33 @@ params = {
         'axes.labelsize' : Lbl, #Axis Labels
         'axes.titlesize' : Ttl, #Title
         'font.size'      : Box, #Textbox
-        'xtick.labelsize': 20, #Axis tick labels
-        'ytick.labelsize': 20, #Axis tick labels
+        'xtick.labelsize': Tck, #Axis tick labels [default: ?, OG: 20]
+        'ytick.labelsize': Tck, #Axis tick labels [default: ?, OG: 20]
         'legend.fontsize': Leg, #Legend font size
         # 'font.family': 'helvetica' #Font family
-        'font.family'    : 'serif',
+        # 'font.family'    : 'serif',
+        'font.family'    : 'DejaVu Serif',
         'font.fantasy'   : 'xkcd',
-        'font.sans-serif': 'Helvetica',
-        'font.monospace' : 'Courier',
+        # 'font.sans-serif': 'Helvetica',
+        'font.sans-serif': 'DejaVu Sans',
+        # 'font.monospace' : 'Courier',
+        'font.monospace' : 'DejaVu Sans Mono',
+
         #AXIS PROPERTIES
         'axes.titlepad'  : 2*6.0, #title spacing from axis
+        'axes.linewidth'    : 1.1, #thickness of axes
+        'xtick.major.width' : 1.1, #thickness of major tick
+        'ytick.major.width' : 1.1, #thickness of major tic
         'axes.grid'      : True,  #grid on plot
+        'grid.color'     : 'b0b0b0',    #transparency of grid?
+        # 'grid.linestyle' : '--',  #for dashed grid
+        'xtick.direction': 'in',  #ticks inward
+        'ytick.direction': 'in',  #ticks inward
+
         #FIGURE PROPERTIES
         'figure.figsize' : (6,6),   #square plots
         'savefig.bbox'   : 'tight', #reduce whitespace in saved figures
+
         #LEGEND PROPERTIES
         'legend.framealpha'     : 0.75,
         'legend.fancybox'       : True,
@@ -235,10 +203,10 @@ params = {
         'legend.labelspacing'   : 0,
 }
 
-tickparams = {
-        'xtick.labelsize': Tck,
-        'ytick.labelsize': Tck,
-}
+# tickparams = {
+#         'xtick.labelsize': Tck,
+#         'ytick.labelsize': Tck,
+# }
 
 
 
@@ -246,7 +214,24 @@ tickparams = {
     #These commands are called again in UseSeaborn since Seaborn resets defaults
      #If you want tight tick spacing, don't update tick size default, just do manually
 matplotlib.rcParams.update(params)
-matplotlib.rcParams.update(tickparams)
+# matplotlib.rcParams.update(tickparams)
+
+
+def set_palette(colors, colorkind=None):
+    """ Set matplotlib default color cycle
+    colors: list of color names to set the cycle
+    colorkind: type of color specificer (e.g. 'xkcd')
+    """
+
+    if colorkind is not None:
+        #this text gets prepended to color name so mpl can recognize it
+        # e.g. 'xkcd:color name'
+        cycle = ['{}:{}'.format(colorkind, c) for c in colors]
+    else:
+        cycle = colors
+
+    matplotlib.rcParams.update({'axes.prop_cycle' : matplotlib.cycler(color=cycle)})
+
 
 
 global sns
@@ -264,8 +249,11 @@ def UseSeaborn(palette=None, ncycle=6):
     sns.set(style='whitegrid', font_scale=1, rc={'legend.frameon': True})
     #Mark ticks with border on all four sides (overrides 'whitegrid')
     sns.set_style('ticks')
-    #ticks point in
-    sns.set_style({"xtick.direction": "in","ytick.direction": "in"})
+
+
+
+    # #ticks point in
+    # sns.set_style({"xtick.direction": "in","ytick.direction": "in"})
 
     # sns.choose_colorbrewer_palette('q')
 
@@ -298,7 +286,7 @@ def UseSeaborn(palette=None, ncycle=6):
 
     #CALL MATPLOTLIB DEFAULTS AGAIN, AFTER SEABORN CHANGED THEM
     matplotlib.rcParams.update(params)
-    matplotlib.rcParams.update(tickparams) #DONT CALL THIS IF YOU WANT TIGHT TICK SPACING
+    # matplotlib.rcParams.update(tickparams) #DONT CALL THIS IF YOU WANT TIGHT TICK SPACING
 
     #return color cycle
     return colors
@@ -1293,8 +1281,10 @@ def main():
 
 
     x = np.linspace(0,100,101)
+    x = np.linspace(0,69,101)
     y1 = -1 * 500 + x ** 2
     y2 = -2 * 500 + x ** 2
+    y3 = -3 * 500 + x ** 2
 
 
 
@@ -1304,20 +1294,44 @@ def main():
 
     import pandas as pd
     cases = pd.DataFrame([
-        pd.Series({'name' : 'y1', 'x': x, 'y': y1, 'mplkwargs' : {} }), #default: no keyword args
-        pd.Series({'name' : 'y2', 'x': x, 'y': y2, 'mplkwargs' : mykwargs }),
+        pd.Series({'lab' : 'y1'  , 'x': x, 'y': y1, 'mplkwargs' : {} }), #default: no keyword args
+        pd.Series({'lab' : 'y2'  , 'x': x, 'y': y2, 'mplkwargs' : mykwargs }),
+        pd.Series({'lab' : '$y3$', 'x': x, 'y': y3, 'mplkwargs' : {'marker' : '.'} }),
         ])
 
 
-    fig, ax = PlotStart()
-    for ind, row in cases.iterrows():
-        ax.plot(row.x, row.y, label=row.name, **row.mplkwargs)
+    # fig, ax = PlotStart()
+    # plt.title('Test kwarg Pass-Thru')
+    def PlotCases(ax, cases):
+        for ind, row in cases.iterrows():
+            ax.plot(row.x, row.y, label=row.lab, **row.mplkwargs)
+    # PlotCases(ax, cases)
 
-    plt.show()
+    # plt.show()
 
 
+    # colors = UseSeaborn('xkcd')
+    set_palette(xkcdcolors, colorkind='xkcd')
 
 
+    #TEST LABEL SPACING
+    nrow = 1
+    ncol = 1
+    fig, ax = plt.subplots(nrow,ncol, figsize=[7*ncol, 0.5*6*nrow])
+    PlotCases(ax, cases)
+    plt.title('Test kwarg Pass-Thru, tick spacing')
+    ax.set_xlabel('X')
+    ax.set_ylabel('Y-Axis Label')
+    ax.legend()
+    # plt.show()
+
+    # ax.set_ylim([-2000, 5000])
+
+    # ylim = ax.get_ylim()
+    # # ax.set_yticks( np.arange(ylim[0], ylim[1]+1, 1.0) )
+    # ax.set_yticks( np.linspace(ylim[0], ylim[1], 5) )
+
+    plt.savefig('test.png')
 
 
 
@@ -1345,6 +1359,7 @@ def main():
     PlotColorCycle(axs[1], colors, 'Custom XKCD Color Cycle:')
 
     plt.show()
+
 
 
 
