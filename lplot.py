@@ -18,7 +18,7 @@ To Do:
     Potentially navigate rcparams to matplotlibrc file?
 """
 
-import subprocess
+# import subprocess
 import os
 import re
 import matplotlib
@@ -28,6 +28,8 @@ from matplotlib.transforms import Bbox #for getting plot bounding boxes
 import numpy as np
 import pandas as pd
 from scipy.interpolate import interp1d
+
+from functools import partial
 
 ########################################################################
 ### UTILITIES
@@ -215,22 +217,6 @@ params = {
      #If you want tight tick spacing, don't update tick size default, just do manually
 matplotlib.rcParams.update(params)
 # matplotlib.rcParams.update(tickparams)
-
-
-def set_palette(colors, colorkind=None):
-    """ Set matplotlib default color cycle
-    colors: list of color names to set the cycle
-    colorkind: type of color specificer (e.g. 'xkcd')
-    """
-
-    if colorkind is not None:
-        #this text gets prepended to color name so mpl can recognize it
-        # e.g. 'xkcd:color name'
-        cycle = ['{}:{}'.format(colorkind, c) for c in colors]
-    else:
-        cycle = colors
-
-    matplotlib.rcParams.update({'axes.prop_cycle' : matplotlib.cycler(color=cycle)})
 
 
 
@@ -513,6 +499,99 @@ def RemoveAxisTickLabels(ax, axis='both', prettygrid=True):
 
     return ax
 
+def GetRelativeTicks(ax, whichax='y'):
+    """Get relative tick locations for a specified axis, use to match shared axes.
+    (Generalized `GetRelativeTicksX`).
+    Use linear interpolation, leave out endpoints if they exceede the data bounds
+    Return relative tick locations and corresponding tick values
+    """
+
+    if whichax.lower() == 'y':
+        axmin, axmax = ax.get_ylim()
+        tickvals = ax.get_yticks()
+    else:
+        #Get bounds of axis values
+        axmin, axmax = ax.get_xlim()
+        #Get values at each tick
+        tickvals = ax.get_xticks()
+
+    #if exterior ticks are outside bounds of data, drop them
+    if tickvals[0] < axmin:
+        tickvals = tickvals[1:]
+    if tickvals[-1] > axmax:
+        tickvals = tickvals[:-1]
+    #Interopolate relative tick locations for bounds 0 to 1
+    relticks = np.interp(tickvals, np.linspace(axmin, axmax), np.linspace(0, 1))
+    return relticks, tickvals
+
+    # #old method, wasnt reliable
+    # xmin, xmax = ax.get_xlim()
+    # ticks = [(tick - xmin)/(xmax - xmin) for tick in ax.get_xticks()]
+    # return ticks
+
+GetRelativeTicksX = partial(GetRelativeTicks, whichax='x')
+
+
+
+def MoreTicks(ax, ndouble=1, whichax='y'):
+    """Increase the number of ticks on an axis to a multiple of the original amount
+    (Multiple so that original tick positions are preserved)
+    """
+
+    def DoubleTicks(vals, ndoubl=1):
+        for k in range(ndouble):
+            newvals = list([ vals[0] ])
+            for i in range(1, len(vals)):
+                #get mid-point preceding current value
+                newvals.append( (vals[i] + vals[i-1])/2 )
+                #get current value
+                newvals.append( vals[i] )
+
+            vals = list(newvals)
+        return vals
+
+
+
+    if whichax == 'y':
+        vals = ax.get_yticks()
+        vals = DoubleTicks(vals, ndouble)
+        ax.set_yticks(vals)
+    else:
+        vals = ax.get_xticks()
+        DoubleTicks()
+        ax.set_xticks(newvals)
+
+    return ax
+
+def SyncTicks_DualAxisY(ax1, ax2, ):
+    """ Sync secondary y-axis ticks to align with primary (align grid)
+    Required: data must already be plotted on both axes
+
+    (Functionality demonstrated by plotting in GUI and hovering cursor next to
+    tick to compare interpolated value to GUI value)
+
+    Args:
+        ax1: primary axis
+        ax2: secondary axis
+    """
+
+    #get location of primary axis ticks relative to position on plot
+    ax1reltcks, ax1vals = GetRelativeTicks(ax1, 'y')
+
+    #get axis bounds of second axis
+    ax2min, ax2max = ax2.get_ylim()
+
+    #interp relative location of ticks on 1st axis to corresponding values on 2nd axis
+    ax2vals = np.interp(ax1reltcks, np.linspace(0, 1), np.linspace(ax2min, ax2max), )
+    #eliminate negative zeros
+    ax2vals = ax2vals + 0.0
+
+    #set new tick locations on second axis
+    ax2.set_yticks(ax2vals)
+
+    return ax2
+
+
 def MakeSecondaryXaxis(ax, xlbl, tickfunc, locs=5):
     """Make an additional x-axis for the data already plotted
     ax       --> original axes object for plot
@@ -556,126 +635,7 @@ def SecondXaxisSameGrid(ax1, xold, xnew, xlbl='', rot=0):
         tk.set_rotation(rot)
     return ax2
 
-def GetRelativeTicksX(ax):
-    """Get relative tick locations for an x-axis, use to match shared axes.
-    Use linear interpolation, leave out endpoints if they exceede the data bounds
-    Return relative tick locations and corresponding tick values
-    """
-    #Get bounds of axis values
-    axmin, axmax = ax.get_xlim()
-    #Get values at each tick
-    tickvals = ax.get_xticks()
-    #if exterior ticks are outside bounds of data, drop them
-    if tickvals[0] < axmin:
-        tickvals = tickvals[1:]
-    if tickvals[-1] > axmax:
-        tickvals = tickvals[:-1]
-    #Interopolate relative tick locations for bounds 0 to 1
-    relticks = np.interp(tickvals, np.linspace(axmin, axmax), np.linspace(0, 1))
-    return relticks, tickvals
 
-    # #old method, wasnt reliable
-    # xmin, xmax = ax.get_xlim()
-    # ticks = [(tick - xmin)/(xmax - xmin) for tick in ax.get_xticks()]
-    # return ticks
-
-def GetRelativeTicks(ax, whichax='x'):
-    """Get relative tick locations for a specified axis, use to match shared axes.
-    (Generalized `GetRelativeTicksX`).
-    Use linear interpolation, leave out endpoints if they exceede the data bounds
-    Return relative tick locations and corresponding tick values
-    """
-
-    if whichax.lower() == 'y':
-        axmin, axmax = ax.get_ylim()
-        tickvals = ax.get_yticks()
-    else:
-        #Get bounds of axis values
-        axmin, axmax = ax.get_xlim()
-        #Get values at each tick
-        tickvals = ax.get_xticks()
-
-    #if exterior ticks are outside bounds of data, drop them
-    if tickvals[0] < axmin:
-        tickvals = tickvals[1:]
-    if tickvals[-1] > axmax:
-        tickvals = tickvals[:-1]
-    #Interopolate relative tick locations for bounds 0 to 1
-    relticks = np.interp(tickvals, np.linspace(axmin, axmax), np.linspace(0, 1))
-    return relticks, tickvals
-
-    # #old method, wasnt reliable
-    # xmin, xmax = ax.get_xlim()
-    # ticks = [(tick - xmin)/(xmax - xmin) for tick in ax.get_xticks()]
-    # return ticks
-
-
-
-def SecondAxisSameGrid(ax1, olddata, newdata, dupax='x'):
-    """Make a secondary x-axis with the same tick locations as the original
-    for a specific second parameter. Tick values are interpolated to match original
-    ax1  --> original axis handle
-    olddata --> dupax-data used when plotting with ax1
-    newdata --> new dupax-data to be mapped to second x-axis
-    lbl  --> optional axis label for new dup-axis
-    rot  --> angle to rotate new tick labels, default none
-    """
-
-    #Compatibility
-    xold = olddata
-    xnew = newdata
-
-    if dupax.lower() == 'y':
-        #Make second axis
-        ax2 = ax1.twinx()
-
-        ax1reltcks, ax1vals = GetRelativeTicks(ax1, 'y')
-        # print(tcks1, vals1)
-
-        ax2min = min(newdata)
-        ax2max = max(newdata)
-
-        # #this doesnt work if your data is non-monontonic
-        # vals2 = interp1d(xold, xnew, fill_value='extrapolate' )(vals1)
-
-
-
-        ax2vals = np.interp(ax1reltcks, np.linspace(0, 1), np.linspace(ax2min, ax2max), )
-
-        # #plot data to get limits, but then remove the plot
-        # xx = olddata
-        # yy = newdata
-
-        # hh, = ax2.plot(xx, yy)
-        # tcks2, vals2old = GetRelativeTicks(ax2, 'y')
-        # hh.remove()
-        # vals2 = interp1d(vals1, vals2old, fill_value='extrapolate' )(vals1)
-
-
-        print(ax2vals)
-        # sys.exit()
-        ax2.set_yticks(ax1reltcks)
-
-        ax2.set_yticklabels(ax2vals)
-
-    else:
-        #Make second x-axis
-        ax2 = MakeTwiny(ax1)
-        #Get relative tick locations of first axis
-        tcks1, vals1 = GetRelativeTicksX(ax1)
-        #interpolate new x-axis values at these locations
-        vals2 = interp1d(xold, xnew, fill_value='extrapolate' )(vals1)
-        #set new ticks to specificed increment
-        ax2.set_xticks(tcks1)
-        #label new ticks
-        ax2.set_xticklabels(vals2)
-        # #rotate new ticks, if specified
-        # for tk in ax2.get_xticklabels():
-        #     tk.set_rotation(rot)
-
-
-
-    return ax2
 
 
 def OffsetTicks(ax, whichax='x', offset=1.5):
@@ -886,6 +846,24 @@ def NumberMarkers(i, first=True, last=False, offset=None):
         markevery = 1
 
     return marker, markevery
+
+
+def set_palette(colors, colorkind=None):
+    """ Set matplotlib default color cycle
+    colors: list of color names to set the cycle
+    colorkind: type of color specificer (e.g. 'xkcd')
+    """
+
+    if colorkind is not None:
+        #this text gets prepended to color name so mpl can recognize it
+        # e.g. 'xkcd:color name'
+        cycle = ['{}:{}'.format(colorkind, c) for c in colors]
+    else:
+        cycle = colors
+
+    matplotlib.rcParams.update({'axes.prop_cycle' : matplotlib.cycler(color=cycle)})
+
+    return cycle
 
 def ColorMap(ncolors, colormap='jet'):
     """return array of colors given number of plots and colormap name
@@ -1280,8 +1258,8 @@ def PolyFit(x, y, order, n, showplot=0):
 def main():
 
 
-    x = np.linspace(0,100,101)
-    x = np.linspace(0,69,101)
+    x = np.linspace(0,100,1001)
+    x = np.linspace(0,69,1001)
     y1 = -1 * 500 + x ** 2
     y2 = -2 * 500 + x ** 2
     y3 = -3 * 500 + x ** 2
@@ -1307,22 +1285,32 @@ def main():
             ax.plot(row.x, row.y, label=row.lab, **row.mplkwargs)
     # PlotCases(ax, cases)
 
+
+
+
+
     # plt.show()
 
 
     # colors = UseSeaborn('xkcd')
-    set_palette(xkcdcolors, colorkind='xkcd')
+    colors = set_palette(xkcdcolors, colorkind='xkcd')
 
 
     #TEST LABEL SPACING
     nrow = 1
     ncol = 1
-    fig, ax = plt.subplots(nrow,ncol, figsize=[7*ncol, 0.5*6*nrow])
-    PlotCases(ax, cases)
+    fig, ax1 = plt.subplots(nrow,ncol, figsize=[7*ncol, 0.5*6*nrow])
+    PlotCases(ax1, cases)
     plt.title('Test kwarg Pass-Thru, tick spacing')
-    ax.set_xlabel('X')
-    ax.set_ylabel('Y-Axis Label')
-    ax.legend()
+    ax1.set_xlabel('X')
+    ax1.set_ylabel('Y-Axis Label')
+    ax1.legend()
+
+
+    #TEST INCREASING AMOUNT OF TICKS
+    MoreTicks(ax1, ndouble=1, whichax='y')
+
+
     # plt.show()
 
     # ax.set_ylim([-2000, 5000])
@@ -1330,6 +1318,22 @@ def main():
     # ylim = ax.get_ylim()
     # # ax.set_yticks( np.arange(ylim[0], ylim[1]+1, 1.0) )
     # ax.set_yticks( np.linspace(ylim[0], ylim[1], 5) )
+
+    #TEST SECOND Y AXIS ON SAME GRID
+    ypr = 10000 * np.sin(np.pi*2*0.20 * x)
+
+    #Make second axis
+    ax2 = ax1.twinx()
+    iclr = len(cases)
+    ax2.set_ylabel('y2', color=colors[iclr])
+
+    ax2.plot(x, ypr, linestyle='--', color=colors[iclr])
+
+
+    SyncTicks_DualAxisY(ax1, ax2, )
+
+
+
 
     plt.savefig('test.png')
 
