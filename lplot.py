@@ -848,8 +848,8 @@ def NumberMarkers(i, first=True, last=False, offset=None):
     return marker, markevery
 
 
-def set_palette(colors, colorkind=None):
-    """ Set matplotlib default color cycle
+def get_palette(colors, colorkind=None):
+    """ Convert a list of colors into strings that matplotlib understands
     colors: list of color names to set the cycle
     colorkind: type of color specificer (e.g. 'xkcd')
     """
@@ -860,6 +860,23 @@ def set_palette(colors, colorkind=None):
         cycle = ['{}:{}'.format(colorkind, c) for c in colors]
     else:
         cycle = colors
+
+    return cycle
+
+def set_palette(colors, colorkind=None):
+    """ Set matplotlib default color cycle
+    colors: list of color names to set the cycle
+    colorkind: type of color specificer (e.g. 'xkcd')
+    """
+
+    # if colorkind is not None:
+    #     #this text gets prepended to color name so mpl can recognize it
+    #     # e.g. 'xkcd:color name'
+    #     cycle = ['{}:{}'.format(colorkind, c) for c in colors]
+    # else:
+    #     cycle = colors
+
+    cycle = get_palette(colors, colorkind)
 
     matplotlib.rcParams.update({'axes.prop_cycle' : matplotlib.cycler(color=cycle)})
 
