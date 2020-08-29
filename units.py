@@ -12,7 +12,11 @@ MODIFIED: 7/16/2020
 HOW TO USE:
 To convert units of `unconverted` from feet to meters without using classes:
     import units
+    # Method 1: Convert units of `unconverted`
     converted = units.convert('ft', 'm', unconverted)
+    # Method 2: Create unit conversion variable
+    ft2m = units.convert('ft', 'm')
+    converted = ft2m * unconverted
 
 To get list of available units to convert:
     units.gethelp()
