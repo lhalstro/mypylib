@@ -346,22 +346,30 @@ def batchconvert(df, units, convto=None, verbose=False):
     if verbose:
         print('Mass converting to {} units'.format(convto))
 
-    #Get all the data keys from the DataFrame or Series
-    keys = list(df.index) if type(df) == type(pd.Series(dtype='object')) else list(df.columns)
+    # #Get all the data keys from the DataFrame or Series
+    # keys = list(df.index) if type(df) == type(pd.Series(dtype='object')) else list(df.columns)
+    # for key in keys:
 
-    unitkeys = [] #store data keys that are actually tracked
-    for key in keys:
+    radkeys = []
 
-        #skip parameters that dont have units tracked
-        if key not in units: continue
+    #loop through all the data keys that have tracked units
+    for key, cur in units.items():
 
-        unitkeys.append(key)
+        # #skip parameters that dont have units tracked
+        # if key not in units: continue
 
-        #current units
-        cur = units[key]
+
+
+        # #current units
+        # cur = units[key]
 
         #skip unitless parameters
         if cur == '-': continue
+
+        #track radians to convert to degrees later
+        if cur == 'rad':
+            radkeys.append(key)
+            #could combine this check with below to be more effish*****************************************************
         #skip systemless parametes (e.g. angles)
         if convdf.loc[cur,'sys'] == '-': continue
 
@@ -379,7 +387,12 @@ def batchconvert(df, units, convto=None, verbose=False):
         units[key] = new
 
     #UPDATE ANY ANGLES (ADD DEGREES COUNTERPART TO RADIANS)
-
+    for key in radkeys:
+        degkey = '{}_deg'.format(key)
+        df[degkey] = convert('rad', 'deg', df[key])
+        print("need to add new deg units to tracker*********************************************************************************")
+        print("and not make duplicate if its already there*********************************************************************************")
+        # AddParameter(self, par, unit='deg', info='')
 
     return df, units
 
@@ -582,8 +595,8 @@ def main():
         print('   FAIL! (converted non-dimensional units)')
     elif abs(dif4) > tol:
         print('   FAIL! (converted angle units)')
-    # elif abs(dif5) > tol:
-    #     print('   FAIL! (didnt make angles in degrees)')
+    elif abs(dif5) > tol:
+        print('   FAIL! (didnt make angles in degrees)')
     else:
         print('   PASS!!!')
 
