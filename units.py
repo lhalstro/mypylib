@@ -180,6 +180,10 @@ convdf = pd.DataFrame([
     pd.Series(name='K', data={'conv':1.0, 'info':'Kelvin',                      'sys':'SI',   'std':1, 'type':'temperature' }),
     pd.Series(name='R', data={'conv':1.8, 'info':'Degrees Rankine (K=5/9degR)', 'sys':'USCS', 'std':1, 'type':'temperature' }),
 
+    # #ANGLE
+    # pd.Series(name='rad', data={'conv':1.0, 'info':'Radians',                      'sys':'SI',   'std':1, 'type':'angle' }),
+    # pd.Series(name='deg', data={'conv':1.0, 'info':'Degrees',                      'sys':'SI',   'std':1, 'type':'angle' }),
+
     # #NON-DIMENSIONAL OR NO UNITS
     # pd.Series(name='-', data={'conv':1.0, 'info':'no unit', 'sys':'SI',  'std':1,'type':'None' }),
     # pd.Series(name='-', data={'conv':1.0, 'info':'no unit', 'sys':'USCS','std':1,'type':'None' }),
@@ -342,12 +346,16 @@ def batchconvert(df, units, convto=None, verbose=False):
     if verbose:
         print('Mass converting to {} units'.format(convto))
 
-    keys = list(df.index) if type(df) == type(pd.Series()) else list(df.columns)
+    #Get all the data keys from the DataFrame or Series
+    keys = list(df.index) if type(df) == type(pd.Series(dtype='object')) else list(df.columns)
 
+    unitkeys = [] #store data keys that are actually tracked
     for key in keys:
 
         #skip parameters that dont have units tracked
         if key not in units: continue
+
+        unitkeys.append(key)
 
         #current units
         cur = units[key]
@@ -443,13 +451,17 @@ def checkout(tol=1e-16):
 
     #get rows where conversion was not expected
     bad = t2[(abs(t2.diffexp) > tol) | (abs(t2.diffinv) > tol) ]
+    print('------------------------------------------------------------')
     if not bad.empty:
         print('    CONVERSION ERRORS EXCEEDED TOLERANCE HERE:')
         print(bad)
 
         print('\n(density conversion is bad precision because of fixed value for slugs)')
+        print('so if density is the only problem, then it probably CHECKS OUT')
     else:
         print('    CHECKS OUT!')
+
+    print('------------------------------------------------------------')
 
 
     # #precison loss check
@@ -485,7 +497,6 @@ def checkout(tol=1e-16):
                         })
     uu = {'x':'mi', 'p':'psi', 'y': 'ft'}
 
-
     d2, u2 = batchconvert(dd.copy(), uu.copy(), convto='metric', verbose=True)
 
     print(dd)
@@ -493,7 +504,6 @@ def checkout(tol=1e-16):
     print('')
     print(uu)
     print(u2)
-
 
 
 
@@ -525,14 +535,40 @@ def main():
     dat.AddParameter('Vinf', 'ft')
     dat.AddParameter('Vref', info='Reference velocity in gridunits (in/s)')
 
-    print(dat.GetData())
+    print('')
     print(dat.GetUnits())
-
-    dat.ConvertUnits()
-
     print(dat.GetData())
-    print(dat.GetUnits())
 
+    df1 = dat.GetData().copy()
+    dat.ConvertUnits(convto='SI')
+
+    print('')
+    print(dat.GetUnits())
+    print(dat.GetData())
+
+    df2 = dat.GetData().copy()
+
+    # print( df2['Vinf'] - df1['Vinf']/(1/.3048) ) #this is non-zero for mult. by 0.3048, zero for div. by inverse
+
+    dif1 = sum(df2['xcg'] -df1['xcg']) #convert from meters to meters, should be zero
+    dif2 = sum(df2['Vinf']-df1['Vinf']/(1/.3048)) #convert from feet to meters
+    print('FUTURE WORK: get 1:1 compare with mult by .3048 rather than divide by inverse')
+    dif3 = sum(df2['Vref']-df1['Vref']) #non-dim. convert shouldnt change anything
+    #ADD ANGLE HERE
+
+    print('Perform Batch Conversion')
+    tol=1e-16
+    if abs(dif1) > tol:
+        print('   FAIL! (converted units when already in correct system)')
+    elif abs(dif2) > tol:
+        print('   FAIL! (didnt convert units to correct system)')
+    elif abs(dif3) > tol:
+        print('   FAIL! (converted non-dimensional units)')
+    else:
+        print('   PASS!!!')
+
+
+    print('')
     print(dat)
 
 
