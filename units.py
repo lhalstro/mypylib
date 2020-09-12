@@ -180,9 +180,9 @@ convdf = pd.DataFrame([
     pd.Series(name='K', data={'conv':1.0, 'info':'Kelvin',                      'sys':'SI',   'std':1, 'type':'temperature' }),
     pd.Series(name='R', data={'conv':1.8, 'info':'Degrees Rankine (K=5/9degR)', 'sys':'USCS', 'std':1, 'type':'temperature' }),
 
-    # #ANGLE
-    # pd.Series(name='rad', data={'conv':1.0, 'info':'Radians',                      'sys':'SI',   'std':1, 'type':'angle' }),
-    # pd.Series(name='deg', data={'conv':1.0, 'info':'Degrees',                      'sys':'SI',   'std':1, 'type':'angle' }),
+    #ANGLE
+    pd.Series(name='rad', data={'conv':1.0,         'info':'Radians',           'sys':'-', 'std':1, 'type':'angle' }),
+    pd.Series(name='deg', data={'conv':180.0/np.pi, 'info':'Degrees',           'sys':'-', 'std':0, 'type':'angle' }),
 
     # #NON-DIMENSIONAL OR NO UNITS
     # pd.Series(name='-', data={'conv':1.0, 'info':'no unit', 'sys':'SI',  'std':1,'type':'None' }),
@@ -362,6 +362,8 @@ def batchconvert(df, units, convto=None, verbose=False):
 
         #skip unitless parameters
         if cur == '-': continue
+        #skip systemless parametes (e.g. angles)
+        if convdf.loc[cur,'sys'] == '-': continue
 
         #type of units (e.g. 'length')
         typ = convdf.loc[cur,'type']
@@ -375,6 +377,9 @@ def batchconvert(df, units, convto=None, verbose=False):
         df[key] = convert(cur, new, df[key])
         #record new units
         units[key] = new
+
+    #UPDATE ANY ANGLES (ADD DEGREES COUNTERPART TO RADIANS)
+
 
     return df, units
 
@@ -476,16 +481,19 @@ def checkout(tol=1e-16):
 
 
     #UNIQUE STANDARD SYSTEMS CHECK
+    #exclude non-system units from check (like angles)
+    chkdf = convdf[convdf['sys'] != '-']
+
     #Get standard unit in convert to system for appropriate unit type
-    tmp = convdf[convdf['std']==1]
+    tmp = chkdf[chkdf['std']==1]
 
     #loop through systems
-    for sys in tmp.sys:
+    for sys in set(tmp.sys):
         tmp1 = tmp[tmp['sys']==sys]
         if len(tmp1) > len(tmp1.drop_duplicates('type')):
             raise ValueError('"convdf" unit conversions dataframe has non-unique entries for standard units:\n' \
                              '    in {} units system'.format(sys))
-        for typ in convdf['type'].drop_duplicates():
+        for typ in chkdf['type'].drop_duplicates():
             if typ not in tmp1['type'].values:
                 raise ValueError('"convdf" unit conversions dataframe is missing a standard value for:\n' \
                                  '    {} unit in the {} system'.format(typ, sys))
@@ -517,6 +525,8 @@ def main():
     checkout()
 
 
+    tol=1e-16
+
     #Make a unit object
 
     dat = UnitTracker()
@@ -528,12 +538,14 @@ def main():
                         'xcg':np.array(range(10)),
                         'Vinf':np.array(range(10))/0.3048,
                         'Vref':np.array(range(10)),
+                        'alf':np.array(range(10))/10,
                         })
     dat.data = dd.copy()
 
     dat.AddParameter('xcg', 'm', 'x location of cg')
     dat.AddParameter('Vinf', 'ft')
     dat.AddParameter('Vref', info='Reference velocity in gridunits (in/s)')
+    dat.AddParameter('alf', 'rad', info='Angle of Attack')
 
     print('')
     print(dat.GetUnits())
@@ -554,16 +566,24 @@ def main():
     dif2 = sum(df2['Vinf']-df1['Vinf']/(1/.3048)) #convert from feet to meters
     print('FUTURE WORK: get 1:1 compare with mult by .3048 rather than divide by inverse')
     dif3 = sum(df2['Vref']-df1['Vref']) #non-dim. convert shouldnt change anything
+    dif4 = sum(df2['alf']-df1['alf']) #angle shouldnt change anything
+    if 'alf_deg' in df2:
+        dif5 = sum(df2['alf_deg']-df1['alf']*180/np.pi) #degree angle should have been created
+    else:
+        dif5 = tol+1e6 #degree angle not created, set value to fail tolerance
     #ADD ANGLE HERE
 
-    print('Perform Batch Conversion')
-    tol=1e-16
+    print('\n\nTest Batch Conversion')
     if abs(dif1) > tol:
         print('   FAIL! (converted units when already in correct system)')
     elif abs(dif2) > tol:
         print('   FAIL! (didnt convert units to correct system)')
     elif abs(dif3) > tol:
         print('   FAIL! (converted non-dimensional units)')
+    elif abs(dif4) > tol:
+        print('   FAIL! (converted angle units)')
+    # elif abs(dif5) > tol:
+    #     print('   FAIL! (didnt make angles in degrees)')
     else:
         print('   PASS!!!')
 
