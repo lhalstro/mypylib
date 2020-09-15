@@ -7,7 +7,7 @@ Also provies UnitTracker class to track and convert the units of entire datasets
 
 LOGAN HALSTROM
 CREATED:  7/14/2020
-MODIFIED: 7/16/2020
+MODIFIED: 9/14/2020
 
 HOW TO USE:
 To convert units of `unconverted` from feet to meters without using classes:
@@ -128,19 +128,68 @@ class UnitTracker():
             info (:obj:`str`): Optional information about the variable ['']
         """
 
-        self.pars = self.pars.append(
-            pd.Series(name=par, data={'unit':unit,'info':info}),
+        #new units entry
+        s = pd.Series(name=par, data={'unit':unit,'info':info})
+
+        #If this is a duplicate entry, replace old entry
+        if par in self.pars.index:
+            self.pars.loc[par] = s
+        else:
+            #Add new unit entry to units dataframe
+            self.pars = self.pars.append(s,
             # ignore_index=True
             )
+
+        # #Add new unit entry to units dataframe
+        # self.pars = self.pars.append(
+        #     pd.Series(name=par, data={'unit':unit,'info':info}),
+        #     # ignore_index=True
+        #     )
+
+    def GetDegAngs(self, ):
+        """ For all angles in radians, compute them in degrees
+        and save as new variable.
+        """
+
+
+        df = self.GetData()
+
+        print('NEED TO HANDLE DUPLICATE UNITS IN PARS')
+
+
+        for ind, row in self.pars.loc[self.pars['unit'] == 'rad' ].iterrows():
+
+            # print("sdfsdf")
+            # print(ind)
+            # print(row.name)
+
+            #new data key will be 'oldkey_deg'
+            degkey = '{}_deg'.format(ind)
+            #compute angle in degrees
+            df[degkey] = convert('rad', 'deg', df[ind])
+
+            #add degrees angle to unit tracking
+            self.AddParameter(degkey, unit='deg', info=row['info'])
+
+
+        #save new degrees to data
+        self.SetData(df)
 
     def ConvertUnits(self, convto='SI', verbose=False):
         """ Batch-convert a dataset between standard imperial and metric (SI)
         Args:
             convto (:obj:`str`): standard system of units to convert to ['SI']
         """
-        self.data, units = batchconvert(self.GetData(), self.GetUnits(),
+        #Convert Units
+        data, units = batchconvert(self.GetData(), self.GetUnits(),
                                         convto=convto, verbose=verbose)
+        #Save Data and Units
+        self.SetData(data)
         self.SetUnits(units)
+
+        #Calculate Any Angles in Degrees Also
+        self.GetDegAngs( )
+
 
 #UNIT CONVERSIONS
     #enter conversions relative to standard imperial units.
@@ -386,13 +435,13 @@ def batchconvert(df, units, convto=None, verbose=False):
         #record new units
         units[key] = new
 
-    #UPDATE ANY ANGLES (ADD DEGREES COUNTERPART TO RADIANS)
-    for key in radkeys:
-        degkey = '{}_deg'.format(key)
-        df[degkey] = convert('rad', 'deg', df[key])
-        print("need to add new deg units to tracker*********************************************************************************")
-        print("and not make duplicate if its already there*********************************************************************************")
-        # AddParameter(self, par, unit='deg', info='')
+    # #UPDATE ANY ANGLES (ADD DEGREES COUNTERPART TO RADIANS)
+    # for key in radkeys:
+    #     degkey = '{}_deg'.format(key)
+    #     df[degkey] = convert('rad', 'deg', df[key])
+    #     print("need to add new deg units to tracker*********************************************************************************")
+    #     print("and not make duplicate if its already there*********************************************************************************")
+    #     # AddParameter(self, par, unit='deg', info='')
 
     return df, units
 
@@ -581,9 +630,13 @@ def main():
     dif3 = sum(df2['Vref']-df1['Vref']) #non-dim. convert shouldnt change anything
     dif4 = sum(df2['alf']-df1['alf']) #angle shouldnt change anything
     if 'alf_deg' in df2:
-        dif5 = sum(df2['alf_deg']-df1['alf']*180/np.pi) #degree angle should have been created
+        dif5 = df2['alf_deg']-df2['alf']*180/np.pi
+        print(dif5)
+        dif5 = sum(dif5) #degree angle should have been created
     else:
-        dif5 = tol+1e6 #degree angle not created, set value to fail tolerance
+        print('   FAIL! (didnt make angles in degrees)')
+        # dif5 = tol+1e6 #degree angle not created, set value to fail tolerance
+        dif5 = 0
     #ADD ANGLE HERE
 
     print('\n\nTest Batch Conversion')
@@ -596,7 +649,7 @@ def main():
     elif abs(dif4) > tol:
         print('   FAIL! (converted angle units)')
     elif abs(dif5) > tol:
-        print('   FAIL! (didnt make angles in degrees)')
+        print('   FAIL! (converted to degrees incorrectly)')
     else:
         print('   PASS!!!')
 
@@ -605,6 +658,16 @@ def main():
     print(dat)
 
 
+
+    dat.ConvertUnits(convto='USCS')
+    print('\nConv back to imperial, test if alf_deg is duplicated')
+    print(dat)
+
+    dif100 = sum(dat.GetData()['alf_deg'] - df2['alf_deg'])
+    if abs(dif100) > tol:
+        print('FAIL! it coverted')
+    else:
+        print('PASS!')
 
 
 if __name__ == "__main__":
