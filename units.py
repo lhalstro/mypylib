@@ -151,17 +151,9 @@ class UnitTracker():
         and save as new variable.
         """
 
-
         df = self.GetData()
 
-        print('NEED TO HANDLE DUPLICATE UNITS IN PARS')
-
-
         for ind, row in self.pars.loc[self.pars['unit'] == 'rad' ].iterrows():
-
-            # print("sdfsdf")
-            # print(ind)
-            # print(row.name)
 
             #new data key will be 'oldkey_deg'
             degkey = '{}_deg'.format(ind)
@@ -170,7 +162,6 @@ class UnitTracker():
 
             #add degrees angle to unit tracking
             self.AddParameter(degkey, unit='deg', info=row['info'])
-
 
         #save new degrees to data
         self.SetData(df)
@@ -434,14 +425,6 @@ def batchconvert(df, units, convto=None, verbose=False):
         df[key] = convert(cur, new, df[key])
         #record new units
         units[key] = new
-
-    # #UPDATE ANY ANGLES (ADD DEGREES COUNTERPART TO RADIANS)
-    # for key in radkeys:
-    #     degkey = '{}_deg'.format(key)
-    #     df[degkey] = convert('rad', 'deg', df[key])
-    #     print("need to add new deg units to tracker*********************************************************************************")
-    #     print("and not make duplicate if its already there*********************************************************************************")
-    #     # AddParameter(self, par, unit='deg', info='')
 
     return df, units
 
