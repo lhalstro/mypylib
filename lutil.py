@@ -116,14 +116,25 @@ def GetGlobalParentDir(savename):
         parent = GetRootDir(savename)
     return parent
 
-def GetFilename(path):
-    """Get filename from path of file"""
-    # parent = GetParentDir(path)
-    # filename = FindBetween(path, parent)
-    # filename = filename.replace('/', '') #remove slashes
-    print('USING BUILT-IN FOR GETFILENAME')
+def GetFilename(path, withext=True):
+    """Get filename from path of file, with or without file extension
+    for withext=True:
+        for path="dir1/dir2/filename.txt" return "filename.txt"
+    for withext=False:
+        return "filename"
+    """
+
+    #Remove path from file
     import ntpath
     filename = ntpath.basename(path)
+
+    #Return filname with file extension, if specified
+    if withext: return filename
+
+    #remove file extension (also works for files without an extension)
+        #splits extension from rest of path. Filename is first entry of the split
+    filename = os.path.splitext(filename)[0]
+
 
     return filename
 
