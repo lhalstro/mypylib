@@ -2,7 +2,7 @@
 """FILE CLEAN-UP TOOL
 Logan Halstrom
 CREATED:  09 FEB 2016
-MODIFIED: 21 AUG 2019
+MODIFIED: 24 SEP 2020
 
 
 DESCRIPTION:  Used to clean up numbered file series.  Delete numbered ranges
@@ -12,6 +12,7 @@ ToDo:
     Function that deletes all files of given header except specified iterations
 """
 import numpy as np
+import argparse
 
 import sys
 import os
@@ -93,31 +94,13 @@ def MakeFilesToDelete(path, header, istart, iend, incr=1):
         cmd('touch {}'.format(curfile))
 
 
-
-def main(path, headers, istart, iend, incr=1, allbut=False, setdryrun=False, iprotect=[]):
-
-    global dryrun
-    dryrun=setdryrun
-    if dryrun:
-        print("DRY RUN, NOT ACTUALLY DELETING FILES")
-
-    #DELETE SERIES FOR EACH FILE HEADER
-    for head in headers:
-        if allbut:
-            #DELETE ALL FILES WITHIN RANGE EXCEPT SPECIFIED SERIES
-            DeleteExcept(path, head, istart, iend, incr, iprotect=iprotect)
-        else:
-            #DELETE ONLY FILES IN SPECIFIED SERIES
-            DeleteSeries(path, head, istart, iend, incr, iprotect=iprotect)
-
-
-
-
-if __name__ == "__main__":
-
-
-
-
+def FunctionalityTest():
+    """ Make a directory full of test files to delete and show how to
+    delete intervals, protect specific files, etc
+    """
+    print('\n-------------------------------------------------------------')
+    print('Functionality Test for fileCleanUp')
+    print('-------------------------------------------------------------\n')
 
     #TEST CASE
     import glob
@@ -147,7 +130,95 @@ if __name__ == "__main__":
 
 
 
-    
+
+def main(path=None, headers=None, istart=None, iend=None, incr=1, allbut=False, setdryrun=False, iprotect=[]):
+    """ Delete specified file interval
+    """
+
+    #Required inputs
+    if headers is None or istart is None or iend is None:
+        raise ValueError("headers, istart, and iend are required inputs")
+
+    #Default path is current directory
+    if path is None:
+        path = os.getcwd()
+
+
+    global dryrun
+    dryrun=setdryrun
+    if dryrun:
+        print("DRY RUN, NOT ACTUALLY DELETING FILES")
+
+    #DELETE SERIES FOR EACH FILE HEADER
+    for head in headers:
+        if allbut:
+            #DELETE ALL FILES WITHIN RANGE EXCEPT SPECIFIED SERIES
+            DeleteExcept(path, head, istart, iend, incr, iprotect=iprotect)
+        else:
+            #DELETE ONLY FILES IN SPECIFIED SERIES
+            DeleteSeries(path, head, istart, iend, incr, iprotect=iprotect)
+
+
+
+
+if __name__ == "__main__":
+
+
+    # parser = argparse.ArgumentParser(description='Interval file cleaner ' \
+    #     '(downselect file intervals to free up space)')
+
+    # parser.add_argument()
+
+
+    # parser.add_argument('-c', '--check', #name of variable is text after '--'
+    #         help="Only set up run directories and check if runs are complete",
+    #         default=False, action='store_true', #default: False, True if '-c'
+    #     )
+
+    # args = parser.parse_args()
+
+
+
+
+
+
+
+
+
+
+    #TEST CASE
+    import glob
+
+    testdir = 'test_deletefiles'
+    cmd('rm -rf {}'.format(testdir))
+
+    #Make a directory full of empty files to delete
+    MakeFilesToDelete(testdir, 'a', 1, 12, incr=2)
+    MakeFilesToDelete(testdir, 'b', 1, 10, incr=1)
+
+    #Deletes all 'b.' files exept the interval 2+3i and b.3
+    # DeleteExcept(testdir, 'b', 2, 10, 3)
+    saveiters = [3]
+    main(testdir, 'b', 2, 10, 3, allbut=True, setdryrun=False, iprotect=saveiters)
+    print("\nDid it Delete all 'b.' except b.1, b.2, b.5, b.8, and b.3?")
+    print(glob.glob('{}/b.*'.format(testdir)))
+    print('')
+
+    #Delete all a files up to and including a.8, save a.3
+    # DeleteSeries(testdir, 'a', 1, 8)
+    main(testdir, 'a', 1, 8, iprotect=saveiters)
+    print("\nDid it Delete all a files up to and including a.8, save a.3?")
+    print(glob.glob('{}/a.*'.format(testdir)))
+    print('')
+
+
+
+    #CLEANUP TEST CASE
+    cmd('rm -rf {}'.format(testdir))
+
+
+
+
 
 
 
@@ -184,8 +255,8 @@ if __name__ == "__main__":
 
     main(dir, headers, istart, iend, incr, allbut=True)
 
-    
-    dir = '/home/lhalstro/projects/ucd/aeropendulum/runs/bob/phystest/gravpend_stillair_2_StatStart' 
+
+    dir = '/home/lhalstro/projects/ucd/aeropendulum/runs/bob/phystest/gravpend_stillair_2_StatStart'
     istart = 1000
     iend = 2000
     incr = 10
