@@ -110,7 +110,7 @@ def FunctionalityTest():
     cmd('rm -rf {}'.format(testdir))
 
     #Make a directory full of empty files to delete
-    MakeFilesToDelete(testdir, 'a', 1, 12, incr=2)
+    MakeFilesToDelete(testdir, 'a.b', 1, 12, incr=2)
     MakeFilesToDelete(testdir, 'b', 1, 10, incr=1)
 
     #Deletes all 'b.' files exept the interval 2+3i and b.3
@@ -123,9 +123,9 @@ def FunctionalityTest():
 
     #Delete all a files up to and including a.8, save a.3
     # DeleteSeries(testdir, 'a', 1, 8)
-    main(testdir, 'a', 1, 8, iprotect=saveiters)
-    print("\nDid it Delete all a files up to and including a.8, save a.3?")
-    print(glob.glob('{}/a.*'.format(testdir)))
+    main(testdir, 'a.b', 1, 8, iprotect=saveiters)
+    print("\nDid it Delete all a files up to and including a.b.8, save a.b.3?")
+    print(glob.glob('{}/a.b.*'.format(testdir)))
     print('')
 
 
@@ -145,6 +145,8 @@ def main(path=None, headers=None, istart=None, iend=None, incr=1,
     #Required inputs
     if headers is None or istart is None or iend is None:
         raise ValueError("headers, istart, and iend are required inputs")
+    elif type(headers) is not list:
+        headers = [headers]
 
     #Default path is current directory
     if path is None:
@@ -163,15 +165,9 @@ def main(path=None, headers=None, istart=None, iend=None, incr=1,
     else:
         #delete only files in specified series
         DeleteFunc = DeleteSeries
+    #delete iter series for each header
     for head in headers:
         DeleteFunc(path, head, istart, iend, incr, iprotect=iprotect, dryrun=setdryrun)
-        # if allbut:
-        #     #DELETE ALL FILES WITHIN RANGE EXCEPT SPECIFIED SERIES
-        #     DeleteExcept(path, head, istart, iend, incr, iprotect=iprotect, dryrun=setdryrun)
-        # else:
-        #     #DELETE ONLY FILES IN SPECIFIED SERIES
-        #     DeleteSeries(path, head, istart, iend, incr, iprotect=iprotect, dryrun=setdryrun)
-
 
 
 
