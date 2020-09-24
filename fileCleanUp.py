@@ -165,9 +165,9 @@ def main(path=None, headers=None, istart=None, iend=None, incr=1, allbut=False, 
 if __name__ == "__main__":
 
 
-    import glob
-    testdir = os.getcwd()
-    MakeFilesToDelete(testdir, 'b', 1, 10, incr=1)
+    # import glob
+    # testdir = os.getcwd()
+    # MakeFilesToDelete(testdir, 'b', 1, 10, incr=1)
 
 
 
@@ -205,59 +205,26 @@ if __name__ == "__main__":
             default=False, action='store_true', #default: False, True if '-d'
         )
 
+    parser.add_argument('-t', '--test', #name of variable is text after '--'
+            help="Test functionality, other inputs are irrelevent",
+            default=False, action='store_true', #default: False, True if '-d'
+        )
+
     args = parser.parse_args()
 
-    print(args)
 
 
-
-    # MakeFilesToDelete(testdir, 'b', 1, 10, incr=1)
-    # main(testdir, 'b', 2, 10, 3, allbut=True, setdryrun=False, iprotect=saveiters)
-    main(path=None, headers=args.header, istart=args.istart, iend=args.iend, incr=args.incr, allbut=args.allbut, setdryrun=args.dryrun, iprotect=args.protect)
-
-    print(glob.glob('{}/b.*'.format(testdir)))
-
-
-
-    sys.exit()
+    if args.test:
+        FunctionalityTest()
+    else:
+        main(path=None, headers=args.header,
+                istart=args.istart, iend=args.iend, incr=args.incr,
+                allbut=args.allbut, setdryrun=args.dryrun, iprotect=args.protect)
 
 
 
 
 
-
-
-
-
-    #TEST CASE
-    import glob
-
-    testdir = 'test_deletefiles'
-    cmd('rm -rf {}'.format(testdir))
-
-    #Make a directory full of empty files to delete
-    MakeFilesToDelete(testdir, 'a', 1, 12, incr=2)
-    MakeFilesToDelete(testdir, 'b', 1, 10, incr=1)
-
-    #Deletes all 'b.' files exept the interval 2+3i and b.3
-    # DeleteExcept(testdir, 'b', 2, 10, 3)
-    saveiters = [3]
-    main(testdir, 'b', 2, 10, 3, allbut=True, setdryrun=False, iprotect=saveiters)
-    print("\nDid it Delete all 'b.' except b.1, b.2, b.5, b.8, and b.3?")
-    print(glob.glob('{}/b.*'.format(testdir)))
-    print('')
-
-    #Delete all a files up to and including a.8, save a.3
-    # DeleteSeries(testdir, 'a', 1, 8)
-    main(testdir, 'a', 1, 8, iprotect=saveiters)
-    print("\nDid it Delete all a files up to and including a.8, save a.3?")
-    print(glob.glob('{}/a.*'.format(testdir)))
-    print('')
-
-
-
-    #CLEANUP TEST CASE
-    cmd('rm -rf {}'.format(testdir))
 
 
 
