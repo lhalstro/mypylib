@@ -38,7 +38,7 @@ def Delete(filename):
     # #debug:
     # cmd( 'ls {}'.format(filename) )
 
-def DeleteIth(path, header, i, iwriteprotects=[]):
+def DeleteIth(path, header, i, iwriteprotects=None):
     """ Within a loop, delete file in given directory with given header
     for given number
     writeprotects --> list of filenames that will not be deleted, even if in series
@@ -46,6 +46,7 @@ def DeleteIth(path, header, i, iwriteprotects=[]):
     #Create filename to delete ('header.number')
     filename = '{}.{}'.format(header, i)
     pathtodelete = '{}/{}'.format(path, filename)
+    if iwriteprotects is None: iwriteprotects = []
     if i in iwriteprotects:
         print('NOT Deleting (Write Protected): {}'.format(filename))
     #DELETE FILE
@@ -54,7 +55,7 @@ def DeleteIth(path, header, i, iwriteprotects=[]):
         Delete(pathtodelete)
 
 
-def DeleteSeries(path, header, istart, iend, incr=1, iprotect=[]):
+def DeleteSeries(path, header, istart, iend, incr=1, iprotect=None):
     """Delete a series of files of given file header withing the number range
     specified.
     header --> filename header
@@ -66,7 +67,7 @@ def DeleteSeries(path, header, istart, iend, incr=1, iprotect=[]):
     for i in todelete:
         DeleteIth(path, header, i, iwriteprotects=iprotect)
 
-def DeleteExcept(path, header, istart, iend, incr=1, iprotect=[]):
+def DeleteExcept(path, header, istart, iend, incr=1, iprotect=None):
     """Within given range, delete everything EXCEPT the specified range"""
     #GIVEN INPUTS SAVE ALL FILES WITHIN RANGE
     if incr == 1:
@@ -131,7 +132,7 @@ def FunctionalityTest():
 
 
 
-def main(path=None, headers=None, istart=None, iend=None, incr=1, allbut=False, setdryrun=False, iprotect=[]):
+def main(path=None, headers=None, istart=None, iend=None, incr=1, allbut=False, setdryrun=False, iprotect=None):
     """ Delete specified file interval
     """
 
@@ -164,19 +165,61 @@ def main(path=None, headers=None, istart=None, iend=None, incr=1, allbut=False, 
 if __name__ == "__main__":
 
 
-    # parser = argparse.ArgumentParser(description='Interval file cleaner ' \
-    #     '(downselect file intervals to free up space)')
+    import glob
+    testdir = os.getcwd()
+    MakeFilesToDelete(testdir, 'b', 1, 10, incr=1)
 
-    # parser.add_argument()
 
 
-    # parser.add_argument('-c', '--check', #name of variable is text after '--'
-    #         help="Only set up run directories and check if runs are complete",
-    #         default=False, action='store_true', #default: False, True if '-c'
-    #     )
+    #If called from commandline, perform cleanup in pwd
 
-    # args = parser.parse_args()
+    parser = argparse.ArgumentParser(description='Interval file cleaner ' \
+        '(downselect file intervals to free up space)')
 
+    parser.add_argument('header', type=str,
+            help="File header to delete (e.g. 'x.y0')"
+        )
+    parser.add_argument('istart', type=int,
+            help="Iteration to start sequence at"
+        )
+    parser.add_argument('iend', type=int,
+            help="Iteration to end sequence at"
+        )
+    parser.add_argument('incr', type=int,
+            help="Sequency increment (default:1)",
+            default=1,
+        )
+
+    parser.add_argument('-p', '--protect', metavar='i', #name of variable is text after '--'
+            help="Protect these files",
+            default=None, type=int, nargs='+',
+        )
+
+    parser.add_argument('-e', '--allbut', #name of variable is text after '--'
+            help="Delete everything with file header EXCEPT given interval, if flag given, otherwise, only delete interval",
+            default=False, action='store_true', #default: False, True if '-d'
+        )
+
+    parser.add_argument('-d', '--dryrun', #name of variable is text after '--'
+            help="Only print which files would be deleted",
+            default=False, action='store_true', #default: False, True if '-d'
+        )
+
+    args = parser.parse_args()
+
+    print(args)
+
+
+
+    # MakeFilesToDelete(testdir, 'b', 1, 10, incr=1)
+    # main(testdir, 'b', 2, 10, 3, allbut=True, setdryrun=False, iprotect=saveiters)
+    main(path=None, headers=args.header, istart=args.istart, iend=args.iend, incr=args.incr, allbut=args.allbut, setdryrun=args.dryrun, iprotect=args.protect)
+
+    print(glob.glob('{}/b.*'.format(testdir)))
+
+
+
+    sys.exit()
 
 
 
