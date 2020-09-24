@@ -1,4 +1,4 @@
-#! /usr/bin/python
+#!/usr/bin/env python
 """FILE CLEAN-UP TOOL
 Logan Halstrom
 CREATED:  09 FEB 2016
