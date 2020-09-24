@@ -29,7 +29,7 @@ def range_inclusive(start, stop, step=1):
     """
     return range(start, (stop + 1) if step >= 0 else (stop - 1), step)
 
-def Delete(filename):
+def Delete(filename, dryrun=False):
     """ Delete a given file
     """
 
@@ -38,7 +38,7 @@ def Delete(filename):
     # #debug:
     # cmd( 'ls {}'.format(filename) )
 
-def DeleteIth(path, header, i, iwriteprotects=None):
+def DeleteIth(path, header, i, iwriteprotects=None, dryrun=False):
     """ Within a loop, delete file in given directory with given header
     for given number
     writeprotects --> list of filenames that will not be deleted, even if in series
@@ -52,10 +52,10 @@ def DeleteIth(path, header, i, iwriteprotects=None):
     #DELETE FILE
     elif os.path.isfile(pathtodelete):
         print('Deleting: {}'.format(filename))
-        Delete(pathtodelete)
+        Delete(pathtodelete, dryrun=dryrun)
 
 
-def DeleteSeries(path, header, istart, iend, incr=1, iprotect=None):
+def DeleteSeries(path, header, istart, iend, incr=1, iprotect=None, dryrun=False):
     """Delete a series of files of given file header withing the number range
     specified.
     header --> filename header
@@ -65,9 +65,9 @@ def DeleteSeries(path, header, istart, iend, incr=1, iprotect=None):
     # todelete = np.append( np.arange(istart, iend, incr), iend )
     todelete = list( range_inclusive(istart, iend, incr) )
     for i in todelete:
-        DeleteIth(path, header, i, iwriteprotects=iprotect)
+        DeleteIth(path, header, i, iwriteprotects=iprotect, dryrun=dryrun)
 
-def DeleteExcept(path, header, istart, iend, incr=1, iprotect=None):
+def DeleteExcept(path, header, istart, iend, incr=1, iprotect=None, dryrun=False):
     """Within given range, delete everything EXCEPT the specified range"""
     #GIVEN INPUTS SAVE ALL FILES WITHIN RANGE
     if incr == 1:
@@ -77,7 +77,7 @@ def DeleteExcept(path, header, istart, iend, incr=1, iprotect=None):
     tosave = list( range_inclusive(istart, iend, incr) )
     for i in range_inclusive(istart, iend, 1):
         if not i in tosave:
-            DeleteIth(path, header, i, iwriteprotects=iprotect)
+            DeleteIth(path, header, i, iwriteprotects=iprotect, dryrun=dryrun)
     # tosave = np.append( np.arange(istart, iend, incr), iend )
     # for i in np.append( np.arange(istart, iend, 1), iend ):
     #     if not i in tosave:
@@ -113,16 +113,20 @@ def FunctionalityTest():
     MakeFilesToDelete(testdir, 'a', 1, 12, incr=2)
     MakeFilesToDelete(testdir, 'b', 1, 10, incr=1)
 
-    #Deletes all 'b.' files except b.2, b.5, b.8, and b.3
+    #Deletes all 'b.' files exept the interval 2+3i and b.3
     # DeleteExcept(testdir, 'b', 2, 10, 3)
     saveiters = [3]
-    main(testdir, 'b', 2, 10, 3, allbut=True, setdryrun=True, iprotect=saveiters)
+    main(testdir, 'b', 2, 10, 3, allbut=True, setdryrun=False, iprotect=saveiters)
+    print("\nDid it Delete all 'b.' except b.1, b.2, b.5, b.8, and b.3?")
     print(glob.glob('{}/b.*'.format(testdir)))
+    print('')
 
-    #Delete all a files up to and including a.7, save a.3
+    #Delete all a files up to and including a.8, save a.3
     # DeleteSeries(testdir, 'a', 1, 8)
     main(testdir, 'a', 1, 8, iprotect=saveiters)
+    print("\nDid it Delete all a files up to and including a.8, save a.3?")
     print(glob.glob('{}/a.*'.format(testdir)))
+    print('')
 
 
 
@@ -132,7 +136,9 @@ def FunctionalityTest():
 
 
 
-def main(path=None, headers=None, istart=None, iend=None, incr=1, allbut=False, setdryrun=False, iprotect=None):
+
+def main(path=None, headers=None, istart=None, iend=None, incr=1,
+            allbut=False, setdryrun=False, iprotect=None):
     """ Delete specified file interval
     """
 
@@ -145,19 +151,26 @@ def main(path=None, headers=None, istart=None, iend=None, incr=1, allbut=False, 
         path = os.getcwd()
 
 
-    global dryrun
-    dryrun=setdryrun
-    if dryrun:
+    # global dryrun
+    # dryrun=setdryrun
+    if setdryrun:
         print("DRY RUN, NOT ACTUALLY DELETING FILES")
 
     #DELETE SERIES FOR EACH FILE HEADER
+    if allbut:
+        #delete all files within range except specified series
+        DeleteFunc = DeleteExcept
+    else:
+        #delete only files in specified series
+        DeleteFunc = DeleteSeries
     for head in headers:
-        if allbut:
-            #DELETE ALL FILES WITHIN RANGE EXCEPT SPECIFIED SERIES
-            DeleteExcept(path, head, istart, iend, incr, iprotect=iprotect)
-        else:
-            #DELETE ONLY FILES IN SPECIFIED SERIES
-            DeleteSeries(path, head, istart, iend, incr, iprotect=iprotect)
+        DeleteFunc(path, head, istart, iend, incr, iprotect=iprotect, dryrun=setdryrun)
+        # if allbut:
+        #     #DELETE ALL FILES WITHIN RANGE EXCEPT SPECIFIED SERIES
+        #     DeleteExcept(path, head, istart, iend, incr, iprotect=iprotect, dryrun=setdryrun)
+        # else:
+        #     #DELETE ONLY FILES IN SPECIFIED SERIES
+        #     DeleteSeries(path, head, istart, iend, incr, iprotect=iprotect, dryrun=setdryrun)
 
 
 
