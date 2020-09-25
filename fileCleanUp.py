@@ -4,12 +4,18 @@ Logan Halstrom
 CREATED:  09 FEB 2016
 MODIFIED: 24 SEP 2020
 
-
 DESCRIPTION:  Used to clean up numbered file series.  Delete numbered ranges
 or ordered series of files.
 
+USAGE:
+    Call main from a wrapper script or enter commandline arguments (-h for usage help)
+    Make globally available:
+        cd ~/bin
+        ln -s ~/lib/python/mypylib/fileCleanUp fclean
+
+
 ToDo:
-    Function that deletes all files of given header except specified iterations
+    Function that deletes all files of given header except specified iterations (basically done)
 """
 import numpy as np
 import argparse
@@ -194,7 +200,7 @@ if __name__ == "__main__":
     parser.add_argument('iend', type=int,
             help="Iteration to end sequence at"
         )
-    parser.add_argument('incr', type=int,
+    parser.add_argument('incr', type=int, nargs='?', #'?': zero or one argument
             help="Sequency increment (default:1)",
             default=1,
         )
