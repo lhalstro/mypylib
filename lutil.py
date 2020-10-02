@@ -35,7 +35,7 @@ def command(cmd):
     return process, proc_stdout
 
 def MakeOutputDir(filename):
-    """ Makes output directories in filename that do not already exisi
+    """ Makes output directories in filename that do not already exist
     filename --> save file path, used to determine parent directories
     NOTE: If specifying an empty directory name, 'filename' must end in '/'
     e.g. To make the directory 'test', specify either:
@@ -87,7 +87,7 @@ def GetRootDir(filename):
     return rootpath
 
 def GetParentDir(savename):
-    """Original functionality (DEPRICATED).
+    """Original functionality (DEPRECATED).
     Return root path with slash at end
     """
     #split individual directories
@@ -164,7 +164,7 @@ def listify(nonlist, n=1):
     """Given a single item, return a list n long (default 1).
     given a list, do nothing"""
     if type(nonlist) != list:
-        #Extend single vaule into n-length list
+        #Extend single value into n-length list
         outlist = [nonlist] * n
     else:
         outlist = nonlist
