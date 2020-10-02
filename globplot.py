@@ -5,6 +5,13 @@ CREATED:  01 OCT 2020
 MODIFIED: 01 OCT 2020
 
 quickly plot a glob of files
+
+USAGE:
+Command-line: globplot header x y
+Add to path: ln -s globplot.py ~/bin/globplot
+
+ToDo:
+add a -l --list option so you can manually enter a list of files to plot, rather than glob
 """
 
 import matplotlib.pyplot as plt
