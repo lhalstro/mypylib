@@ -153,6 +153,13 @@ class UnitTracker():
 
         df = self.GetData()
 
+        if df.empty:
+            print('warning no units!')
+            return
+        elif 'rad' not in df:
+            print('warning no angles!')
+            return
+
         for ind, row in self.pars.loc[self.pars['unit'] == 'rad' ].iterrows():
 
             #new data key will be 'oldkey_deg'
@@ -662,4 +669,3 @@ if __name__ == "__main__":
 
 
     main()
-

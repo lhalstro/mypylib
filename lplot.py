@@ -1044,8 +1044,9 @@ def TextBox(ax, boxtext, x=0.005, y=0.95, fontsize=None,
                 alpha=1.0, props=None, color=None, relcoord=True,
                 vert='top', horz='left', rotation=0):
     """Add text box.
-    (Anchor position is upper left corner of text box)
-    relcoord --> Use relative coordinate achor points (0 --> 1) if true,
+    (Anchor position is upper left corner of text box, Origin is lower left corner of plot)
+    For transparent textbox, use: color='none', alpha=0
+    relcoord --> Use relative coordinate achor points (0 --> 1) if [True],
                     actual x,y coordinates if False
     vert/horz --> vertical and horizontal alignment of box about given point
                     e.g. center/center places box centered on point
@@ -1076,11 +1077,12 @@ def TextBox(ax, boxtext, x=0.005, y=0.95, fontsize=None,
                 )
 
 
-def TightLims(ax, tol=0.0):
+def TightLims(ax, tol=0.0, rel=False):
     """Return axis limits for tight bounding of data set in ax.
     NOTE: doesn't work for scatter plots.
     ax  --> plot axes to bound
-    tol --> whitespace tolerance
+    tol --> whitespace tolerance (in axis units)
+    rel --> consider tol to be a fraction of the total height/width of the axes bounds
     """
     xmin = xmax = ymin = ymax = None
     for line in ax.get_lines():
@@ -1098,15 +1100,26 @@ def TightLims(ax, tol=0.0):
         if ymax == None or curymax > ymax:
             ymax = curymax
 
-    xlim = [xmin-tol, xmax+tol]
-    ylim = [ymin-tol, ymax+tol]
+    if rel:
+        h = ymax - ymin
+        w = xmax - xmin
+        tolrelx = w * tol
+        tolrely = h * tol
+        xlim = [xmin-tolrelx, xmax+tolrelx]
+        ylim = [ymin-tolrely, ymax+tolrely]
+    else:
+        xlim = [xmin-tol, xmax+tol]
+        ylim = [ymin-tol, ymax+tol]
 
     return xlim, ylim
 
-def SetTightLims(ax, tol=0.0):
+def SetTightLims(ax, tol=0.0, rel=False):
     """ Set axis limits to tightly bound data
+    ax  --> plot axes to bound
+    tol --> whitespace tolerance (in axis units
+    rel --> consider tol to be a fraction of the total height/width of the axes bounds
     """
-    xlim, ylim = TightLims(ax, tol)
+    xlim, ylim = TightLims(ax, tol=tol, rel=rel)
     ax.set_xlim(xlim)
     ax.set_ylim(ylim)
     return ax
@@ -1386,5 +1399,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
