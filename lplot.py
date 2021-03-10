@@ -22,6 +22,7 @@ To Do:
 import os
 import re
 import matplotlib
+# matplotlib.use('TkAgg') #trying to make this work without display variable but not working
 import matplotlib.pyplot as plt
 from matplotlib.cm import get_cmap
 from matplotlib.transforms import Bbox #for getting plot bounding boxes
