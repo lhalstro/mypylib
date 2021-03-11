@@ -377,6 +377,19 @@ def SeriesFromFile(filename):
             s[i] = list(val.strip('][').split(', '))
     return s
 
+def dfSafetyValve(df, targetsize=None, quiet=True):
+    """ safety valve in case data sample frequency was too high and kills plotting
+    df --> dataframe to down-sample
+    targetsize --> downselect df to this length if larger Default: does nothing [None]
+    """
+    if targetsize is None: return df
+    if len(df) > targetsize:
+        interval = int(round(len(df)/targetsize))
+        if not quiet:
+           print("case {} bigger than {}. Downsampling by {}x".format(i, targetsize, interval))
+        df  = dfTimeSubset(df,  tstart=None, tend=None, tevery=interval, reindex=True)
+    return df
+                                        
 
 ########################################################################
 ### PLOTTING ###########################################################
