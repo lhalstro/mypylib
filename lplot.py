@@ -18,16 +18,21 @@ To Do:
     Potentially navigate rcparams to matplotlibrc file?
 """
 
-# import subprocess
+import numpy as np
+import pandas as pd
 import os
 import re
+
 import matplotlib
-# matplotlib.use('TkAgg') #trying to make this work without display variable but not working
+if 'DISPLAY' not in os.environ:
+    #Compatiblity mode for plotting on non-X11 server
+    matplotlib.use('Agg') 
+elif 'pfe' in os.environ['DISPLAY']:
+    #for some reason, pfe sets display but hangs up, so treat as no X11
+    matplotlib.use('Agg') 
 import matplotlib.pyplot as plt
 from matplotlib.cm import get_cmap
 from matplotlib.transforms import Bbox #for getting plot bounding boxes
-import numpy as np
-import pandas as pd
 from scipy.interpolate import interp1d
 
 from functools import partial
