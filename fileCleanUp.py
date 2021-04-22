@@ -35,6 +35,114 @@ def range_inclusive(start, stop, step=1):
     """
     return range(start, (stop + 1) if step >= 0 else (stop - 1), step)
 
+
+class Deletor():
+    """ Makes filecleanup more efficient by passing options through an object instead of booleans
+    """
+
+    def __init__(self, head, istart, iend, incr=None, path=None,
+                    allbut=False, dryrun=None, iwriteprotects=None):
+
+
+        self.header=head
+        self.istart=istart
+        self.iend=iend
+        self.incr=incr
+        if self.incr is None: self.incr = 1
+
+        if path is None:
+            #Default path is current directory
+            self.path = os.getcwd()
+        else:
+            self.path = path
+
+
+        self.dryrun = dryrun
+        if self.dryrun is None: self.dryrun = False
+
+        if self.dryrun:
+            #do nothing when file is deleted
+            # self.Delete = lambda *args: None
+            self.Delete = DontDelete
+            print("DRY RUN, NOT ACTUALLY DELETING FILES")
+        else:
+            #delete the file
+            # self.Delete = lambda filename: cmd('rm {}'.format(filename))
+            self.Delete = DoDelete
+
+        self.iwriteprotects = iwriteprotects
+        if self.iwriteprotects is None:
+            self.iwriteprotects = []
+        else:
+            print("\nNOT Deleting (Write Protected):")
+            for i in self.iwriteprotects:
+                filename = '{}.{}'.format(self.header, i)
+                pathtonotdelete = '{}/{}'.format(self.path, filename)
+                if os.path.isfile(pathtonotdelete):
+                    print('    {}'.format(filename))
+
+        #DELETE SERIES FOR EACH FILE HEADER
+        if allbut:
+            #delete all files within range except specified series
+            self.DeleteFiles = self.DeleteExcept
+        else:
+            #delete only files in specified series
+            self.DeleteFiles = self.DeleteSeries
+
+
+
+    def DeleteSeries(self, ):
+        """Delete a series of files of given file header withing the number range
+        specified.
+        header --> filename header
+        istart, iend --> numbers of beginning and end of series to delete
+        incr --> number increment to delete within series range.  Default, delete all
+        """
+        todelete = list( range_inclusive(self.istart, self.iend, self.incr) )
+
+        todelete = [i for i in todelete if i not in self.iwriteprotects]
+        [self.Delete(self.path, '{}.{}'.format(self.header, i)) for i in todelete]
+
+        # for i in todelete:
+        #     DeleteIth(path, header, i, iwriteprotects=iprotect, dryrun=dryrun)
+
+    def DeleteExcept(self, ):
+        """Within given range, delete everything EXCEPT the specified range"""
+        #GIVEN INPUTS SAVE ALL FILES WITHIN RANGE
+        if self.incr == 1:
+            print('\nNO FILES WILL BE DELETED IN THIS SERIES\n')
+            return
+        #DELETE EVERY FILE NOT WITHIN GIVEN SERIES TO SAVE
+        tosave = list( range_inclusive(self.istart, self.iend, self.incr) )
+        todelete = [i for i in range_inclusive(self.istart, self.iend, 1) if i not in tosave]
+
+        todelete = [i for i in todelete if i not in self.iwriteprotects]
+        [self.Delete(self.path, '{}.{}'.format(self.header, i)) for i in todelete]
+        # for i in todelete:
+        #     # DeleteIth(path, header, i, iwriteprotects=iprotect, dryrun=dryrun)
+        #     DeleteIth(path, header, i, dryrun=dryrun)
+
+
+
+
+def DoDelete(path, filename):
+    """ Delete a given file
+    """
+    pathtodelete = '{}/{}'.format(path, filename)
+    if os.path.isfile(pathtodelete):
+        print('Deleting: {}'.format(filename))
+        cmd('rm {}'.format(pathtodelete))
+def DontDelete(path ,filename):
+    """ Dry-run Delete a given file
+    """
+    pathtodelete = '{}/{}'.format(path, filename)
+    if os.path.isfile(pathtodelete):
+        print('DRY-RUN, Otherwise Would Delete: {}'.format(filename))
+
+
+
+
+
 def Delete(filename, dryrun=False):
     """ Delete a given file
     """
@@ -90,7 +198,7 @@ def DeleteExcept(path, header, istart, iend, incr=1, iprotect=None, dryrun=False
     todelete = [i for i in todelete if i not in iprotect]
     for i in todelete:
         # DeleteIth(path, header, i, iwriteprotects=iprotect, dryrun=dryrun)
-        DeleteIth(path, header, i, iwriteprotects=[], dryrun=dryrun)
+        DeleteIth(path, header, i, dryrun=dryrun)
 
 
 
@@ -183,6 +291,25 @@ def main(path=None, headers=None, istart=None, iend=None, incr=1,
         DeleteFunc(path, head, istart, iend, incr, iprotect=iprotect, dryrun=setdryrun)
 
 
+def main_oop(path=None, headers=None, istart=None, iend=None, incr=1,
+            allbut=False, setdryrun=False, iprotect=None):
+    """ Delete specified file interval
+    """
+
+    #Required inputs
+    if headers is None or istart is None or iend is None:
+        raise ValueError("headers, istart, and iend are required inputs")
+    elif type(headers) is not list:
+        headers = [headers]
+
+
+    #delete iter series for each header
+    o = Deletor(headers[0], istart, iend, incr, path=path, iwriteprotects=iprotect, dryrun=setdryrun, allbut=allbut)
+    for head in headers:
+        o.header = head
+        o.DeleteFiles()
+
+
 
 if __name__ == "__main__":
 
@@ -239,7 +366,12 @@ if __name__ == "__main__":
     if args.test:
         FunctionalityTest()
     else:
-        main(path=None, headers=args.header,
+        # #Conventional (standard until 4/22/2021)
+        # main(path=None, headers=args.header,
+        #         istart=args.istart, iend=args.iend, incr=args.incr,
+        #         allbut=args.allbut, setdryrun=args.dryrun, iprotect=args.protect)
+        #Object oriented (adopted 4/22/2021)
+        main_oop(path=None, headers=args.header,
                 istart=args.istart, iend=args.iend, incr=args.incr,
                 allbut=args.allbut, setdryrun=args.dryrun, iprotect=args.protect)
 
