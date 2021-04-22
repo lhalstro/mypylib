@@ -81,13 +81,18 @@ def DeleteExcept(path, header, istart, iend, incr=1, iprotect=None, dryrun=False
         return
     #DELETE EVERY FILE NOT WITHIN GIVEN SERIES TO SAVE
     tosave = list( range_inclusive(istart, iend, incr) )
-    for i in range_inclusive(istart, iend, 1):
-        if not i in tosave:
-            DeleteIth(path, header, i, iwriteprotects=iprotect, dryrun=dryrun)
-    # tosave = np.append( np.arange(istart, iend, incr), iend )
-    # for i in np.append( np.arange(istart, iend, 1), iend ):
+
+    # for i in range_inclusive(istart, iend, 1):
     #     if not i in tosave:
-    #         DeleteIth(path, header, i)
+    #         DeleteIth(path, header, i, iwriteprotects=iprotect, dryrun=dryrun)
+
+    todelete = [i for i in range_inclusive(istart, iend, 1) if i not in tosave]
+    todelete = [i for i in todelete if i not in iprotect]
+    for i in todelete:
+        # DeleteIth(path, header, i, iwriteprotects=iprotect, dryrun=dryrun)
+        DeleteIth(path, header, i, iwriteprotects=[], dryrun=dryrun)
+
+
 
 
 

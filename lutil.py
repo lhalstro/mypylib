@@ -170,6 +170,23 @@ def listify(nonlist, n=1):
         outlist = nonlist
     return outlist
 
+def OrderedGlob(header=None):
+    """ Glob all files in cwd with wildcard: "ls header.*"
+    Return DataFrame with file list ordered by * match
+    """
+    if header is None:
+        raise IOError("Usage: OrderedGlob(header) -> glob(header.*) -> return df{['file', 'tail']}")
+    from glob import glob
+    files = glob("{}.*".format(header))
+    tails = [x.split('.')[-1] for x in files]
+    if tails[0].isnumeric():
+        try:
+            tails = [int(i) for i in tails]
+        except:
+            tails = [float(i) for i in tails]
+    df = pd.DataFrame({'file':files, 'tail':tails}).sort_values('tail')
+    return df
+
 ########################################################################
 ### PANDAS UTILITIES ###################################################
 ########################################################################
@@ -389,7 +406,7 @@ def dfSafetyValve(df, targetsize=None, quiet=True):
            print("case {} bigger than {}. Downsampling by {}x".format(i, targetsize, interval))
         df  = dfTimeSubset(df,  tstart=None, tend=None, tevery=interval, reindex=True)
     return df
-                                        
+
 
 ########################################################################
 ### PLOTTING ###########################################################
