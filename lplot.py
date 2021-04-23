@@ -1,7 +1,7 @@
 """PYTHON PLOTTING UTILITIES
 Logan Halstrom
 CREATED:  07 OCT 2015
-MODIFIED: 21 AUG 2020
+MODIFIED: 16 MAR 2021
 
 
 DESCRIPTION:  File manipulation, matplotlib plotting and saving.  A subset of
@@ -18,16 +18,21 @@ To Do:
     Potentially navigate rcparams to matplotlibrc file?
 """
 
-# import subprocess
+import numpy as np
+import pandas as pd
 import os
 import re
+
 import matplotlib
-# matplotlib.use('TkAgg') #trying to make this work without display variable but not working
+if 'DISPLAY' not in os.environ:
+    #Compatiblity mode for plotting on non-X11 server (also need to call this in your local script)
+    matplotlib.use('Agg')
+elif 'pfe' in os.environ['DISPLAY']:
+    #for some reason, pfe sets display but hangs up, so treat as no X11
+    matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from matplotlib.cm import get_cmap
 from matplotlib.transforms import Bbox #for getting plot bounding boxes
-import numpy as np
-import pandas as pd
 from scipy.interpolate import interp1d
 
 from functools import partial
@@ -138,6 +143,8 @@ smallmarkers = ['.', '*', 'd', '1', '+']
 bigmarkers = ['o', 'v', 'd', 's', '*', 'D', 'p', '>', 'H', '8']
 bigdotmarkers = ['$\\odot$', 'v', 'd', '$\\boxdot$', '*', 'D', 'p', '>', 'H', '8']
 scattermarkers = ['o', 'v', 'd', 's', 'p']
+
+linestyles = ['-', '--', '-.', '.']
 
 #GLOBAL INITIAL FONT SIZES
 #default font sizes
@@ -1088,6 +1095,12 @@ def TightLims(ax, tol=0.0, rel=False):
     xmin = xmax = ymin = ymax = None
     for line in ax.get_lines():
         data = line.get_data()
+
+        # print(data)
+        if len(data[0]) == 0 or len(data[1]) == 0:
+            print('No data for this line, excluding from TightLims')
+            continue
+
         curxmin = min(data[0])
         curxmax = max(data[0])
         curymin = min(data[1])
