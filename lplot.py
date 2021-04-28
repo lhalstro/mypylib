@@ -830,7 +830,7 @@ def NumberMarkers(i, first=True, last=False, offset=None):
         i: `int`: index count of plot item (marker number will be i+1)
         first: `bool`: marker at the first index [True]
         last:  `bool`: marker at the last index [False]
-        offset: `int`: offset markers by this many indices to they don't overlap [don't offset]
+        offset: `int`: offset markers by this many indices so they don't overlap [don't offset]
 
     Returns:
         `str`: marker string which is '$i+1$'
