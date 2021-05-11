@@ -407,6 +407,15 @@ def dfSafetyValve(df, targetsize=None, quiet=True):
         df  = dfTimeSubset(df,  tstart=None, tend=None, tevery=interval, reindex=True)
     return df
 
+def dfZeroSmallValues(df, tol=1e-16):
+    """ Convert small values that are essentially zero to actually zero
+    ToDo: make this ignore any string values in dataframe
+    Args
+        tol --> any absolute value less than this is converted to zero [1e-16]
+    """
+    df[abs(df) < tol] = 0
+    return df
+
 
 ########################################################################
 ### PLOTTING ###########################################################
