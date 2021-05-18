@@ -208,15 +208,45 @@ def dfInterp(df, key, vals, method='linear', fill=np.nan):
         newdf[k] = f(vals) #Interp each column to desired values
     return newdf
 
-def dfTimeSubset(df, tstart=None, tend=None, tevery=1, reindex=True):
+
+def dfSubset(df, tstart=None, tend=None, tevery=None, tkey=None, reindex=True):
+    """Get interval subset of provided dataframe
+
+    df     --> dataframe with trajectory data
+    tstart --> subset start time   [None] (start)
+    tend   --> subset end time     [None] (end)
+    everyt --> (int) sample interval (-1 for reverse order) [None] (sample every)
+    tkey   --> column to sample by [None]  ('time')
+    reindex --> reset dataframe index after resizing timeseries [True]
+    """
+    if tkey is None: tkey = 'time'
+
+    #Trim time series to specified interval
+    if tstart != None:
+        df = df[df[tkey] >= tstart]
+    if tend != None:
+        df = df[df[tkey] <= tend]
+    #Reduce points by interval
+    if tevery is not None:
+        #keep every 'everyt'-th row
+        df = df.loc[::tevery,:]
+    #reset df index
+    if reindex:
+        df = df.reset_index(drop=True)
+
+    return df
+
+def dfTimeSubset(df, tstart=None, tend=None, tevery=None, reindex=True):
     """Get time interval subset of provided dataframe
 
     df     --> dataframe with trajectory data
-    tstart --> subset start time
-    tend   --> subset end time
-    everyt --> time step size (sample rate of 40Hz)
-    reindex --> reset dataframe index after resizing timeseries
+    tstart --> subset start time [None] (start)
+    tend   --> subset end time   [None] (end)
+    everyt --> time step size    [None] (every)
+    reindex --> reset dataframe index after resizing timeseries [True]
     """
+    return dfSubset(df, tstart=tstart, tend=tend, tevery=tevery, reindex=reindex, tkey='time')
+
     #Trim time series to specified interval
     if tstart != None:
         df = df[df.time >= tstart]
@@ -405,6 +435,15 @@ def dfSafetyValve(df, targetsize=None, quiet=True):
         if not quiet:
            print("case {} len {} > target {}. Downsampling by {}x".format(i, len(df), targetsize, interval))
         df  = dfTimeSubset(df,  tstart=None, tend=None, tevery=interval, reindex=True)
+    return df
+
+def dfZeroSmallValues(df, tol=1e-16):
+    """ Convert small values that are essentially zero to actually zero
+    ToDo: make this ignore any string values in dataframe
+    Args
+        tol --> any absolute value less than this is converted to zero [1e-16]
+    """
+    df[abs(df) < tol] = 0
     return df
 
 

@@ -391,7 +391,7 @@ def batchconvert(df, units, convto=None, verbose=False):
         raise ValueError('"{}" is not a recognized standard unit system'.format(convto))
 
     if verbose:
-        print('Mass converting to {} units'.format(convto))
+        print('Batch converting to {} units'.format(convto))
 
     # #Get all the data keys from the DataFrame or Series
     # keys = list(df.index) if type(df) == type(pd.Series(dtype='object')) else list(df.columns)
