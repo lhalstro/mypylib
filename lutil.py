@@ -255,7 +255,7 @@ def dfTimeSubset(df, tstart=None, tend=None, tevery=None, reindex=True):
     #Reduce points by interval
     if tevery > 1:
         #keep every 'everyt'-th row
-        df = df.loc[::tevery,:]
+        df = df.loc[::tevery, :]
     #reset df index
     if reindex:
         df = df.reset_index(drop=True)
