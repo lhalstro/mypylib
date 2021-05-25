@@ -819,7 +819,7 @@ def AddlLegend(ax, leg1, *args, outside=None, **kwargs):
     #plot second legend
     leg2 = Legend(ax, *args, outside=outside, **kwargs)
     #make first legend visible
-    ax.add_artist(leg1)
+    if leg1 is not None: ax.add_artist(leg1)
     return leg2
 
 def NumberMarkers(i, first=True, last=False, offset=None):
