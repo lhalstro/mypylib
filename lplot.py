@@ -1052,11 +1052,12 @@ def TextBox(ax, boxtext, x=0.005, y=0.95, fontsize=None,
                 alpha=1.0, props=None, color=None, relcoord=True,
                 vert='top', horz='left', rotation=0):
     """Add text box.
-    (Anchor position is upper left corner of text box, Origin is lower left corner of plot)
+    (Default anchor position is upper left corner of text box, Origin is lower left corner of plot,
+    So x=0,y=1 puts the upper left corner of text box in upper left corner of plot)
     For transparent textbox, use: color='none', alpha=0
     relcoord --> Use relative coordinate achor points (0 --> 1) if [True],
                     actual x,y coordinates if False
-    vert/horz --> vertical and horizontal alignment of box about given point
+    vert/horz --> vertical and horizontal alignment of box about anchor point
                     e.g. center/center places box centered on point
                          top/center places box with point on top center
     rotation --> text rotation in degrees
