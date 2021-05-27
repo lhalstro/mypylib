@@ -237,7 +237,7 @@ def dfSubset(df, tstart=None, tend=None, tevery=None, tkey=None, reindex=True):
     return df
 
 def dfTimeSubset(df, tstart=None, tend=None, tevery=None, reindex=True):
-    """Get time interval subset of provided dataframe
+    """Partial function of `dfSubset`. Get time interval subset of provided dataframe.
 
     df     --> dataframe with trajectory data
     tstart --> subset start time [None] (start)
