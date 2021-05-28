@@ -1106,13 +1106,13 @@ def TightLims(ax, tol=0.0, rel=False):
         curxmax = max(data[0])
         curymin = min(data[1])
         curymax = max(data[1])
-        if xmin == None or curxmin < xmin:
+        if xmin is None or curxmin < xmin:
             xmin = curxmin
-        if xmax == None or curxmax > xmax:
+        if xmax is None or curxmax > xmax:
             xmax = curxmax
-        if ymin == None or curymin < ymin:
+        if ymin is None or curymin < ymin:
             ymin = curymin
-        if ymax == None or curymax > ymax:
+        if ymax is None or curymax > ymax:
             ymax = curymax
 
     if rel:
@@ -1123,8 +1123,28 @@ def TightLims(ax, tol=0.0, rel=False):
         xlim = [xmin-tolrelx, xmax+tolrelx]
         ylim = [ymin-tolrely, ymax+tolrely]
     else:
-        xlim = [xmin-tol, xmax+tol]
-        ylim = [ymin-tol, ymax+tol]
+        xlim = [None, None]
+        if xmin is not None:
+            xlim[0] = xmin-tol
+        else:
+            print('TightLims Error: no xmin')
+        if xmax is not None:
+            xlim[1] = xmax+tol
+        else:
+            print('TightLims Error: no xmax')
+
+        ylim = [None, None]
+        if ymin is not None:
+            ylim[0] = ymin-tol
+        else:
+            print('TightLims Error: no ymin')
+        if ymax is not None:
+            ylim[1] = ymax+tol
+        else:
+            print('TightLims Error: no ymax')
+
+        # xlim = [xmin-tol, xmax+tol]
+        # ylim = [ymin-tol, ymax+tol]
 
     return xlim, ylim
 
