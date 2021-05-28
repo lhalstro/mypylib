@@ -236,8 +236,8 @@ def UseSeaborn(palette=None, ncycle=6):
     palette --> keyword for default color palette
     ncycle  --> number of colors in color palette cycle
     """
-    import seaborn as sns
     global sns
+    import seaborn as sns
     # global colors
     #No Background fill, legend font scale, frame on legend
     sns.set(style='whitegrid', font_scale=1, rc={'legend.frameon': True})
@@ -1093,60 +1093,95 @@ def TightLims(ax, tol=0.0, rel=False):
     tol --> whitespace tolerance (in axis units)
     rel --> consider tol to be a fraction of the total height/width of the axes bounds
     """
-    xmin = xmax = ymin = ymax = None
-    for line in ax.get_lines():
+    # xmin = xmax = ymin = ymax = None
+    oglims = {}
+    oglims['xmin'] = oglims['xmax'] = oglims['ymin'] = oglims['ymax'] = None
+    for i, line in enumerate(ax.get_lines()):
         data = line.get_data()
 
         # print(data)
         if len(data[0]) == 0 or len(data[1]) == 0:
-            print('No data for this line, excluding from TightLims')
+            print('No data for line {}, excluding from TightLims'.format(i+1))
             continue
 
-        curxmin = min(data[0])
-        curxmax = max(data[0])
-        curymin = min(data[1])
-        curymax = max(data[1])
-        if xmin is None or curxmin < xmin:
-            xmin = curxmin
-        if xmax is None or curxmax > xmax:
-            xmax = curxmax
-        if ymin is None or curymin < ymin:
-            ymin = curymin
-        if ymax is None or curymax > ymax:
-            ymax = curymax
+        # curxmin = min(data[0])
+        # curxmax = max(data[0])
+        # curymin = min(data[1])
+        # curymax = max(data[1])
+        # if xmin is None or curxmin < xmin:
+        #     xmin = curxmin
+        # if xmax is None or curxmax > xmax:
+        #     xmax = curxmax
+        # if ymin is None or curymin < ymin:
+        #     ymin = curymin
+        # if ymax is None or curymax > ymax:
+        #     ymax = curymax
+        curlims = {}
+        curlims['xmin'] = min(data[0])
+        curlims['xmax'] = max(data[0])
+        curlims['ymin'] = min(data[1])
+        curlims['ymax'] = max(data[1])
+        for xy in ['x', 'y']:
+            for minmax, subadd in zip(['min', 'max'], [-1, 1]):
+                if oglims[xy+minmax] is None or curlims[xy+minmax] < oglims[xy+minmax]:
+                    oglims[xy+minmax] = curlims[xy+minmax]
 
+    # if rel:
+    #     h = ymax - ymin
+    #     w = xmax - xmin
+    #     tolrelx = w * tol
+    #     tolrely = h * tol
+    #     xlim = [xmin-tolrelx, xmax+tolrelx]
+    #     ylim = [ymin-tolrely, ymax+tolrely]
+    # else:
+        # xlim = [None, None]
+        # if xmin is not None:
+        #     xlim[0] = xmin-tol
+        # else:
+        #     print('TightLims Error: no xmin')
+        # if xmax is not None:
+        #     xlim[1] = xmax+tol
+        # else:
+        #     print('TightLims Error: no xmax')
+
+        # ylim = [None, None]
+        # if ymin is not None:
+        #     ylim[0] = ymin-tol
+        # else:
+        #     print('TightLims Error: no ymin')
+        # if ymax is not None:
+        #     ylim[1] = ymax+tol
+        # else:
+        #     print('TightLims Error: no ymax')
+
+        # # xlim = [xmin-tol, xmax+tol]
+        # # ylim = [ymin-tol, ymax+tol]
+
+    # return xlim, ylim
+
+
+    tols = {}
     if rel:
-        h = ymax - ymin
-        w = xmax - xmin
-        tolrelx = w * tol
-        tolrely = h * tol
-        xlim = [xmin-tolrelx, xmax+tolrelx]
-        ylim = [ymin-tolrely, ymax+tolrely]
+        h = oglims['ymax'] - oglims['ymin']
+        w = oglims['xmax'] - oglims['xmin']
+        tols['x'] = w * tol
+        tols['y'] = h * tol
     else:
-        xlim = [None, None]
-        if xmin is not None:
-            xlim[0] = xmin-tol
-        else:
-            print('TightLims Error: no xmin')
-        if xmax is not None:
-            xlim[1] = xmax+tol
-        else:
-            print('TightLims Error: no xmax')
+        tols['x'] = tols['y'] = tol
 
-        ylim = [None, None]
-        if ymin is not None:
-            ylim[0] = ymin-tol
-        else:
-            print('TightLims Error: no ymin')
-        if ymax is not None:
-            ylim[1] = ymax+tol
-        else:
-            print('TightLims Error: no ymax')
+    d = {}
+    lims = {}
+    for xy in ['x', 'y']:
+        for minmax, subadd in zip(['min', 'max'], [-1, 1]):
+            if oglims[xy+minmax] is not None:
+                lims[xy+minmax] = oglims[xy+minmax]+subadd*tols[xy]
+            else:
+                print('TightLims Error: no '+ xy+minmax)
+                lims[xy+minmax] = None
 
-        # xlim = [xmin-tol, xmax+tol]
-        # ylim = [ymin-tol, ymax+tol]
+    return [lims['xmin'], lims['xmax']], [lims['ymin'], lims['ymax']]
 
-    return xlim, ylim
+
 
 def SetTightLims(ax, tol=0.0, rel=False):
     """ Set axis limits to tightly bound data
