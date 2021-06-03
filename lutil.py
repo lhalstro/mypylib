@@ -414,14 +414,24 @@ def SeriesToFile(s, filename):
 
 def SeriesFromFile(filename):
     """How to read a pd.Series from a text file
-    Manually convert list strings to actual lists
     """
     s = pd.read_csv(filename, header=None, index_col=0, squeeze=True)
-    #convert lists from string to lists (items will still be strings)
+    #if everything in the series is numeric, then it will convert it to numeric values
+    if s.dtype == float or s.dtype ==  int: return
+    #Otherwise, convert lists from string to lists (items will still be strings)
     for i, val in s.items():
         if val[0] == '[':
             #convert to list
             s[i] = list(val.strip('][').split(', '))
+        else:
+            #convert any floats or ints
+            try:
+                s[i] = int(val)
+            except ValueError:
+                try:
+                    s[i] = float(val)
+                except ValueError:
+                    pass
     return s
 
 def dfSafetyValve(df, targetsize=None, quiet=True):
