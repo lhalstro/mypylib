@@ -1445,14 +1445,14 @@ def main():
         x = np.linspace(0,100,101)
         for i, c in enumerate(colors):
             y = -i*500 + x ** 2
-            ax.plot(x, y, color=c, label=str(i+1))
+            ax.plot(x, y, color=c, label=str(i))
         ax.legend()
         ax.set_title(title)
         ax.set_xlabel('x')
         ax.set_ylabel('y')
 
     nrow = 1
-    ncol = 2
+    ncol = 3
     fig, axs = plt.subplots(nrow,ncol, figsize=[7*ncol, 6*nrow])
 
 
@@ -1461,6 +1461,8 @@ def main():
     #Plot My Custom Colors
     colors = UseSeaborn('xkcd')
     PlotColorCycle(axs[1], colors, 'Custom XKCD Color Cycle:')
+    colors = UseSeaborn('xkcdrainbow')
+    PlotColorCycle(axs[2], colors, 'Custom Rainbow Color Cycle:')
 
     plt.show()
 
