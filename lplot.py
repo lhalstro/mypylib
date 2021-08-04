@@ -1138,8 +1138,8 @@ def TightLims(ax, tol=0.0, rel=False):
         curlims['ymin'] = min(data[1])
         curlims['ymax'] = max(data[1])
         for xy in ['x', 'y']:
-            for minmax, subadd in zip(['min', 'max'], [-1, 1]):
-                if oglims[xy+minmax] is None or curlims[xy+minmax] < oglims[xy+minmax]:
+            for minmax, ltgt in zip(['min', 'max'], [1, -1]): #(use -1 to flip the direction of <)
+                if oglims[xy+minmax] is None or ltgt*curlims[xy+minmax] < ltgt*oglims[xy+minmax]:
                     oglims[xy+minmax] = curlims[xy+minmax]
 
     # if rel:
