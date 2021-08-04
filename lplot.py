@@ -123,15 +123,66 @@ def FindBetween(string, before='^', after=None):
 ### PLOTTING DEFAULTS
 ########################################################################
 
+
+
+def get_palette(colors, colorkind=None):
+    """ Convert a list of colors into strings that matplotlib understands
+    colors: list of color names to set the cycle
+    colorkind: type of color specificer (e.g. 'xkcd')
+    """
+
+    if colorkind is not None:
+        #this text gets prepended to color name so mpl can recognize it
+        # e.g. 'xkcd:color name'
+        cycle = ['{}:{}'.format(colorkind, c) for c in colors]
+    else:
+        cycle = colors
+
+    return cycle
+
+def set_palette(colors, colorkind=None):
+    """ Set matplotlib default color cycle
+    colors: list of color names to set the cycle
+    colorkind: type of color specificer (e.g. 'xkcd')
+    """
+
+    # if colorkind is not None:
+    #     #this text gets prepended to color name so mpl can recognize it
+    #     # e.g. 'xkcd:color name'
+    #     cycle = ['{}:{}'.format(colorkind, c) for c in colors]
+    # else:
+    #     cycle = colors
+
+    cycle = get_palette(colors, colorkind)
+
+    matplotlib.rcParams.update({'axes.prop_cycle' : matplotlib.cycler(color=cycle)})
+
+    return cycle
+
+
 #new matplotlib default color cycle (use to reset seaborn default)
 #            dark blue,   orange,   green,      red,      purple,    brown,      pink,     gray,      yellow,   light blue
 mplcolors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf']
 #custom color cycle I like make with xkcd colors
 xkcdcolors = ["windows blue", "tangerine",  "dusty purple",  "leaf green",    "cherry" ,  'light brown',  "salmon pink",   "greyish",   "puke yellow",  "sky blue", "aqua"     ]
 xkcdhex =    ['#3778bf',       "#ff9408" ,  '#825f87',       '#5ca904',       '#cf0234',   '#ad8150',      "#fe7b7c"     ,  '#a8a495',  '#c2be0e',      "#75bbfd" , "#13eac9"    ]
+colorxkcd = get_palette(xkcdcolors, colorkind='xkcd') #actual rgbs that matplotlib likes
+#easy names for xkcd colors in case you need to pick and choose:
+colordictxkcd = {k:colorxkcd[i] for i,k in enumerate(["blue", "orange",  "purple",  "green", "red" ,  'brown',  "pink",   "gray",   "yellow",  "light blue", "aqua"     ])}
+
+#corresponding dark/light color pairs
+xkcddark = ["windows blue", "tangerine",  "dusty purple",    "viridian",           "cherry" ,      ]
+xkcdhex =    ['#3778bf',       "#ff9408" ,  '#825f87',         '#5ca904',            '#cf0234',    ]
+xkcdlight =[  "sky blue",   "sunflower",  "lightish purple", "leaf green",  "cherry red" , ]
+xkcdhex =    [  "#75bbfd" ,  "#??????" ,  '#a552e6',           '#??????',           '#??????',    ]
+colordark = get_palette(xkcddark, colorkind='xkcd') #actual rgbs that matplotlib likes
+colorlight = get_palette(xkcdlight, colorkind='xkcd') #actual rgbs that matplotlib likes
+colordarklight = [x for x in zip(colordark, colorlight)]
+
 
 xkcdrainbow =       ["cherry" ,   "tangerine",    "puke yellow",  "leaf green",  "windows blue",  "dusty purple",  'light brown',  "greyish",   "salmon pink",     "sky blue", "aqua"     ]
 xkcdrainbowhex =    ['#cf0234',    "#ff9408" ,    '#c2be0e',      '#5ca904',     '#3778bf',       '#825f87',        '#ad8150',      '#a8a495',   "#fe7b7c"     ,   "#75bbfd" , "#13eac9"    ]
+colorrainbow = get_palette(xkcdcolors, colorkind='xkcd') #actual rgbs that matplotlib like
 
 #Line Styles
 mark = 5
@@ -854,41 +905,6 @@ def NumberMarkers(i, first=True, last=False, offset=None):
         markevery = 1
 
     return marker, markevery
-
-
-def get_palette(colors, colorkind=None):
-    """ Convert a list of colors into strings that matplotlib understands
-    colors: list of color names to set the cycle
-    colorkind: type of color specificer (e.g. 'xkcd')
-    """
-
-    if colorkind is not None:
-        #this text gets prepended to color name so mpl can recognize it
-        # e.g. 'xkcd:color name'
-        cycle = ['{}:{}'.format(colorkind, c) for c in colors]
-    else:
-        cycle = colors
-
-    return cycle
-
-def set_palette(colors, colorkind=None):
-    """ Set matplotlib default color cycle
-    colors: list of color names to set the cycle
-    colorkind: type of color specificer (e.g. 'xkcd')
-    """
-
-    # if colorkind is not None:
-    #     #this text gets prepended to color name so mpl can recognize it
-    #     # e.g. 'xkcd:color name'
-    #     cycle = ['{}:{}'.format(colorkind, c) for c in colors]
-    # else:
-    #     cycle = colors
-
-    cycle = get_palette(colors, colorkind)
-
-    matplotlib.rcParams.update({'axes.prop_cycle' : matplotlib.cycler(color=cycle)})
-
-    return cycle
 
 def ColorMap(ncolors, colormap='jet'):
     """return array of colors given number of plots and colormap name
