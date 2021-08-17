@@ -222,14 +222,14 @@ def dfSubset(df, tstart=None, tend=None, tevery=None, tkey=None, reindex=True):
     if tkey is None: tkey = 'time'
 
     #Trim time series to specified interval
-    if tstart != None:
+    if tstart is not None:
         df = df[df[tkey] >= tstart]
-    if tend != None:
+    if tend is not None:
         df = df[df[tkey] <= tend]
     #Reduce points by interval
     if tevery is not None:
         #keep every 'everyt'-th row
-        df = df.loc[::tevery,:]
+        df = df.loc[::int(tevery),:]
     #reset df index
     if reindex:
         df = df.reset_index(drop=True)
