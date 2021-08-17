@@ -363,12 +363,12 @@ def dfWriteFixedWidth(df, savename, index=True, datatype='f', wid=16, prec=6,
     ofile.close()
 
 def ReadCdatFile2Pandas(path, nskip=2, hashspace=True):
-    """Read Phil Robinson cdat savefile format into a Pandas Dataframe
+    """Read cdat savefile format into a Pandas Dataframe
     with no cdat dependencies.
     path --> path to file
     nskip --> number of header rows to skip to reach data (header row index is nskip-1)
                 2 for cdat with no variable information,
-                1 for jpowell,
+                1 for jpowl,
                -1 for automatic (standard cdat format). hashspace must be True
     hashspace --> True if space between # and first header
     """
@@ -428,7 +428,12 @@ def SeriesFromFile(filename):
     for i, val in s.items():
         if val[0] == '[':
             #convert to list
-            s[i] = list(val.strip('][').split(', '))
+            s[i] = list(val.strip('][').split(', ')) #all values are still strings
+
+            #has trouble with lists of strings with quote marks
+            s[i] = [x.replace("'", "") for x in s[i]]
+
+
         else:
             #convert any floats or ints
             try:
@@ -676,7 +681,7 @@ def AddToSub(text, subadd):
     split = text.split('_')
     return split[0] + '_{' + split[1] + subadd + '}'
 
-def df2tex(df, filename=None, dec=4, align='c', boldcol=True, boldrow=True,):
+def df2tex(df, filename=None, dec=4, exp=False, align='c', boldcol=True, boldrow=True, nonan=True):
     """Convert pandas dataframe to latex table and save as '.tex' text file.
     Dataframe column keys will be column titles of table.
     Dataframe indices will be row titles of table.
@@ -690,6 +695,7 @@ def df2tex(df, filename=None, dec=4, align='c', boldcol=True, boldrow=True,):
     dec --> number of decimal places
     align --> alignment (left: l, center: c, right: r)
     boldcol, boldrow --> make columns, rows bold, add $$ for latex math
+    nonan --> replace "NaN" values with empty cell
     """
 
     #functions to add
@@ -713,8 +719,12 @@ def df2tex(df, filename=None, dec=4, align='c', boldcol=True, boldrow=True,):
         rows = ['$\\mathbf{{{}}}$'.format(r) for r in rows]
         df = df.set_index([rows])
 
-    def f1(x):
-        return '{:1.{}f}'.format(x, dec)
+    if exp:
+        def f1(x):
+            return '{:1.{}e}'.format(x, dec)
+    else:
+        def f1(x):
+            return '{:1.{}f}'.format(x, dec)
 
     out = df.to_latex(escape=False, float_format=f1)
     #Replace horizonatal lines
@@ -730,6 +740,10 @@ def df2tex(df, filename=None, dec=4, align='c', boldcol=True, boldrow=True,):
     #replace
     out = out.replace( replace, colform )
     # out = out.replace( ''.join(['l']*(len(cols)+1) ), colform )
+
+    #empty space instead of "NaN"
+    if nonan:
+        out = out.replace("NaN", "   ")
 
     if filename != None:
         #WRITE TEX TABLE TO FILE
