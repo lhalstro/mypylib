@@ -3,14 +3,14 @@ Logan Halstrom
 CREATED:  25 JUL 2015
 MODIFIED: 12 MAY 2020
 
-DESCRIPTION:  File manipulation, matplotlib plotting and saving
+DESCRIPTION:  File manipulation,
 """
 
 import subprocess
 import os
 import errno
 import re
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 import numpy as np
 from scipy.interpolate import interp1d
 import pandas as pd
@@ -222,14 +222,14 @@ def dfSubset(df, tstart=None, tend=None, tevery=None, tkey=None, reindex=True):
     if tkey is None: tkey = 'time'
 
     #Trim time series to specified interval
-    if tstart != None:
+    if tstart is not None:
         df = df[df[tkey] >= tstart]
-    if tend != None:
+    if tend is not None:
         df = df[df[tkey] <= tend]
     #Reduce points by interval
     if tevery is not None:
         #keep every 'everyt'-th row
-        df = df.loc[::tevery,:]
+        df = df.loc[::int(tevery),:]
     #reset df index
     if reindex:
         df = df.reset_index(drop=True)
@@ -237,7 +237,7 @@ def dfSubset(df, tstart=None, tend=None, tevery=None, tkey=None, reindex=True):
     return df
 
 def dfTimeSubset(df, tstart=None, tend=None, tevery=None, reindex=True):
-    """Get time interval subset of provided dataframe
+    """Partial function of `dfSubset`. Get time interval subset of provided dataframe.
 
     df     --> dataframe with trajectory data
     tstart --> subset start time [None] (start)
@@ -363,12 +363,12 @@ def dfWriteFixedWidth(df, savename, index=True, datatype='f', wid=16, prec=6,
     ofile.close()
 
 def ReadCdatFile2Pandas(path, nskip=2, hashspace=True):
-    """Read Phil Robinson cdat savefile format into a Pandas Dataframe
+    """Read cdat savefile format into a Pandas Dataframe
     with no cdat dependencies.
     path --> path to file
     nskip --> number of header rows to skip to reach data (header row index is nskip-1)
                 2 for cdat with no variable information,
-                1 for jpowell,
+                1 for jpowl,
                -1 for automatic (standard cdat format). hashspace must be True
     hashspace --> True if space between # and first header
     """
@@ -414,14 +414,35 @@ def SeriesToFile(s, filename):
 
 def SeriesFromFile(filename):
     """How to read a pd.Series from a text file
-    Manually convert list strings to actual lists
+    Expects two-column, comma-separated data of (e.g. "key1,value1\nkey2,value2...")
     """
-    s = pd.read_csv(filename, header=None, index_col=0, squeeze=True)
-    #convert lists from string to lists (items will still be strings)
+    s = pd.read_csv(filename, header=None, names=[None], index_col=0, squeeze=True)
+        #header=None: columns are key/val
+        #names=[None]: if no column names are given, column gets labeled "0", then that gets turned into the series name
+        #index_col=0: says to use first column as the "row" labels (soon to be column or key labels)
+        #squeeze=True: supposedly returns a series if only one column
+
+    #if everything in the series is numeric, then it will convert it to numeric values
+    if s.dtype == float or s.dtype ==  int: return
+    #Otherwise, convert lists from string to lists (items will still be strings)
     for i, val in s.items():
         if val[0] == '[':
             #convert to list
-            s[i] = list(val.strip('][').split(', '))
+            s[i] = list(val.strip('][').split(', ')) #all values are still strings
+
+            #has trouble with lists of strings with quote marks
+            s[i] = [x.replace("'", "") for x in s[i]]
+
+
+        else:
+            #convert any floats or ints
+            try:
+                s[i] = int(val)
+            except ValueError:
+                try:
+                    s[i] = float(val)
+                except ValueError:
+                    pass
     return s
 
 def dfSafetyValve(df, targetsize=None, quiet=True):
@@ -447,204 +468,207 @@ def dfZeroSmallValues(df, tol=1e-16):
     return df
 
 
-########################################################################
-### PLOTTING ###########################################################
-########################################################################
+# ########################################################################
+# ### PLOTTING ###########################################################
+# ########################################################################
 
-#PLOT FORMATTING
-# Configure figures for production
-WIDTH = 495.0  # width of one column
-FACTOR = 1.0   # the fraction of the width the figure should occupy
-fig_width_pt  = WIDTH * FACTOR
+# #PLOT FORMATTING
+# # Configure figures for production
+# WIDTH = 495.0  # width of one column
+# FACTOR = 1.0   # the fraction of the width the figure should occupy
+# fig_width_pt  = WIDTH * FACTOR
 
-inches_per_pt = 1.0 / 72.27
-golden_ratio  = (np.sqrt(5) - 1.0) / 2.0      # because it looks good
-fig_width_in  = fig_width_pt * inches_per_pt  # figure width in inches
-fig_height_in = fig_width_in * golden_ratio   # figure height in inches
-fig_dims      = [fig_width_in, fig_height_in] # fig dims as a list
+# inches_per_pt = 1.0 / 72.27
+# golden_ratio  = (np.sqrt(5) - 1.0) / 2.0      # because it looks good
+# fig_width_in  = fig_width_pt * inches_per_pt  # figure width in inches
+# fig_height_in = fig_width_in * golden_ratio   # figure height in inches
+# fig_dims      = [fig_width_in, fig_height_in] # fig dims as a list
 
-#Line Styles
-mark = 5
-minimark = 0.75
-line = 1.5
-#Font Styles
-font_tit = {'family' : 'serif',
-            'color'  : 'black',
-            'weight' : 'normal',
-            'size'   : 18,
-            }
-font_lbl = {'family' : 'serif',
-            'color'  : 'black',
-            'weight' : 'normal',
-            'size'   : 18,
-            }
-font_box = {'family' : 'arial',
-            'color'  : 'black',
-            'weight' : 'normal',
-            'size'   : 12,
-            }
-font_tick = 16
-#Textbox Properties
-textbox_props = dict(boxstyle='round', facecolor='white', alpha=0.5)
+# #Line Styles
+# mark = 5
+# minimark = 0.75
+# line = 1.5
+# #Font Styles
+# font_tit = {'family' : 'serif',
+#             'color'  : 'black',
+#             'weight' : 'normal',
+#             'size'   : 18,
+#             }
+# font_lbl = {'family' : 'serif',
+#             'color'  : 'black',
+#             'weight' : 'normal',
+#             'size'   : 18,
+#             }
+# font_box = {'family' : 'arial',
+#             'color'  : 'black',
+#             'weight' : 'normal',
+#             'size'   : 12,
+#             }
+# font_tick = 16
+# #Textbox Properties
+# textbox_props = dict(boxstyle='round', facecolor='white', alpha=0.5)
 
-def PlotStart(title, xlbl, ylbl, horzy='vertical'):
-    """Begin plot with title and axis labels
-    horzy --> vertical or horizontal y axis label"""
-    fig = plt.figure()
-    ax = fig.add_subplot(1, 1, 1)
-    plt.title(title, fontdict=font_tit)
-    plt.xlabel(xlbl, fontdict=font_lbl)
-    plt.xticks(fontsize=font_tick)
-    plt.ylabel(ylbl, fontdict=font_lbl, rotation=horzy)
-    plt.yticks(fontsize=font_tick)
-    #increase title spacing
-    ttl = ax.title
-    ttl.set_position([.5, 1.025])
-    return fig, ax
+# def PlotStart(title, xlbl, ylbl, horzy='vertical'):
+#     """Begin plot with title and axis labels
+#     horzy --> vertical or horizontal y axis label"""
+#     fig = plt.figure()
+#     ax = fig.add_subplot(1, 1, 1)
+#     plt.title(title, fontdict=font_tit)
+#     plt.xlabel(xlbl, fontdict=font_lbl)
+#     plt.xticks(fontsize=font_tick)
+#     plt.ylabel(ylbl, fontdict=font_lbl, rotation=horzy)
+#     plt.yticks(fontsize=font_tick)
+#     #increase title spacing
+#     ttl = ax.title
+#     ttl.set_position([.5, 1.025])
+#     return fig, ax
 
-def SharexSubPlotStart(nplots, title=''):
-    """Start an array of nplots subplots arranged in a vertical column with
-    a shared x-axis. Optional title.
-    nplots --> number of SubPlotStart
-    title --> title for array of subplots
-    sharex --> true for all subplots sharex"""
-    fig, ax = plt.subplots(nplots, sharex=True)
-    if title != '':
-        plt.title(title, fontdict=font_tit)
-        #increase title spacing
-        ttl = ax.title
-        ttl.set_position([.5, 1.025])
-    return fig, ax
+# def SharexSubPlotStart(nplots, title=''):
+#     """Start an array of nplots subplots arranged in a vertical column with
+#     a shared x-axis. Optional title.
+#     nplots --> number of SubPlotStart
+#     title --> title for array of subplots
+#     sharex --> true for all subplots sharex"""
+#     fig, ax = plt.subplots(nplots, sharex=True)
+#     if title != '':
+#         plt.title(title, fontdict=font_tit)
+#         #increase title spacing
+#         ttl = ax.title
+#         ttl.set_position([.5, 1.025])
+#     return fig, ax
 
-def SharexSubPlotAdd(ax, nplot, x, y, title):
-    ax[nplot].set_title(title, fontdict=font_tit)
-    return ax[nplot].plot(x, y)
+# def SharexSubPlotAdd(ax, nplot, x, y, title):
+#     ax[nplot].set_title(title, fontdict=font_tit)
+#     return ax[nplot].plot(x, y)
 
-def Plot(ax, x, y, color, label, linestyle='-',
-            markerstyle='None', line=1.5, mark=5):
-    """Enter 'Default' to keep default value if entering values for later
-    variables"""
-    return ax.plot(x, y, color=color, label=label, linestyle=linestyle,
-                    linewidth=line, marker=markerstyle, markersize=mark)
+# def Plot(ax, x, y, color, label, linestyle='-',
+#             markerstyle='None', line=1.5, mark=5):
+#     """Enter 'Default' to keep default value if entering values for later
+#     variables"""
+#     return ax.plot(x, y, color=color, label=label, linestyle=linestyle,
+#                     linewidth=line, marker=markerstyle, markersize=mark)
 
-def PlotLegend(ax, loc='best', alpha=0.5, title=None):
-    leg = ax.legend(loc=loc, title=title, fancybox=True)
-    leg.get_frame().set_alpha(alpha)
-    return leg
+# def PlotLegend(ax, loc='best', alpha=0.5, title=None):
+#     leg = ax.legend(loc=loc, title=title, fancybox=True)
+#     leg.get_frame().set_alpha(alpha)
+#     return leg
 
-def PlotLegendLabels(ax, handles, labels, loc='best', title=None, alpha=0.5):
-    """Plot legend specifying labels"""
-    leg = ax.legend(handles, labels, loc=loc, title=title, fancybox=True)
-    leg.get_frame().set_alpha(alpha)
-    for label in leg.get_texts():
-        label.set_fontsize('large')
-    return leg
+# def PlotLegendLabels(ax, handles, labels, loc='best', title=None, alpha=0.5):
+#     """Plot legend specifying labels"""
+#     leg = ax.legend(handles, labels, loc=loc, title=title, fancybox=True)
+#     leg.get_frame().set_alpha(alpha)
+#     for label in leg.get_texts():
+#         label.set_fontsize('large')
+#     return leg
 
-def ColorMap(ncolors, colormap='jet'):
-    """return array of colors given number of plots and colormap name
-    colormaps: jet, brg, Accent, rainbow
-    """
-    cmap = plt.get_cmap(colormap)
-    colors = [cmap(i) for i in np.linspace(0, 1, ncolors)]
-    return colors
+# def ColorMap(ncolors, colormap='jet'):
+#     """return array of colors given number of plots and colormap name
+#     colormaps: jet, brg, Accent, rainbow
+#     """
+#     cmap = plt.get_cmap(colormap)
+#     colors = [cmap(i) for i in np.linspace(0, 1, ncolors)]
+#     return colors
 
-def SavePlot(savename, overwrite=1):
-    """Save file given save path.  Do not save if file exists
-    or if variable overwrite is 1"""
-    if os.path.isfile(savename):
-        if overwrite == 0:
-            print('     Overwrite is off')
-            return
-        else: os.remove(savename)
-    MakeOutputDir(GetParentDir(savename))
-    plt.savefig(savename, bbox_inches='tight')
-    # plt.close()
+# def SavePlot(savename, overwrite=1):
+#     """Save file given save path.  Do not save if file exists
+#     or if variable overwrite is 1"""
+#     if os.path.isfile(savename):
+#         if overwrite == 0:
+#             print('     Overwrite is off')
+#             return
+#         else: os.remove(savename)
+#     MakeOutputDir(GetParentDir(savename))
+#     plt.savefig(savename, bbox_inches='tight')
+#     # plt.close()
 
-def ShowPlot(showplot=1):
-    """Show plot if variable showplot is 1"""
-    if showplot == 1:
-        plt.show()
-    else:
-        plt.close()
+# def ShowPlot(showplot=1):
+#     """Show plot if variable showplot is 1"""
+#     if showplot == 1:
+#         plt.show()
+#     else:
+#         plt.close()
 
-def GridLines(ax, linestyle='--', color='k', which='major'):
-    """Plot grid lines for given axis.
-    Default dashed line, blach, major ticks
-    (use: 'color = p1.get_color()' to get color of a line 'p1')
-    """
-    ax.grid(True, which=which, linestyle=linestyle, color=color)
+# def GridLines(ax, linestyle='--', color='k', which='major'):
+#     """Plot grid lines for given axis.
+#     Default dashed line, blach, major ticks
+#     (use: 'color = p1.get_color()' to get color of a line 'p1')
+#     """
+#     ax.grid(True, which=which, linestyle=linestyle, color=color)
 
-def TextBox(ax, boxtext, x=0.005, y=0.95, fontsize=font_box['size'],
-                                                    alpha=0.5, props=None):
-    if props == None:
-        props = dict(boxstyle='round', facecolor='white', alpha=alpha)
-    ax.text(x, y, boxtext, transform=ax.transAxes, fontsize=fontsize,
-            verticalalignment='top', bbox=props)
+# def TextBox(ax, boxtext, x=0.005, y=0.95, fontsize=font_box['size'],
+#                                                     alpha=0.5, props=None):
+#     if props == None:
+#         props = dict(boxstyle='round', facecolor='white', alpha=alpha)
+#     ax.text(x, y, boxtext, transform=ax.transAxes, fontsize=fontsize,
+#             verticalalignment='top', bbox=props)
 
-def VectorMark(ax, x, y, nmark, color='k'):
-    """Mark line with arrow pointing in direction of x+.
-    Show nmark arrows
-    """
-    n = len(y)
-    dm = int(len(y) / nmark)
-    # indicies = np.linspace(1, n-2, nmark)
-    indicies = [1]
-    while indicies[-1]+dm < len(y)-1:
-        indicies.append(indicies[-1] + dm)
+# def VectorMark(ax, x, y, nmark, color='k'):
+#     """Mark line with arrow pointing in direction of x+.
+#     Show nmark arrows
+#     """
+#     n = len(y)
+#     dm = int(len(y) / nmark)
+#     # indicies = np.linspace(1, n-2, nmark)
+#     indicies = [1]
+#     while indicies[-1]+dm < len(y)-1:
+#         indicies.append(indicies[-1] + dm)
 
-    for ind in indicies:
-        #entries are x, y, dx, dy
-        xbase, ybase = x[ind], y[ind]
-        dx, dy = x[ind+1] - x[ind], y[ind+1] - y[ind]
-        ax.quiver(xbase, ybase, dx, dy ,angles='xy',scale_units='xy',scale=1)
+#     for ind in indicies:
+#         #entries are x, y, dx, dy
+#         xbase, ybase = x[ind], y[ind]
+#         dx, dy = x[ind+1] - x[ind], y[ind+1] - y[ind]
+#         ax.quiver(xbase, ybase, dx, dy ,angles='xy',scale_units='xy',scale=1)
 
-def PlotVelProfile(ax, y, u, color='green', narrow=4):
-    """Plot velocity profile as y vs y
-    y --> non-dim. vetical grid within BL (y/delta)
-    u --> non-dim. x-velocity withing BL (u/u_e)
-    color --> sting, color of plot
-    narrow --> number of points between arrows
-    """
-    vertlinex = np.zeros(len(y))
-    ax.plot(vertlinex, y, color=color, linewidth=line)
-    ax.fill_betweenx(y, vertlinex, u, facecolor=color, alpha=0.2)
-    wd, ln = 0.03, 0.03
-    for i in range(0, len(y), narrow):
-        if abs(u[i]) < ln:
-            ax.plot([0, u[i]], [y[i], y[i]], color=color, linewidth=line)
-        else:
-            ax.arrow(0, y[i], u[i]-ln, 0, head_width=wd, head_length=ln,
-                fc=color, ec=color, linewidth=line)
-    ax.plot(u, y, color=color, linewidth=line)
-    ax.axis([min(u), max(u), min(y), max(y)])
+# def PlotVelProfile(ax, y, u, color='green', narrow=4):
+#     """Plot velocity profile as y vs y
+#     y --> non-dim. vetical grid within BL (y/delta)
+#     u --> non-dim. x-velocity withing BL (u/u_e)
+#     color --> sting, color of plot
+#     narrow --> number of points between arrows
+#     """
+#     vertlinex = np.zeros(len(y))
+#     ax.plot(vertlinex, y, color=color, linewidth=line)
+#     ax.fill_betweenx(y, vertlinex, u, facecolor=color, alpha=0.2)
+#     wd, ln = 0.03, 0.03
+#     for i in range(0, len(y), narrow):
+#         if abs(u[i]) < ln:
+#             ax.plot([0, u[i]], [y[i], y[i]], color=color, linewidth=line)
+#         else:
+#             ax.arrow(0, y[i], u[i]-ln, 0, head_width=wd, head_length=ln,
+#                 fc=color, ec=color, linewidth=line)
+#     ax.plot(u, y, color=color, linewidth=line)
+#     ax.axis([min(u), max(u), min(y), max(y)])
 
-def PolyFit(x, y, order, n, showplot=0):
-    """Polynomial fit xdata vs ydata points
-    x --> independent variable data points vector
-    y --> dependent variable data points vector
-    order --> order of polynomial fit
-    n --> number of points in polynomial fit
-    showplot --> '1' to show plot of data fit
-    Returns:
-    function of polynomial fit
-    """
-    #New independent variable vector:
-    xmin, xmax = x[0], x[-1]
-    x_poly = np.linspace(xmin, xmax, n)
-    fit = np.polyfit(x, y, order)
-    polyfit = np.poly1d(fit)
-    y_poly = polyfit(x_poly)
-    #Plot Poly Fit
-    plt.figure()
-    plt.title(str(order) + '-Order Polynomial Fit', fontsize=14)
-    plt.xlabel('x', fontsize=14)
-    plt.ylabel('y', fontsize=14)
-    plt.plot(x, y, 'rx', label='Data')
-    plt.plot(x_poly, y_poly, 'b', label='Fit')
-    plt.legend(loc='best')
-    if showplot == 1:
-        plt.show()
-    return polyfit
+# def PolyFit(x, y, order, n, showplot=0):
+#     """Polynomial fit xdata vs ydata points
+#     x --> independent variable data points vector
+#     y --> dependent variable data points vector
+#     order --> order of polynomial fit
+#     n --> number of points in polynomial fit
+#     showplot --> '1' to show plot of data fit
+#     Returns:
+#     function of polynomial fit
+#     """
+#     #New independent variable vector:
+#     xmin, xmax = x[0], x[-1]
+#     x_poly = np.linspace(xmin, xmax, n)
+#     fit = np.polyfit(x, y, order)
+#     polyfit = np.poly1d(fit)
+#     y_poly = polyfit(x_poly)
+#     #Plot Poly Fit
+#     plt.figure()
+#     plt.title(str(order) + '-Order Polynomial Fit', fontsize=14)
+#     plt.xlabel('x', fontsize=14)
+#     plt.ylabel('y', fontsize=14)
+#     plt.plot(x, y, 'rx', label='Data')
+#     plt.plot(x_poly, y_poly, 'b', label='Fit')
+#     plt.legend(loc='best')
+#     if showplot == 1:
+#         plt.show()
+#     return polyfit
+
+
+
 
 ########################################################################
 ### LATEX ##############################################################
@@ -657,7 +681,7 @@ def AddToSub(text, subadd):
     split = text.split('_')
     return split[0] + '_{' + split[1] + subadd + '}'
 
-def df2tex(df, filename=None, dec=4, align='c', boldcol=True, boldrow=True,):
+def df2tex(df, filename=None, dec=4, exp=False, align='c', boldcol=True, boldrow=True, nonan=True):
     """Convert pandas dataframe to latex table and save as '.tex' text file.
     Dataframe column keys will be column titles of table.
     Dataframe indices will be row titles of table.
@@ -671,6 +695,7 @@ def df2tex(df, filename=None, dec=4, align='c', boldcol=True, boldrow=True,):
     dec --> number of decimal places
     align --> alignment (left: l, center: c, right: r)
     boldcol, boldrow --> make columns, rows bold, add $$ for latex math
+    nonan --> replace "NaN" values with empty cell
     """
 
     #functions to add
@@ -694,8 +719,12 @@ def df2tex(df, filename=None, dec=4, align='c', boldcol=True, boldrow=True,):
         rows = ['$\\mathbf{{{}}}$'.format(r) for r in rows]
         df = df.set_index([rows])
 
-    def f1(x):
-        return '{:1.{}f}'.format(x, dec)
+    if exp:
+        def f1(x):
+            return '{:1.{}e}'.format(x, dec)
+    else:
+        def f1(x):
+            return '{:1.{}f}'.format(x, dec)
 
     out = df.to_latex(escape=False, float_format=f1)
     #Replace horizonatal lines
@@ -711,6 +740,10 @@ def df2tex(df, filename=None, dec=4, align='c', boldcol=True, boldrow=True,):
     #replace
     out = out.replace( replace, colform )
     # out = out.replace( ''.join(['l']*(len(cols)+1) ), colform )
+
+    #empty space instead of "NaN"
+    if nonan:
+        out = out.replace("NaN", "   ")
 
     if filename != None:
         #WRITE TEX TABLE TO FILE

@@ -123,15 +123,66 @@ def FindBetween(string, before='^', after=None):
 ### PLOTTING DEFAULTS
 ########################################################################
 
+
+
+def get_palette(colors, colorkind=None):
+    """ Convert a list of colors into strings that matplotlib understands
+    colors: list of color names to set the cycle
+    colorkind: type of color specificer (e.g. 'xkcd')
+    """
+
+    if colorkind is not None:
+        #this text gets prepended to color name so mpl can recognize it
+        # e.g. 'xkcd:color name'
+        cycle = ['{}:{}'.format(colorkind, c) for c in colors]
+    else:
+        cycle = colors
+
+    return cycle
+
+def set_palette(colors, colorkind=None):
+    """ Set matplotlib default color cycle
+    colors: list of color names to set the cycle
+    colorkind: type of color specificer (e.g. 'xkcd')
+    """
+
+    # if colorkind is not None:
+    #     #this text gets prepended to color name so mpl can recognize it
+    #     # e.g. 'xkcd:color name'
+    #     cycle = ['{}:{}'.format(colorkind, c) for c in colors]
+    # else:
+    #     cycle = colors
+
+    cycle = get_palette(colors, colorkind)
+
+    matplotlib.rcParams.update({'axes.prop_cycle' : matplotlib.cycler(color=cycle)})
+
+    return cycle
+
+
 #new matplotlib default color cycle (use to reset seaborn default)
 #            dark blue,   orange,   green,      red,      purple,    brown,      pink,     gray,      yellow,   light blue
 mplcolors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf']
 #custom color cycle I like make with xkcd colors
 xkcdcolors = ["windows blue", "tangerine",  "dusty purple",  "leaf green",    "cherry" ,  'light brown',  "salmon pink",   "greyish",   "puke yellow",  "sky blue", "aqua"     ]
 xkcdhex =    ['#3778bf',       "#ff9408" ,  '#825f87',       '#5ca904',       '#cf0234',   '#ad8150',      "#fe7b7c"     ,  '#a8a495',  '#c2be0e',      "#75bbfd" , "#13eac9"    ]
+colorxkcd = get_palette(xkcdcolors, colorkind='xkcd') #actual rgbs that matplotlib likes
+#easy names for xkcd colors in case you need to pick and choose:
+colordictxkcd = {k:colorxkcd[i] for i,k in enumerate(["blue", "orange",  "purple",  "green", "red" ,  'brown',  "pink",   "gray",   "yellow",  "light blue", "aqua"     ])}
+
+#corresponding dark/light color pairs
+xkcddark = ["windows blue", "tangerine",  "dusty purple",    "viridian",           "cherry" ,      ]
+xkcdhex =    ['#3778bf',       "#ff9408" ,  '#825f87',         '#5ca904',            '#cf0234',    ]
+xkcdlight =[  "sky blue",   "sunflower",  "lightish purple", "leaf green",  "cherry red" , ]
+xkcdhex =    [  "#75bbfd" ,  "#??????" ,  '#a552e6',           '#??????',           '#??????',    ]
+colordark = get_palette(xkcddark, colorkind='xkcd') #actual rgbs that matplotlib likes
+colorlight = get_palette(xkcdlight, colorkind='xkcd') #actual rgbs that matplotlib likes
+colordarklight = [x for x in zip(colordark, colorlight)]
+
 
 xkcdrainbow =       ["cherry" ,   "tangerine",    "puke yellow",  "leaf green",  "windows blue",  "dusty purple",  'light brown',  "greyish",   "salmon pink",     "sky blue", "aqua"     ]
 xkcdrainbowhex =    ['#cf0234',    "#ff9408" ,    '#c2be0e',      '#5ca904',     '#3778bf',       '#825f87',        '#ad8150',      '#a8a495',   "#fe7b7c"     ,   "#75bbfd" , "#13eac9"    ]
+colorrainbow = get_palette(xkcdcolors, colorkind='xkcd') #actual rgbs that matplotlib like
 
 #Line Styles
 mark = 5
@@ -236,8 +287,8 @@ def UseSeaborn(palette=None, ncycle=6):
     palette --> keyword for default color palette
     ncycle  --> number of colors in color palette cycle
     """
-    import seaborn as sns
     global sns
+    import seaborn as sns
     # global colors
     #No Background fill, legend font scale, frame on legend
     sns.set(style='whitegrid', font_scale=1, rc={'legend.frameon': True})
@@ -857,41 +908,6 @@ def NumberMarkers(i, first=True, last=False, offset=None):
 
     return marker, markevery
 
-
-def get_palette(colors, colorkind=None):
-    """ Convert a list of colors into strings that matplotlib understands
-    colors: list of color names to set the cycle
-    colorkind: type of color specificer (e.g. 'xkcd')
-    """
-
-    if colorkind is not None:
-        #this text gets prepended to color name so mpl can recognize it
-        # e.g. 'xkcd:color name'
-        cycle = ['{}:{}'.format(colorkind, c) for c in colors]
-    else:
-        cycle = colors
-
-    return cycle
-
-def set_palette(colors, colorkind=None):
-    """ Set matplotlib default color cycle
-    colors: list of color names to set the cycle
-    colorkind: type of color specificer (e.g. 'xkcd')
-    """
-
-    # if colorkind is not None:
-    #     #this text gets prepended to color name so mpl can recognize it
-    #     # e.g. 'xkcd:color name'
-    #     cycle = ['{}:{}'.format(colorkind, c) for c in colors]
-    # else:
-    #     cycle = colors
-
-    cycle = get_palette(colors, colorkind)
-
-    matplotlib.rcParams.update({'axes.prop_cycle' : matplotlib.cycler(color=cycle)})
-
-    return cycle
-
 def ColorMap(ncolors, colormap='jet'):
     """return array of colors given number of plots and colormap name
     colormaps: jet, brg, Accent, rainbow
@@ -1054,11 +1070,12 @@ def TextBox(ax, boxtext, x=0.005, y=0.95, fontsize=None,
                 alpha=1.0, props=None, color=None, relcoord=True,
                 vert='top', horz='left', rotation=0):
     """Add text box.
-    (Anchor position is upper left corner of text box, Origin is lower left corner of plot)
+    (Default anchor position is upper left corner of text box, Origin is lower left corner of plot,
+    So x=0,y=1 puts the upper left corner of text box in upper left corner of plot)
     For transparent textbox, use: color='none', alpha=0
     relcoord --> Use relative coordinate achor points (0 --> 1) if [True],
                     actual x,y coordinates if False
-    vert/horz --> vertical and horizontal alignment of box about given point
+    vert/horz --> vertical and horizontal alignment of box about anchor point
                     e.g. center/center places box centered on point
                          top/center places box with point on top center
     rotation --> text rotation in degrees
@@ -1094,40 +1111,95 @@ def TightLims(ax, tol=0.0, rel=False):
     tol --> whitespace tolerance (in axis units)
     rel --> consider tol to be a fraction of the total height/width of the axes bounds
     """
-    xmin = xmax = ymin = ymax = None
-    for line in ax.get_lines():
+    # xmin = xmax = ymin = ymax = None
+    oglims = {}
+    oglims['xmin'] = oglims['xmax'] = oglims['ymin'] = oglims['ymax'] = None
+    for i, line in enumerate(ax.get_lines()):
         data = line.get_data()
 
         # print(data)
         if len(data[0]) == 0 or len(data[1]) == 0:
-            print('No data for this line, excluding from TightLims')
+            print('No data for line {}, excluding from TightLims'.format(i+1))
             continue
 
-        curxmin = min(data[0])
-        curxmax = max(data[0])
-        curymin = min(data[1])
-        curymax = max(data[1])
-        if xmin == None or curxmin < xmin:
-            xmin = curxmin
-        if xmax == None or curxmax > xmax:
-            xmax = curxmax
-        if ymin == None or curymin < ymin:
-            ymin = curymin
-        if ymax == None or curymax > ymax:
-            ymax = curymax
+        # curxmin = min(data[0])
+        # curxmax = max(data[0])
+        # curymin = min(data[1])
+        # curymax = max(data[1])
+        # if xmin is None or curxmin < xmin:
+        #     xmin = curxmin
+        # if xmax is None or curxmax > xmax:
+        #     xmax = curxmax
+        # if ymin is None or curymin < ymin:
+        #     ymin = curymin
+        # if ymax is None or curymax > ymax:
+        #     ymax = curymax
+        curlims = {}
+        curlims['xmin'] = min(data[0])
+        curlims['xmax'] = max(data[0])
+        curlims['ymin'] = min(data[1])
+        curlims['ymax'] = max(data[1])
+        for xy in ['x', 'y']:
+            for minmax, ltgt in zip(['min', 'max'], [1, -1]): #(use -1 to flip the direction of <)
+                if oglims[xy+minmax] is None or ltgt*curlims[xy+minmax] < ltgt*oglims[xy+minmax]:
+                    oglims[xy+minmax] = curlims[xy+minmax]
 
+    # if rel:
+    #     h = ymax - ymin
+    #     w = xmax - xmin
+    #     tolrelx = w * tol
+    #     tolrely = h * tol
+    #     xlim = [xmin-tolrelx, xmax+tolrelx]
+    #     ylim = [ymin-tolrely, ymax+tolrely]
+    # else:
+        # xlim = [None, None]
+        # if xmin is not None:
+        #     xlim[0] = xmin-tol
+        # else:
+        #     print('TightLims Error: no xmin')
+        # if xmax is not None:
+        #     xlim[1] = xmax+tol
+        # else:
+        #     print('TightLims Error: no xmax')
+
+        # ylim = [None, None]
+        # if ymin is not None:
+        #     ylim[0] = ymin-tol
+        # else:
+        #     print('TightLims Error: no ymin')
+        # if ymax is not None:
+        #     ylim[1] = ymax+tol
+        # else:
+        #     print('TightLims Error: no ymax')
+
+        # # xlim = [xmin-tol, xmax+tol]
+        # # ylim = [ymin-tol, ymax+tol]
+
+    # return xlim, ylim
+
+
+    tols = {}
     if rel:
-        h = ymax - ymin
-        w = xmax - xmin
-        tolrelx = w * tol
-        tolrely = h * tol
-        xlim = [xmin-tolrelx, xmax+tolrelx]
-        ylim = [ymin-tolrely, ymax+tolrely]
+        h = oglims['ymax'] - oglims['ymin']
+        w = oglims['xmax'] - oglims['xmin']
+        tols['x'] = w * tol
+        tols['y'] = h * tol
     else:
-        xlim = [xmin-tol, xmax+tol]
-        ylim = [ymin-tol, ymax+tol]
+        tols['x'] = tols['y'] = tol
 
-    return xlim, ylim
+    d = {}
+    lims = {}
+    for xy in ['x', 'y']:
+        for minmax, subadd in zip(['min', 'max'], [-1, 1]):
+            if oglims[xy+minmax] is not None:
+                lims[xy+minmax] = oglims[xy+minmax]+subadd*tols[xy]
+            else:
+                print('TightLims Error: no '+ xy+minmax)
+                lims[xy+minmax] = None
+
+    return [lims['xmin'], lims['xmax']], [lims['ymin'], lims['ymax']]
+
+
 
 def SetTightLims(ax, tol=0.0, rel=False):
     """ Set axis limits to tightly bound data
@@ -1391,14 +1463,14 @@ def main():
         x = np.linspace(0,100,101)
         for i, c in enumerate(colors):
             y = -i*500 + x ** 2
-            ax.plot(x, y, color=c, label=str(i+1))
+            ax.plot(x, y, color=c, label=str(i))
         ax.legend()
         ax.set_title(title)
         ax.set_xlabel('x')
         ax.set_ylabel('y')
 
     nrow = 1
-    ncol = 2
+    ncol = 3
     fig, axs = plt.subplots(nrow,ncol, figsize=[7*ncol, 6*nrow])
 
 
@@ -1407,6 +1479,8 @@ def main():
     #Plot My Custom Colors
     colors = UseSeaborn('xkcd')
     PlotColorCycle(axs[1], colors, 'Custom XKCD Color Cycle:')
+    colors = UseSeaborn('xkcdrainbow')
+    PlotColorCycle(axs[2], colors, 'Custom Rainbow Color Cycle:')
 
     plt.show()
 
