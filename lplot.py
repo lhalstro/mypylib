@@ -752,6 +752,8 @@ legboxdict = {
     'top'    : {'bbox' : (0.5,1),     'loc' : 'lower center',}, #legend on top of plot
     'bottom' : {'bbox' : (0.5,-0.15), 'loc' : 'upper center',}, #legend on bottom of plot
     'right'  : {'bbox' : (1,0.5),     'loc' : 'center left' ,}, #Legend to right of plot [default]
+    'rightup': {'bbox' : (1,0.5),     'loc' : 'lower left' ,}, #Legend to right of plot, but above midline so you can fit two legends
+    'rightlo': {'bbox' : (1,0.5),     'loc' : 'upper left' ,}, #Legend to right of plot, but below midline
 }
 
 def Legend(ax, *args, outside=None, **kwargs):
