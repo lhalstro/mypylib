@@ -803,6 +803,7 @@ legboxdict = {
     'top'    : {'bbox' : (0.5,1),     'loc' : 'lower center',}, #legend on top of plot
     'bottom' : {'bbox' : (0.5,-0.15), 'loc' : 'upper center',}, #legend on bottom of plot
     'right'  : {'bbox' : (1,0.5),     'loc' : 'center left' ,}, #Legend to right of plot [default]
+    'upperrightcorner'  : {'bbox' : (1,1),     'loc' : 'upper left' ,}, #Legend starts at upper right corner of plot, goes down
 }
 
 def Legend(ax, *args, outside=None, **kwargs):
@@ -813,7 +814,7 @@ def Legend(ax, *args, outside=None, **kwargs):
     Args:
         ax: matplotlib axis object
         *args: nothing, labels, or handles and labels (just like ax.legend)
-        outside: `str` locate legend outside of plot frame. Default: inside. Options: 'top', 'bottom', 'right'
+        outside: `str` locate legend outside of plot frame. Default: inside. Options: 'top', 'bottom', 'right', 'upperrightcorner'
         **kwargs: matplotlib.legend kwargs
 
     Useful matplotlib kwargs that you can passthru:
@@ -832,7 +833,7 @@ def Legend(ax, *args, outside=None, **kwargs):
     if outside is not None:
         if outside not in legboxdict.keys():
             raise ValueError("'{}' is not an option for outside legend location".format(outside))
-        newkwargs['bbox_to_anchor'] = legboxdict[outside]['bbox'] #loc of achor point
+        newkwargs['bbox_to_anchor'] = legboxdict[outside]['bbox'] #loc of anchor point
         newkwargs['loc']            = legboxdict[outside]['loc'] #anchor point on leg
 
     #Add keys in newkwargs to kwargs, but don't replace existing keys
@@ -1059,13 +1060,37 @@ def ShowPlot(showplot=1):
 
 def GridLines(ax, linestyle='--', color='k', which='major'):
     """Plot grid lines for given axis.
-    Default dashed line, blach, major ticks
+    Default dashed line, black, major ticks
     (use: 'color = p1.get_color()' to get color of a line 'p1')
     """
     ax.grid(True, which=which, linestyle=linestyle, color=color)
 
+def Grid_Minor(ax, nx=None, ny=None, **kwargs):
+    """ Add minor ticks and associated dashed grid,
+    with nx/ny minor ticks for every major tick [Default: None (no minor ticks)]
+    Takes standard mpl kwargs
+    """
+    from matplotlib import ticker
+
+    minorgrid = False
+    if nx is not None:
+        if type(nx) is not int:
+            raise TypeError('nx should be int')
+        minorgrid=True
+        minorLocator = ticker.AutoMinorLocator(nx)
+        ax.xaxis.set_minor_locator(minorLocator)
+    if ny is not None:
+        if type(ny) is not int:
+            raise TypeError('ny should be int')
+        minorgrid=True
+        minorLocator = ticker.AutoMinorLocator(ny)
+        ax.yaxis.set_minor_locator(minorLocator)
+    if minorgrid:
+        ax.grid(True, which='minor', linestyle='--', **kwargs)
+    return ax
+
 def TextBox(ax, boxtext, x=0.005, y=0.95, fontsize=None,
-                alpha=1.0, props=None, color=None, relcoord=True,
+                alpha=1.0, props=None, color=None, textcolor=None, relcoord=True,
                 vert='top', horz='left', rotation=0):
     """Add text box.
     (Default anchor position is upper left corner of text box, Origin is lower left corner of plot,
@@ -1087,19 +1112,16 @@ def TextBox(ax, boxtext, x=0.005, y=0.95, fontsize=None,
         #Set box fill and edge color if specified
         props['edgecolor'] = color
         props['facecolor'] = color
-    if relcoord:
-        #Use relative coordinates to anchor textbox
-        ax.text(x, y, boxtext, fontsize=fontsize, bbox=props,
-                verticalalignment=vert, horizontalalignment=horz,
-                rotation=rotation,
-                transform=ax.transAxes, #makes coordinate relative
-                )
-    else:
-        #Use absolute coordinates to anchor textbox
-        ax.text(x, y, boxtext, fontsize=fontsize, bbox=props,
-                verticalalignment=vert, horizontalalignment=horz,
-                rotation=rotation,
-                )
+
+    kw = {
+            'fontsize' : fontsize, 'bbox' : props,
+            'verticalalignment' : vert, 'horizontalalignment' : horz,
+            'rotation' : rotation,
+    }
+    if textcolor is not None: kw['color'] = textcolor
+    if relcoord: kw['transform'] = ax.transAxes #makes coordinate relative
+
+    ax.text(x, y, boxtext, **kw)
 
 
 def TightLims(ax, tol=0.0, rel=False):

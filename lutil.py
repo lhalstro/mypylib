@@ -138,9 +138,9 @@ def GetFilename(path, withext=True):
 
     return filename
 
-def NoWhitespace(str):
+def NoWhitespace(string):
     """Return given string with all whitespace removed"""
-    return str.replace(' ', '')
+    return string.replace(' ', '')
 
 def FindBetween(string, before='^', after=None):
     """Search 'string' for characters between 'before' and 'after' characters
@@ -362,16 +362,23 @@ def dfWriteFixedWidth(df, savename, index=True, datatype='f', wid=16, prec=6,
     #CLOSE FILE
     ofile.close()
 
-def ReadCdatFile2Pandas(path, nskip=2, hashspace=True):
-    """Read cdat savefile format into a Pandas Dataframe
-    with no cdat dependencies.
-    path --> path to file
-    nskip --> number of header rows to skip to reach data (header row index is nskip-1)
-                2 for cdat with no variable information,
-                1 for jpowl,
-               -1 for automatic (standard cdat format). hashspace must be True
-    hashspace --> True if space between # and first header
+def ReadCdatFile2Pandas(path, nskip=None, hashspace=None):
+    """Read cdat-format file file into a Pandas Dataframe.
+    (Use nskip=-1, hashspace=False for overlst aero.dat)
+    Args:
+        path --> path to file
+        nskip --> number of header rows to skip to reach data (header row index is nskip-1)
+                    2 for cdat with no variable information,
+                    1 for jpowl,
+                   -1 for automatic (standard cdat format) [Default]
+        hashspace --> True if space between # and first header [True]
     """
+
+    if nskip is None: nskip = -1
+    # if hashspace is None or nskip == -1: hashspace = True #WHY DID I THINK HASHSPACE==TRUE FOR NSKIP=-1?
+    if hashspace is None: hashspace = True
+
+
     #GET COLUMN HEADERS
     with open(path) as f:
         #Read file lines into list
@@ -416,14 +423,15 @@ def SeriesFromFile(filename):
     """How to read a pd.Series from a text file
     Expects two-column, comma-separated data of (e.g. "key1,value1\nkey2,value2...")
     """
-    s = pd.read_csv(filename, header=None, names=[None], index_col=0, squeeze=True)
+    s = pd.read_csv(filename, header=None, names=[None], index_col=0, squeeze=True, comment="#")
         #header=None: columns are key/val
         #names=[None]: if no column names are given, column gets labeled "0", then that gets turned into the series name
         #index_col=0: says to use first column as the "row" labels (soon to be column or key labels)
         #squeeze=True: supposedly returns a series if only one column
+        #comment="#": drop any lines that were commented out (`#` as first character)
 
     #if everything in the series is numeric, then it will convert it to numeric values
-    if s.dtype == float or s.dtype ==  int: return
+    if s.dtype == float or s.dtype ==  int: return s
     #Otherwise, convert lists from string to lists (items will still be strings)
     for i, val in s.items():
         if val[0] == '[':
@@ -466,6 +474,22 @@ def dfZeroSmallValues(df, tol=1e-16):
     """
     df[abs(df) < tol] = 0
     return df
+
+def dfStats(df):
+    """ Compute the basic statistical parameters (mean, std, min, max) of a given dataframe
+    """
+    #get mean values
+    s = df.mean()
+    #get other statistics
+    stats = ['std', 'min', 'max']
+    for stat in stats:
+        #take the statistic of the time series
+        s1 = eval("df.{}()".format(stat))
+        #rename the columns for that statistic
+        s1.index = s1.index + "_" + stat
+        #combine with statistics series
+        s = pd.concat([s, s1])
+    return s
 
 
 # ########################################################################
