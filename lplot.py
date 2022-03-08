@@ -804,6 +804,8 @@ legboxdict = {
     'bottom' : {'bbox' : (0.5,-0.15), 'loc' : 'upper center',}, #legend on bottom of plot
     'right'  : {'bbox' : (1,0.5),     'loc' : 'center left' ,}, #Legend to right of plot [default]
     'upperrightcorner'  : {'bbox' : (1,1),     'loc' : 'upper left' ,}, #Legend starts at upper right corner of plot, goes down
+    'rightup': {'bbox' : (1,0.5),     'loc' : 'lower left' ,}, #Legend to right of plot, but above midline so you can fit two legends
+    'rightlo': {'bbox' : (1,0.5),     'loc' : 'upper left' ,}, #Legend to right of plot, but below midline
 }
 
 def Legend(ax, *args, outside=None, **kwargs):
@@ -814,7 +816,7 @@ def Legend(ax, *args, outside=None, **kwargs):
     Args:
         ax: matplotlib axis object
         *args: nothing, labels, or handles and labels (just like ax.legend)
-        outside: `str` locate legend outside of plot frame. Default: inside. Options: 'top', 'bottom', 'right', 'upperrightcorner'
+        outside: `str` locate legend outside of plot frame. [Default: inside]. Options: 'top', 'bottom', 'right', 'upperrightcorner', 'rightup', 'rightlo'
         **kwargs: matplotlib.legend kwargs
 
     Useful matplotlib kwargs that you can passthru:
