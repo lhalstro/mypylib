@@ -178,6 +178,8 @@ def OrderedGlob(header=None):
         raise IOError("Usage: OrderedGlob(header) -> glob(header.*) -> return df{['file', 'tail']}")
     from glob import glob
     files = glob("{}.*".format(header))
+    #return empty DF if no files globbed
+    if len(files) < 1: return pd.DataFrame(columns=['file','tail'])
     tails = [x.split('.')[-1] for x in files]
     if tails[0].isnumeric():
         try:
@@ -209,7 +211,60 @@ def dfInterp(df, key, vals, method='linear', fill=np.nan):
     return newdf
 
 
-def dfSubset(df, tstart=None, tend=None, tevery=None, tkey=None, reindex=True):
+def dfSubset(df, tmin=None, tmax=None, tevery=None, tkey=None, tkeymin=None, tkeymax=None, reindex=True, ):
+    """Get interval subset of provided dataframe
+
+    Args:
+        df (:obj:`~pandas.DataFrame`): Contains time series data
+        tmin (:obj:`float` or :obj:`int`): subset start time. [None (start)]. If negative, trim that bound relative to its endpoint
+        tmax (:obj:`float` or :obj:`int`): subset end time. [None (end)]. If negative, trim that bound relative to its endpoint
+        tevery (:obj:`int`): sample interval to downsample to. -1 for reverse order. [1]
+        tkey (:obj:`str`): key indicating which parameter given bounds pertain to ['time']
+        tkeymin (:obj:`str`): use unique parameter for minimum bound [`tkey`]
+        tkeymax (:obj:`str`): use unique parameter for maximum bound [`tkey`]
+        reindex (:obj:`bool`): reset index after trimming/downsampling [False]
+
+    TODO:
+        - Currently cant trim minimum to a value relative from end if the x-axis has negative data
+    """
+
+    lim = [tmin, tmax]
+    key = [tkeymin, tkeymax]
+
+    #tkey overrides tkeymin/max
+    if tkey is not None: key = [tkey, tkey]
+    #default subset key is 'time'
+    if key[0] is None: key[0] = 'time'
+    if key[1] is None: key[1] = 'time'
+
+    #Trim time series to specified minimum
+    if lim[0] is not None:
+        #allow bound relative to end point (need 'dropna' since NaN is a max) UNLESS the data has negative values
+        if lim[0] < 0 and min(df[key[0]]) >= 0: lim[0] = max(df[key[0]].dropna()) - abs(lim[0])
+        #trim, but dont trim to oblivion
+        if max(df[key[0]]) < lim[0]:
+            df = df[df[key[0]] >= lim[0]]
+        else:
+            print("    Trimming min `{}` to `{}` would obliviate df, skipping trim".format(tkeymin, lim[0]))
+
+    #Trim time series to specified maximum
+    if lim[1] is not None:
+        #allow bound relative to end point (need 'dropna' since NaN is a max) UNLESS the data has negative values
+        if lim[1] < 0 and min(df[key[1]]) >= 0: lim[1] = min(df[key[1]].dropna()) + abs(lim[1])
+        #trim, but dont trim to oblivion
+        if min(df[key[1]]) > lim[1]:
+            df = df[df[key[1]] <= lim[1]]
+        else:
+            print("    Trimming max `{}` to `{}` would obliviate df, skipping trim".format(tkeymin, lim[1]))
+
+    #Reduce points by interval (keep every 'tevery'-th row)
+    if tevery is not None: df = df.loc[::int(tevery),:]
+    #reset df index
+    if reindex: df = df.reset_index(drop=True)
+
+    return df
+
+def dfSubsetOld(df, tstart=None, tend=None, tevery=None, tkey=None, reindex=True):
     """Get interval subset of provided dataframe
 
     df     --> dataframe with trajectory data
@@ -245,7 +300,8 @@ def dfTimeSubset(df, tstart=None, tend=None, tevery=None, reindex=True):
     everyt --> time step size    [None] (every)
     reindex --> reset dataframe index after resizing timeseries [True]
     """
-    return dfSubset(df, tstart=tstart, tend=tend, tevery=tevery, reindex=reindex, tkey='time')
+    return dfSubset(df, tmin=tstart, tmax=tend, tevery=tevery, reindex=reindex, tkey='time')
+    # return dfSubset(df, tstart=tstart, tend=tend, tevery=tevery, reindex=reindex, tkey='time')
 
     #Trim time series to specified interval
     if tstart != None:
