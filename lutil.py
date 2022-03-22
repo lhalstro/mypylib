@@ -522,8 +522,7 @@ def dfSafetyValve(df, targetsize=None, quiet=True):
     if targetsize is None: return df
     if len(df) > targetsize:
         interval = int(round(len(df)/targetsize))
-        if not quiet:
-           print("case {} len {} > target {}. Downsampling by {}x".format(i, len(df), targetsize, interval))
+        if not quiet: print("df len {} > target {}. Downsampling by {}x".format(len(df), targetsize, interval))
         df  = dfTimeSubset(df,  tstart=None, tend=None, tevery=interval, reindex=True)
     return df
 
