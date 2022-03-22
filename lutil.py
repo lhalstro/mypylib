@@ -484,12 +484,12 @@ def SeriesFromFile(filename):
     """How to read a pd.Series from a text file
     Expects two-column, comma-separated data of (e.g. "key1,value1\nkey2,value2...")
     """
-    s = pd.read_csv(filename, header=None, names=[None], index_col=0, squeeze=True, comment="#")
+    s = pd.read_csv(filename, header=None, names=[None], index_col=0, comment="#").squeeze("columns")
         #header=None: columns are key/val
         #names=[None]: if no column names are given, column gets labeled "0", then that gets turned into the series name
         #index_col=0: says to use first column as the "row" labels (soon to be column or key labels)
-        #squeeze=True: supposedly returns a series if only one column
         #comment="#": drop any lines that were commented out (`#` as first character)
+        #squeeze("columns"): supposedly returns a series if only one column
 
     #if everything in the series is numeric, then it will convert it to numeric values
     if s.dtype == float or s.dtype ==  int: return s
