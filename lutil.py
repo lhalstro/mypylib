@@ -172,7 +172,12 @@ def listify(nonlist, n=1):
 
 def OrderedGlob(header=None):
     """ Glob all files in cwd with wildcard: "ls header.*"
-    Return DataFrame with file list ordered by * match
+    Return DataFrame with file list ordered by * match converted to float/int
+    Returns:
+        pd.DataFrame({'file','tail'})
+    TODO:
+        Require "*" in input so you can glob numbers in middle of file name.
+        (just split the glob string by "*" and replace text matching head/tail to get iter, if more than 1 "*" raise error, backwards compatibility would add ".*" to glob string if no * in it)
     """
     if header is None:
         raise IOError("Usage: OrderedGlob(header) -> glob(header.*) -> return df{['file', 'tail']}")

@@ -60,26 +60,28 @@ class Deletor():
         self.dryrun = dryrun
         if self.dryrun is None: self.dryrun = False
 
-        if self.dryrun:
-            #do nothing when file is deleted
-            # self.Delete = lambda *args: None
-            self.Delete = DontDelete
-            print("DRY RUN, NOT ACTUALLY DELETING FILES")
-        else:
-            #delete the file
-            # self.Delete = lambda filename: cmd('rm {}'.format(filename))
-            self.Delete = DoDelete
+        # if self.dryrun:
+        #     #do nothing when file is deleted
+        #     # self.Delete = lambda *args: None
+        #     self.Delete = DontDelete
+        #     print("DRY RUN, NOT ACTUALLY DELETING FILES")
+        # else:
+        #     #delete the file
+        #     # self.Delete = lambda filename: cmd('rm {}'.format(filename))
+        #     self.Delete = DoDelete
 
         self.iwriteprotects = iwriteprotects
         if self.iwriteprotects is None:
             self.iwriteprotects = []
         else:
             print("\nNOT Deleting (Write Protected):")
-            for i in self.iwriteprotects:
-                filename = '{}.{}'.format(self.header, i)
-                pathtonotdelete = '{}/{}'.format(self.path, filename)
-                if os.path.isfile(pathtonotdelete):
-                    print('    {}'.format(filename))
+            files = ['{}.{}'.format(self.header, i) for i in self.iwriteprotects]
+            filestoprotect = ""
+            for f in files:
+                p = "{}/{}".format(self.path, f)
+                if os.path.isfile(p):
+                    filestoprotect += "\n    "+f
+            print(filestoprotect)
 
         #DELETE SERIES FOR EACH FILE HEADER
         if allbut:
@@ -101,10 +103,11 @@ class Deletor():
         todelete = list( range_inclusive(self.istart, self.iend, self.incr) )
 
         todelete = [i for i in todelete if i not in self.iwriteprotects]
-        [self.Delete(self.path, '{}.{}'.format(self.header, i)) for i in todelete]
+        self.Delete(todelete)
+        # [self.Delete(self.path, '{}.{}'.format(self.header, i)) for i in todelete]
 
-        # for i in todelete:
-        #     DeleteIth(path, header, i, iwriteprotects=iprotect, dryrun=dryrun)
+        # # for i in todelete:
+        # #     DeleteIth(path, header, i, iwriteprotects=iprotect, dryrun=dryrun)
 
     def DeleteExcept(self, ):
         """Within given range, delete everything EXCEPT the specified range"""
@@ -117,89 +120,35 @@ class Deletor():
         todelete = [i for i in range_inclusive(self.istart, self.iend, 1) if i not in tosave]
 
         todelete = [i for i in todelete if i not in self.iwriteprotects]
-        [self.Delete(self.path, '{}.{}'.format(self.header, i)) for i in todelete]
-        # for i in todelete:
-        #     # DeleteIth(path, header, i, iwriteprotects=iprotect, dryrun=dryrun)
-        #     DeleteIth(path, header, i, dryrun=dryrun)
+        self.Delete(todelete)
+        # [self.Delete(self.path, '{}.{}'.format(self.header, i)) for i in todelete]
+        # # for i in todelete:
+        # #     # DeleteIth(path, header, i, iwriteprotects=iprotect, dryrun=dryrun)
+        # #     DeleteIth(path, header, i, dryrun=dryrun)
 
 
+    def Delete(self, iterstodelete):
+        """ Delete a given file
+        (minimum 3x faster to delete all files at once instead of individually in a loop)
+        """
+        files = ['{}.{}'.format(self.header, i) for i in iterstodelete]
+        filestodelete = ""
+        pathstodelete = " "
+        for f in files:
+            p = "{}/{}".format(self.path, f)
+            if os.path.isfile(p):
+                filestodelete += "\n    "+f
+                pathstodelete += " "+p
 
-
-def DoDelete(path, filename):
-    """ Delete a given file
-    """
-    pathtodelete = '{}/{}'.format(path, filename)
-    if os.path.isfile(pathtodelete):
-        print('Deleting: {}'.format(filename))
-        cmd('rm {}'.format(pathtodelete))
-def DontDelete(path ,filename):
-    """ Dry-run Delete a given file
-    """
-    pathtodelete = '{}/{}'.format(path, filename)
-    if os.path.isfile(pathtodelete):
-        print('DRY-RUN, Otherwise Would Delete: {}'.format(filename))
-
-
-
-
-
-def Delete(filename, dryrun=False):
-    """ Delete a given file
-    """
-
-    if not dryrun:
-        cmd('rm {}'.format(filename))
-    # #debug:
-    # cmd( 'ls {}'.format(filename) )
-
-def DeleteIth(path, header, i, iwriteprotects=None, dryrun=False):
-    """ Within a loop, delete file in given directory with given header
-    for given number
-    writeprotects --> list of filenames that will not be deleted, even if in series
-    """
-    #Create filename to delete ('header.number')
-    filename = '{}.{}'.format(header, i)
-    pathtodelete = '{}/{}'.format(path, filename)
-    if iwriteprotects is None: iwriteprotects = []
-    if i in iwriteprotects:
-        print('NOT Deleting (Write Protected): {}'.format(filename))
-    #DELETE FILE
-    elif os.path.isfile(pathtodelete):
-        print('Deleting: {}'.format(filename))
-        Delete(pathtodelete, dryrun=dryrun)
-
-
-def DeleteSeries(path, header, istart, iend, incr=1, iprotect=None, dryrun=False):
-    """Delete a series of files of given file header withing the number range
-    specified.
-    header --> filename header
-    istart, iend --> numbers of beginning and end of series to delete
-    incr --> number increment to delete within series range.  Default, delete all
-    """
-    # todelete = np.append( np.arange(istart, iend, incr), iend )
-    todelete = list( range_inclusive(istart, iend, incr) )
-    for i in todelete:
-        DeleteIth(path, header, i, iwriteprotects=iprotect, dryrun=dryrun)
-
-def DeleteExcept(path, header, istart, iend, incr=1, iprotect=None, dryrun=False):
-    """Within given range, delete everything EXCEPT the specified range"""
-    #GIVEN INPUTS SAVE ALL FILES WITHIN RANGE
-    if incr == 1:
-        print('\nNO FILES WILL BE DELETED IN THIS SERIES\n')
-        return
-    #DELETE EVERY FILE NOT WITHIN GIVEN SERIES TO SAVE
-    tosave = list( range_inclusive(istart, iend, incr) )
-
-    # for i in range_inclusive(istart, iend, 1):
-    #     if not i in tosave:
-    #         DeleteIth(path, header, i, iwriteprotects=iprotect, dryrun=dryrun)
-
-    todelete = [i for i in range_inclusive(istart, iend, 1) if i not in tosave]
-    todelete = [i for i in todelete if i not in iprotect]
-    for i in todelete:
-        # DeleteIth(path, header, i, iwriteprotects=iprotect, dryrun=dryrun)
-        DeleteIth(path, header, i, dryrun=dryrun)
-
+        if self.dryrun:
+            print("DRY-RUN, Otherwise Would Delete:"+filestodelete)
+        else:
+            print("Deleting:"+filestodelete)
+            print(cmd("rm {}".format(pathstodelete)))
+        # pathtodelete = '{}/{}'.format(path, filename)
+        # if os.path.isfile(pathtodelete):
+        #     print('Deleting: {}'.format(filename))
+        #     cmd('rm {}'.format(pathtodelete))
 
 
 
@@ -216,7 +165,8 @@ def MakeFilesToDelete(path, header, istart, iend, incr=1):
         cmd('touch {}'.format(curfile))
 
 
-def FunctionalityTest():
+
+def FunctionalityTestOOP():
     """ Make a directory full of test files to delete and show how to
     delete intervals, protect specific files, etc
     """
@@ -226,6 +176,7 @@ def FunctionalityTest():
 
     #TEST CASE
     import glob
+    from time import time
 
     testdir = 'test_deletefiles'
     cmd('rm -rf {}'.format(testdir))
@@ -237,17 +188,26 @@ def FunctionalityTest():
     #Deletes all 'b.' files exept the interval 2+3i and b.3
     # DeleteExcept(testdir, 'b', 2, 10, 3)
     saveiters = [3]
-    main(testdir, 'b', 2, 10, 3, allbut=True, setdryrun=False, iprotect=saveiters)
-    print("\nDid it Delete all 'b.' except b.1, b.2, b.5, b.8, and b.3?")
+    # main(testdir, 'b', 2, 10, 3, allbut=True, setdryrun=False, iprotect=saveiters)
+    t = time()
+    main_oop(path=testdir, headers='b', istart=2, iend=10, incr=3, allbut=True, iprotect=saveiters)
+    dt1 = time()-t
+    print("\nDid it Delete all 'b.' except b.1, b.2, b.3, b.5, and b.8?")
     print(glob.glob('{}/b.*'.format(testdir)))
     print('')
 
+
     #Delete all a files up to and including a.8, save a.3
     # DeleteSeries(testdir, 'a', 1, 8)
-    main(testdir, 'a.b', 1, 8, iprotect=saveiters)
+    # main(testdir, 'a.b', 1, 8, iprotect=saveiters)
+    t = time()
+    main_oop(path=testdir, headers='a.b', istart=1, iend=8, incr=1, iprotect=saveiters)
+    dt2 = time()-t
     print("\nDid it Delete all a files up to and including a.b.8, save a.b.3?")
     print(glob.glob('{}/a.b.*'.format(testdir)))
     print('')
+
+    print("\ntime to delete: {:1.6f} + {:1.6f} = {:1.6f}s".format(dt1, dt2, dt1+dt2))
 
 
 
@@ -256,39 +216,6 @@ def FunctionalityTest():
 
 
 
-
-
-def main(path=None, headers=None, istart=None, iend=None, incr=1,
-            allbut=False, setdryrun=False, iprotect=None):
-    """ Delete specified file interval
-    """
-
-    #Required inputs
-    if headers is None or istart is None or iend is None:
-        raise ValueError("headers, istart, and iend are required inputs")
-    elif type(headers) is not list:
-        headers = [headers]
-
-    #Default path is current directory
-    if path is None:
-        path = os.getcwd()
-
-
-    # global dryrun
-    # dryrun=setdryrun
-    if setdryrun:
-        print("DRY RUN, NOT ACTUALLY DELETING FILES")
-
-    #DELETE SERIES FOR EACH FILE HEADER
-    if allbut:
-        #delete all files within range except specified series
-        DeleteFunc = DeleteExcept
-    else:
-        #delete only files in specified series
-        DeleteFunc = DeleteSeries
-    #delete iter series for each header
-    for head in headers:
-        DeleteFunc(path, head, istart, iend, incr, iprotect=iprotect, dryrun=setdryrun)
 
 
 def main_oop(path=None, headers=None, istart=None, iend=None, incr=1,
@@ -308,6 +235,169 @@ def main_oop(path=None, headers=None, istart=None, iend=None, incr=1,
     for head in headers:
         o.header = head
         o.DeleteFiles()
+
+
+
+
+# #------------------------------------
+# # OLD NON-OOP CODE
+# #--------------------------------------
+
+# def FunctionalityTest():
+#     """ Make a directory full of test files to delete and show how to
+#     delete intervals, protect specific files, etc
+#     """
+#     print('\n-------------------------------------------------------------')
+#     print('Functionality Test for fileCleanUp')
+#     print('-------------------------------------------------------------\n')
+
+#     #TEST CASE
+#     import glob
+#     from time import time
+
+#     testdir = 'test_deletefiles'
+#     cmd('rm -rf {}'.format(testdir))
+
+#     #Make a directory full of empty files to delete
+#     MakeFilesToDelete(testdir, 'a.b', 1, 12, incr=2)
+#     MakeFilesToDelete(testdir, 'b', 1, 10, incr=1)
+
+#     #Deletes all 'b.' files exept the interval 2+3i and b.3
+#     # DeleteExcept(testdir, 'b', 2, 10, 3)
+#     saveiters = [3]
+#     main(testdir, 'b', 2, 10, 3, allbut=True, setdryrun=False, iprotect=saveiters)
+#     print("\nDid it Delete all 'b.' except b.1, b.2, b.5, b.8, and b.3?")
+#     print(glob.glob('{}/b.*'.format(testdir)))
+#     print('')
+
+#     #Delete all a files up to and including a.8, save a.3
+#     # DeleteSeries(testdir, 'a', 1, 8)
+#     main(testdir, 'a.b', 1, 8, iprotect=saveiters)
+#     print("\nDid it Delete all a files up to and including a.b.8, save a.b.3?")
+#     print(glob.glob('{}/a.b.*'.format(testdir)))
+#     print('')
+
+
+
+#     #CLEANUP TEST CASE
+#     cmd('rm -rf {}'.format(testdir))
+
+
+
+
+
+
+# def DoDelete(path, filename):
+#     """ Delete a given file
+#     """
+#     pathtodelete = '{}/{}'.format(path, filename)
+#     if os.path.isfile(pathtodelete):
+#         print('Deleting: {}'.format(filename))
+#         cmd('rm {}'.format(pathtodelete))
+# def DontDelete(path ,filename):
+#     """ Dry-run Delete a given file
+#     """
+#     pathtodelete = '{}/{}'.format(path, filename)
+#     if os.path.isfile(pathtodelete):
+#         print('DRY-RUN, Otherwise Would Delete: {}'.format(filename))
+
+
+
+
+
+# def Delete(filename, dryrun=False):
+#     """ Delete a given file
+#     """
+
+#     if not dryrun:
+#         cmd('rm {}'.format(filename))
+#     # #debug:
+#     # cmd( 'ls {}'.format(filename) )
+
+# def DeleteIth(path, header, i, iwriteprotects=None, dryrun=False):
+#     """ Within a loop, delete file in given directory with given header
+#     for given number
+#     writeprotects --> list of filenames that will not be deleted, even if in series
+#     """
+#     #Create filename to delete ('header.number')
+#     filename = '{}.{}'.format(header, i)
+#     pathtodelete = '{}/{}'.format(path, filename)
+#     if iwriteprotects is None: iwriteprotects = []
+#     if i in iwriteprotects:
+#         print('NOT Deleting (Write Protected): {}'.format(filename))
+#     #DELETE FILE
+#     elif os.path.isfile(pathtodelete):
+#         print('Deleting: {}'.format(filename))
+#         Delete(pathtodelete, dryrun=dryrun)
+
+
+# def DeleteSeries(path, header, istart, iend, incr=1, iprotect=None, dryrun=False):
+#     """Delete a series of files of given file header withing the number range
+#     specified.
+#     header --> filename header
+#     istart, iend --> numbers of beginning and end of series to delete
+#     incr --> number increment to delete within series range.  Default, delete all
+#     """
+#     # todelete = np.append( np.arange(istart, iend, incr), iend )
+#     todelete = list( range_inclusive(istart, iend, incr) )
+#     for i in todelete:
+#         DeleteIth(path, header, i, iwriteprotects=iprotect, dryrun=dryrun)
+
+# def DeleteExcept(path, header, istart, iend, incr=1, iprotect=None, dryrun=False):
+#     """Within given range, delete everything EXCEPT the specified range"""
+#     #GIVEN INPUTS SAVE ALL FILES WITHIN RANGE
+#     if incr == 1:
+#         print('\nNO FILES WILL BE DELETED IN THIS SERIES\n')
+#         return
+#     #DELETE EVERY FILE NOT WITHIN GIVEN SERIES TO SAVE
+#     tosave = list( range_inclusive(istart, iend, incr) )
+
+#     # for i in range_inclusive(istart, iend, 1):
+#     #     if not i in tosave:
+#     #         DeleteIth(path, header, i, iwriteprotects=iprotect, dryrun=dryrun)
+
+#     todelete = [i for i in range_inclusive(istart, iend, 1) if i not in tosave]
+#     todelete = [i for i in todelete if i not in iprotect]
+#     for i in todelete:
+#         # DeleteIth(path, header, i, iwriteprotects=iprotect, dryrun=dryrun)
+#         DeleteIth(path, header, i, dryrun=dryrun)
+
+
+
+
+
+
+# def main(path=None, headers=None, istart=None, iend=None, incr=1,
+#             allbut=False, setdryrun=False, iprotect=None):
+#     """ Delete specified file interval
+#     """
+
+#     #Required inputs
+#     if headers is None or istart is None or iend is None:
+#         raise ValueError("headers, istart, and iend are required inputs")
+#     elif type(headers) is not list:
+#         headers = [headers]
+
+#     #Default path is current directory
+#     if path is None:
+#         path = os.getcwd()
+
+
+#     # global dryrun
+#     # dryrun=setdryrun
+#     if setdryrun:
+#         print("DRY RUN, NOT ACTUALLY DELETING FILES")
+
+#     #DELETE SERIES FOR EACH FILE HEADER
+#     if allbut:
+#         #delete all files within range except specified series
+#         DeleteFunc = DeleteExcept
+#     else:
+#         #delete only files in specified series
+#         DeleteFunc = DeleteSeries
+#     #delete iter series for each header
+#     for head in headers:
+#         DeleteFunc(path, head, istart, iend, incr, iprotect=iprotect, dryrun=setdryrun)
 
 
 
@@ -364,7 +454,7 @@ if __name__ == "__main__":
 
 
     if args.test:
-        FunctionalityTest()
+        FunctionalityTestOOP()
     else:
         # #Conventional (standard until 4/22/2021)
         # main(path=None, headers=args.header,
