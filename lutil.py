@@ -170,28 +170,46 @@ def listify(nonlist, n=1):
         outlist = nonlist
     return outlist
 
-def OrderedGlob(header=None):
-    """ Glob all files in cwd with wildcard: "ls header.*"
+
+def OrderedGlob(globpattern=None, header=None):
+    """ Glob all files in cwd with provided glob pattern or: "ls header.*"
     Return DataFrame with file list ordered by * match converted to float/int
+    Args:
+        globpattern: str containing a wildcard character like `*`, `[0-9]`, etc
+        header: backwards compatibility, same as `globpattern
     Returns:
-        pd.DataFrame({'file','tail'})
-    TODO:
-        Require "*" in input so you can glob numbers in middle of file name.
-        (just split the glob string by "*" and replace text matching head/tail to get iter, if more than 1 "*" raise error, backwards compatibility would add ".*" to glob string if no * in it)
+        pd.DataFrame({'file','match'})
     """
-    if header is None:
-        raise IOError("Usage: OrderedGlob(header) -> glob(header.*) -> return df{['file', 'tail']}")
+    #backwards compatible
+    if header is not None and globpattern is None: globpattern = header
+    #Manage inputs
+    if globpattern is None:
+        raise IOError("Usage: OrderedGlob(globpattern) -> glob(globpattern) -> return df{['file', 'match']}")
+    elif "*" not in globpattern:
+        #original functionality, where a header was given assuming a file extension of ".XXXXX..."
+        globpattern += ".*"
+    elif len(globpattern.split("*")) > 2:
+        raise ValueError("'{}': I don't know how to handle globs with more than one wildcard (*) ".format(globpattern))
+
     from glob import glob
-    files = glob("{}.*".format(header))
+    files = glob(globpattern)
     #return empty DF if no files globbed
-    if len(files) < 1: return pd.DataFrame(columns=['file','tail'])
-    tails = [x.split('.')[-1] for x in files]
-    if tails[0].isnumeric():
+    if len(files) < 1: return pd.DataFrame(columns=['file','match','tail'])
+
+    #get glob match for each file (remove boilerplate portion of the glob pattern, and delete any wildcards in square brackets (e.g. `[0-9]`) )
+    pattern = re.sub( "\[.*?\]", "", globpattern).split("*")
+    for i, x in enumerate(pattern):
+        if x == '': pattern[i] = None
+
+    match = [ FindBetween(f, pattern[0], pattern[1]) for f in files]
+    if match[0].isnumeric():
         try:
-            tails = [int(i) for i in tails]
+            match = [int(i) for i in match]
         except:
-            tails = [float(i) for i in tails]
-    df = pd.DataFrame({'file':files, 'tail':tails}).sort_values('tail')
+            match = [float(i) for i in match]
+
+    #'TAILS' IS FOR COMPATIBILITY
+    df = pd.DataFrame({'file':files, 'match':match, 'tail':match}).sort_values('match')
     return df
 
 ########################################################################
@@ -247,7 +265,7 @@ def dfSubset(df, tmin=None, tmax=None, tevery=None, tkey=None, tkeymin=None, tke
         #allow bound relative to end point (need 'dropna' since NaN is a max) UNLESS the data has negative values
         if lim[0] < 0 and min(df[key[0]]) >= 0: lim[0] = max(df[key[0]].dropna()) - abs(lim[0])
         #trim, but dont trim to oblivion
-        if max(df[key[0]]) < lim[0]:
+        if max(df[key[0]]) > lim[0]:
             df = df[df[key[0]] >= lim[0]]
         else:
             print("    Trimming min `{}` to `{}` would obliviate df, skipping trim".format(tkeymin, lim[0]))
@@ -257,7 +275,7 @@ def dfSubset(df, tmin=None, tmax=None, tevery=None, tkey=None, tkeymin=None, tke
         #allow bound relative to end point (need 'dropna' since NaN is a max) UNLESS the data has negative values
         if lim[1] < 0 and min(df[key[1]]) >= 0: lim[1] = min(df[key[1]].dropna()) + abs(lim[1])
         #trim, but dont trim to oblivion
-        if min(df[key[1]]) > lim[1]:
+        if min(df[key[1]]) < lim[1]:
             df = df[df[key[1]] <= lim[1]]
         else:
             print("    Trimming max `{}` to `{}` would obliviate df, skipping trim".format(tkeymin, lim[1]))

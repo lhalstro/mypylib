@@ -140,11 +140,15 @@ class Deletor():
                 filestodelete += "\n    "+f
                 pathstodelete += " "+p
 
-        if self.dryrun:
+        if pathstodelete.replace(" ", "") == "":
+            print("No files to delete with current specified protection options")
+        elif self.dryrun:
             print("DRY-RUN, Otherwise Would Delete:"+filestodelete)
         else:
+            rmcmd = "rm {}".format(pathstodelete)
+            print(rmcmd)
             print("Deleting:"+filestodelete)
-            print(cmd("rm {}".format(pathstodelete)))
+            print(cmd(rmcmd))
         # pathtodelete = '{}/{}'.format(path, filename)
         # if os.path.isfile(pathtodelete):
         #     print('Deleting: {}'.format(filename))
