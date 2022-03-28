@@ -555,30 +555,22 @@ def RemoveAxisTickLabels(ax, axis='both', prettygrid=True):
 
     return ax
 
-def GetRelativeTicks(ax, whichax='y'):
-    """Get relative tick locations for a specified axis, use to match shared axes.
-    (Generalized `GetRelativeTicksX`).
-    Use linear interpolation, leave out endpoints if they exceede the data bounds
-    Return relative tick locations and corresponding tick values
+
+def RotateTicks(ax, rot=0, whichax='xy',):
+    """ Rotate axis tick labels (makes them fit better)
+
+    Args:
+        rot  --> angle to rotate new tick labels, default none
+        whichax --> which axes to rotate labels for ['xy'] xy: both axes, x: x-axis, y: y-axis
     """
+    if 'x' in whichax.lower():
+        for tk in ax.get_xticklabels():
+            tk.set_rotation(rot)
+    if 'y' in whichax.lower():
+        for tk in ax.get_yticklabels():
+            tk.set_rotation(rot)
 
-    if whichax == None or (whichax.lower() != 'x' and whichax.lower() != 'y'):
-        raise IOError("Must choose 'x' or 'y' axes to sync ticks")
-    xy = whichax.lower()
-
-    #Get bounds of axis values
-    axmin, axmax = getattr(ax, "get_{}lim".format(xy))()
-    #Get values at each tick
-    tickvals = getattr(ax, "get_{}ticks".format(xy))()
-
-    #if exterior ticks are outside bounds of data, drop them
-    if tickvals[0]  < axmin: tickvals = tickvals[1:]
-    if tickvals[-1] > axmax: tickvals = tickvals[:-1]
-    #Interpolate relative tick locations for bounds 0 to 1
-    relticks = np.interp(tickvals, np.linspace(axmin, axmax), np.linspace(0, 1))
-    return relticks, tickvals
-
-GetRelativeTicksX = partial(GetRelativeTicks, whichax='x')
+    return ax
 
 
 
@@ -607,6 +599,34 @@ def MoreTicks(ax, ndouble=1, whichax='y'):
     getattr(ax, "set_{}ticks".format(xy))(vals)
 
     return ax
+
+def GetRelativeTicks(ax, whichax='y'):
+    """Get relative tick locations for a specified axis, use to match shared axes.
+    (Generalized `GetRelativeTicksX`).
+    Use linear interpolation, leave out endpoints if they exceede the data bounds
+    Return relative tick locations and corresponding tick values
+    """
+
+    if whichax == None or (whichax.lower() != 'x' and whichax.lower() != 'y'):
+        raise IOError("Must choose 'x' or 'y' axes to sync ticks")
+    xy = whichax.lower()
+
+    #Get bounds of axis values
+    axmin, axmax = getattr(ax, "get_{}lim".format(xy))()
+    #Get values at each tick
+    tickvals = getattr(ax, "get_{}ticks".format(xy))()
+
+    #if exterior ticks are outside bounds of data, drop them
+    if tickvals[0]  < axmin: tickvals = tickvals[1:]
+    if tickvals[-1] > axmax: tickvals = tickvals[:-1]
+    #Interpolate relative tick locations for bounds 0 to 1
+    relticks = np.interp(tickvals, np.linspace(axmin, axmax), np.linspace(0, 1))
+    return relticks, tickvals
+
+GetRelativeTicksX = partial(GetRelativeTicks, whichax='x')
+
+
+
 
 def SyncDualAxisTicks(ax1, ax2, whichax=None):
     """ Sync secondary axis ticks to align with primary (align grid)
@@ -781,22 +801,6 @@ def OffsetTicks(ax, whichax='x', offset=1.5):
     for i in range(1, len(tks), 2):
         tks[i].set_pad(offset*pad)
 
-    return ax
-
-def RotateTicks(ax, rot=0, whichax='xy',):
-    """ Rotate axis tick labels (makes them fit better)
-
-    Args:
-        rot  --> angle to rotate new tick labels, default none
-        whichax --> which axes to rotate labels for ['xy'] xy: both axes, x: x-axis, y: y-axis
-    """
-
-    if 'x' in whichax.lower():
-        for tk in ax.get_xticklabels():
-            tk.set_rotation(rot)
-    if 'y' in whichax.lower():
-        for tk in ax.get_yticklabels():
-            tk.set_rotation(rot)
     return ax
 
 
