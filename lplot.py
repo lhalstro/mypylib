@@ -494,10 +494,7 @@ def MakeTwiny(ax, xlbl=''):
     xlbl --> new x-axis label
     """
     ax2 = ax.twiny() #get separte x-axis for labeling trajectory Mach
-    # ax2.set_xlabel(xlbl) #label new x-axis
-    plt.xticks() #set tick font size
     ax2.set_xlabel(xlbl) #label new x-axis
-    plt.xticks() #set tick font size
     return ax2
 
 def YlabelOnTop(ax, ylbl, x=0.0, y=1.01):
@@ -565,28 +562,21 @@ def GetRelativeTicks(ax, whichax='y'):
     Return relative tick locations and corresponding tick values
     """
 
-    if whichax.lower() == 'y':
-        axmin, axmax = ax.get_ylim()
-        tickvals = ax.get_yticks()
-    else:
-        #Get bounds of axis values
-        axmin, axmax = ax.get_xlim()
-        #Get values at each tick
-        tickvals = ax.get_xticks()
+    if whichax == None or (whichax.lower() != 'x' and whichax.lower() != 'y'):
+        raise IOError("Must choose 'x' or 'y' axes to sync ticks")
+    xy = whichax.lower()
+
+    #Get bounds of axis values
+    axmin, axmax = getattr(ax, "get_{}lim".format(xy))()
+    #Get values at each tick
+    tickvals = getattr(ax, "get_{}ticks".format(xy))()
 
     #if exterior ticks are outside bounds of data, drop them
-    if tickvals[0] < axmin:
-        tickvals = tickvals[1:]
-    if tickvals[-1] > axmax:
-        tickvals = tickvals[:-1]
-    #Interopolate relative tick locations for bounds 0 to 1
+    if tickvals[0]  < axmin: tickvals = tickvals[1:]
+    if tickvals[-1] > axmax: tickvals = tickvals[:-1]
+    #Interpolate relative tick locations for bounds 0 to 1
     relticks = np.interp(tickvals, np.linspace(axmin, axmax), np.linspace(0, 1))
     return relticks, tickvals
-
-    # #old method, wasnt reliable
-    # xmin, xmax = ax.get_xlim()
-    # ticks = [(tick - xmin)/(xmax - xmin) for tick in ax.get_xticks()]
-    # return ticks
 
 GetRelativeTicksX = partial(GetRelativeTicks, whichax='x')
 
@@ -596,6 +586,9 @@ def MoreTicks(ax, ndouble=1, whichax='y'):
     """Increase the number of ticks on an axis to a multiple of the original amount
     (Multiple so that original tick positions are preserved)
     """
+    if whichax == None or (whichax.lower() != 'x' and whichax.lower() != 'y'):
+        raise IOError("Must choose 'x' or 'y' axes to sync ticks")
+    xy = whichax.lower()
 
     def DoubleTicks(vals, ndoubl=1):
         for k in range(ndouble):
@@ -609,21 +602,14 @@ def MoreTicks(ax, ndouble=1, whichax='y'):
             vals = list(newvals)
         return vals
 
-
-
-    if whichax == 'y':
-        vals = ax.get_yticks()
-        vals = DoubleTicks(vals, ndouble)
-        ax.set_yticks(vals)
-    else:
-        vals = ax.get_xticks()
-        DoubleTicks()
-        ax.set_xticks(newvals)
+    vals = getattr(ax, "get_{}ticks".format(xy))()
+    vals = DoubleTicks(vals, ndouble)
+    getattr(ax, "set_{}ticks".format(xy))(vals)
 
     return ax
 
-def SyncTicks_DualAxisY(ax1, ax2, ):
-    """ Sync secondary y-axis ticks to align with primary (align grid)
+def SyncDualAxisTicks(ax1, ax2, whichax=None):
+    """ Sync secondary axis ticks to align with primary (align grid)
     Required: data must already be plotted on both axes
 
     (Functionality demonstrated by plotting in GUI and hovering cursor next to
@@ -632,13 +618,18 @@ def SyncTicks_DualAxisY(ax1, ax2, ):
     Args:
         ax1: primary axis
         ax2: secondary axis
+        whichax: 'x' or 'y', which dual axis pair to sync
     """
+    if whichax == None or (whichax.lower() != 'x' and whichax.lower() != 'y'):
+        raise IOError("Must choose 'x' or 'y' axes to sync ticks")
+    xy = whichax.lower()
 
     #get location of primary axis ticks relative to position on plot
-    ax1reltcks, ax1vals = GetRelativeTicks(ax1, 'y')
+    ax1reltcks, ax1vals = GetRelativeTicks(ax1, xy)
 
     #get axis bounds of second axis
-    ax2min, ax2max = ax2.get_ylim()
+    ax2min, ax2max = getattr(ax2, 'get_{}lim'.format(xy))()
+    # ax2min, ax2max = ax2.get_ylim()
 
     #interp relative location of ticks on 1st axis to corresponding values on 2nd axis
     ax2vals = np.interp(ax1reltcks, np.linspace(0, 1), np.linspace(ax2min, ax2max), )
@@ -646,13 +637,77 @@ def SyncTicks_DualAxisY(ax1, ax2, ):
     ax2vals = ax2vals + 0.0
 
     #set new tick locations on second axis
-    ax2.set_yticks(ax2vals)
+    getattr(ax2, "set_{}ticks".format(xy))(ax2vals)
+    # ax2.set_yticks(ax2vals)
+
+    return ax2
+
+#partials
+SyncDualAxisTicksY = partial(SyncDualAxisTicks, whichax='y')
+SyncDualAxisTicksX = partial(SyncDualAxisTicks, whichax='x')
+#backwards compatibility
+SyncTicks_DualAxisY = SyncDualAxisTicksY
+SyncTicks_DualAxisX = SyncDualAxisTicksX
+
+
+
+def SecondaryXaxis(ax, x2, bot=True, xlbl=None, xlblcombine=True, offset=None):
+    """Make a second x-axis below the first, mapping a second independent parameter
+    from the dataset to y-data ALREADY PLOTTED
+    Args:
+        ax       --> original axes object for plot
+        x2       --> independed x-data to map to on second x-axis
+        bottom   --> second x-axis on bottom of plot (otherwise top) [True]
+        xlbl     --> new x-axis label [None]
+        xlblcombine --> combine primary and secondary x-axis labels with a "/" on one line below both axes [True]
+        offset   --> axis-relative distance to offset 2nd x-axis from first [0.15]
+    """
+    if offset is None: offset = 0.15
+
+
+    #SETUP SECONDARY AXIS
+    ax2 = ax.twiny() #get separte x-axis for labeling trajectory Mach
+    # ax2 = MakeTwiny(ax, xlbl)
+
+
+    #show second x-axis on same side as first (bottom)
+    if bot:
+        #offset the 2nd xaxis from the first (spines are the lines that tick lines are connected to)
+        ax2.spines["bottom"].set_position(("axes", 0.0-offset))
+        #activate ax2 spines, but keep them invisible so that they dont appear over ax1
+        # make_patch_spines_invisible(ax2)
+        ax2.set_frame_on(True)
+        ax2.patch.set_visible(False)
+        [sp.set_visible(False) for sp in ax.spines.values()]
+        #now make the x-axis spine visible
+        ax2.spines["bottom"].set_visible(True)
+        #and put the labels on the correct side
+        ax2.xaxis.set_label_position('bottom')
+        ax2.xaxis.set_ticks_position('bottom')
+
+
+    #invisible throwaway plot to set up the second x-axis
+    ax2.plot(x2, ax.lines[0].get_xdata(), color='k', alpha=0 )
+    ax2 = SyncDualAxisTicks(ax, ax2, 'x')
+
+
+    #label new x-axis
+    if xlbl is not None:
+        if xlblcombine:
+            xlbl1 = ax.get_xlabel()
+            lbl = "{} / {}".format(xlbl1, xlbl)
+            ax.set_xlabel(None) #hide original axis label
+        else:
+            lbl = xlbl
+        ax2.set_xlabel(lbl)
 
     return ax2
 
 
+
 def MakeSecondaryXaxis(ax, xlbl, tickfunc, locs=5):
-    """Make an additional x-axis for the data already plotted
+    """Make a second x-axis with tick values interpolated from user-provided function
+    *** SEE `SecondaryXaxis` FOR SECOND X-AXIS WITH VALUES SYNCED TO DATA ***
     ax       --> original axes object for plot
     xlbl     --> new x-axis label
     tickfunc --> function that calculates tick value, based on location
@@ -671,7 +726,7 @@ def MakeSecondaryXaxis(ax, xlbl, tickfunc, locs=5):
     return ax2
 
 def SecondXaxisSameGrid(ax1, xold, xnew, xlbl='', rot=0):
-    """Make a secondary x-axis with the same tick locations as the original
+    """*** DEPRECATED - USE `SecondaryXaxis` INSTEAD*** Make a secondary x-axis with the same tick locations as the original
     for a specific second parameter. Tick values are interpolated to match original
     ax1  --> original axis handle
     xold --> x-data used when plotting with ax1
@@ -1443,6 +1498,9 @@ def main():
         pd.Series({'lab' : '$y3$', 'x': x, 'y': y3, 'mplkwargs' : {'marker' : '.'} }),
         ])
 
+    x2 = x*10000 #arbitrary 2nd xaxis for dual axis
+    # x2 = np.log(x+1) #arbitrary 2nd xaxis for dual axis
+    # cases['x2'] = x2
 
     # fig, ax = PlotStart()
     # plt.title('Test kwarg Pass-Thru')
@@ -1467,10 +1525,10 @@ def main():
     ncol = 1
     fig, ax1 = plt.subplots(nrow,ncol, figsize=[7*ncol, 0.5*6*nrow])
     PlotCases(ax1, cases)
-    plt.title('Test kwarg Pass-Thru, tick spacing')
+    plt.title('Test: kwarg Pass-Thru, more ticks, sync dual y-axis')
     ax1.set_xlabel('X')
     ax1.set_ylabel('Y-Axis Label')
-    ax1.legend()
+    # ax1.legend()
 
 
     #TEST INCREASING AMOUNT OF TICKS
@@ -1491,15 +1549,26 @@ def main():
     #Make second axis
     ax2 = ax1.twinx()
     iclr = len(cases)
-    ax2.set_ylabel('y2', color=colors[iclr])
+    ax2.set_ylabel("$y'$", color=colors[iclr])
 
     ax2.plot(x, ypr, linestyle='--', color=colors[iclr])
 
 
-    SyncTicks_DualAxisY(ax1, ax2, )
+    # SyncTicks_DualAxisY(ax1, ax2, )
+    SyncDualAxisTicks(ax1, ax2, whichax='y')
 
 
 
+
+    #TEST SECOND X AXIS ON SAME GRID
+
+    # ax3 = SecondXaxisSameGrid(ax1, x, x2, xlbl='x2', rot=0)
+    ax3 = SecondaryXaxis(ax1, x2, xlbl='x2')
+
+
+
+
+    Legend(ax1)
 
     plt.savefig('test.png')
 
