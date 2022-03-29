@@ -657,6 +657,9 @@ def SyncDualAxisTicks(ax1, ax2, whichax=None):
     ax2vals = ax2vals + 0.0
 
     #set new tick locations on second axis
+    # print("    LPLOT DEBUG: SyncDualAxisTicks sometimes dont line up if a slight round makes the numbers better. could fix this by changing axis number formatter")
+    # print("    LPLOT DEBUG: old ticks", getattr(ax2, "get_{}ticks".format(xy))() )
+    # print("    LPLOT DEBUG: new ticks", ax2vals )
     getattr(ax2, "set_{}ticks".format(xy))(ax2vals)
     # ax2.set_yticks(ax2vals)
 
@@ -707,7 +710,7 @@ def SecondaryXaxis(ax, x2, bot=True, xlbl=None, xlblcombine=True, offset=None):
 
 
     #invisible throwaway plot to set up the second x-axis
-    ax2.plot(x2, ax.lines[0].get_xdata(), color='k', alpha=0 )
+    ax2.plot(x2, ax.lines[0].get_ydata(), color='k', alpha=0 )
     ax2 = SyncDualAxisTicks(ax, ax2, 'x')
 
 
@@ -1068,7 +1071,7 @@ def GetPlotBbox(ypad=0.5, xpad=0, shft=0.1, offtop=0.5):
     """Get bounding box of a plot. Used for saving figures.
     ypad --> inches to pad left side with
     xpad --> inches to pad bottom with
-    shft --> genearl padding for all sides, based on axis label font size
+    shft --> general padding for all sides, based on axis label font size
     offtop --> inches to remove from top (when no title)
 
     for square bbox: ypad=xpad, offtop=0
@@ -1083,14 +1086,14 @@ def GetPlotBbox(ypad=0.5, xpad=0, shft=0.1, offtop=0.5):
 
     return bbox
 
-def SavePlot(savename, overwrite=1, trans=False, bbox='tight', pad=0.5):
+def SavePlot(savename, overwrite=1, trans=False, bbox='tight', pad=None):
     """Save file given save path.  Do not save if file exists
     or if variable overwrite is 1
     trans --> tranparent background if True
     bbox --> 'tight' for tight border (best for individual plots)
              'fixed' for fixed-size border (best for plots that need to be same size)
              'fixedsquare' same as 'fixed' but final shape is square, not rect
-    pad  --> lower left corner padding for 'fixed' bbox (inches)
+    pad  --> lower left corner padding for 'fixed' bbox [0.5] or padding on all sides for 'tight' [0.1] (inches)
     """
     if os.path.isfile(savename):
         if overwrite == 0:
@@ -1101,7 +1104,10 @@ def SavePlot(savename, overwrite=1, trans=False, bbox='tight', pad=0.5):
     #Make figure save directory if it does not exist
     MakeOutputDir(GetParentDir(savename))
 
-    #Pad bbox with this value to accomodate specific axis label fontsize
+    if pad is None:
+        pad = 0.5 if "fixed" in bbox else 0.1
+
+    #Pad bbox with this value to accommodate specific axis label fontsize
     shft = 0.1
 
     if bbox == 'fixedsquare':
@@ -1109,15 +1115,6 @@ def SavePlot(savename, overwrite=1, trans=False, bbox='tight', pad=0.5):
         #Make bounding box that is same width/height as values in 'size'
             #pad left and bottom size so axis labels aren't cut off
         bbox = GetPlotBbox(ypad=pad, xpad=pad, shft=shft, offtop=0)
-
-        # fig = plt.gcf()
-        # size = fig.get_size_inches() #figsize
-        # #Make bounding box that is same width/height as values in 'size'
-        #     #pad left and bottom size so axis labels aren't cut off
-        # GetPlotBbox(ypad=pad, xpad=pad, shft=shft, offtop=0)
-        # # bbox = Bbox.from_bounds(-pad-shft, -pad-shft, size[0]+shft, size[1]+shft)
-        # #     #1st two entries are index (in inches) of lower left corner of bbox
-        # #     #2nd two entries are width and height (in inches) of bbox
     elif bbox == 'fixed':
         #SAVE WITH FIXED BBOX, AXIS LABELS PADDED, FINAL SHAPE IS RECTANGLE
         #Make bounding box that is same width/height as values in 'size'
@@ -1126,15 +1123,7 @@ def SavePlot(savename, overwrite=1, trans=False, bbox='tight', pad=0.5):
             #top is too high, subtrack some height
         bbox = GetPlotBbox(ypad=pad, xpad=0, shft=shft, offtop=0.5)
 
-        # fig = plt.gcf()
-        # size = fig.get_size_inches() #figsize
-        # #Make bounding box that is same width/height as values in 'size'
-        #     #pad left side so axis labels aren't cut off
-        #     #bottom side is already ok, don't pad to reduce whitespace
-        #     #top is too high, subtrack some height
-        # bbox = Bbox.from_bounds(-pad-shft, 0-shft, size[0]+shft, size[1]+shft-0.5)
-
-    plt.savefig(savename, bbox_inches=bbox, transparent=trans)
+    plt.savefig(savename, bbox_inches=bbox, transparent=trans, pad_inches=pad)
     # plt.savefig(savename, bbox_inches='tight', transparent=trans)
     # plt.close()
 
@@ -1559,7 +1548,7 @@ def main():
 
 
     # SyncTicks_DualAxisY(ax1, ax2, )
-    SyncDualAxisTicks(ax1, ax2, whichax='y')
+    ax2 = SyncDualAxisTicks(ax1, ax2, whichax='y')
 
 
 
@@ -1574,7 +1563,8 @@ def main():
 
     Legend(ax1)
 
-    plt.savefig('test.png')
+    # plt.savefig('test.png')
+    SavePlot('test.png', pad=0.75)
 
 
 
