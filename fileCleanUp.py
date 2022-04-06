@@ -71,17 +71,7 @@ class Deletor():
         #     self.Delete = DoDelete
 
         self.iwriteprotects = iwriteprotects
-        if self.iwriteprotects is None:
-            self.iwriteprotects = []
-        else:
-            print("\nNOT Deleting (Write Protected):")
-            files = ['{}.{}'.format(self.header, i) for i in self.iwriteprotects]
-            filestoprotect = ""
-            for f in files:
-                p = "{}/{}".format(self.path, f)
-                if os.path.isfile(p):
-                    filestoprotect += "\n    "+f
-            print(filestoprotect)
+        if self.iwriteprotects is None: self.iwriteprotects = []
 
         #DELETE SERIES FOR EACH FILE HEADER
         if allbut:
@@ -131,28 +121,37 @@ class Deletor():
         """ Delete a given file
         (minimum 3x faster to delete all files at once instead of individually in a loop)
         """
-        files = ['{}.{}'.format(self.header, i) for i in iterstodelete]
-        filestodelete = ""
-        pathstodelete = " "
-        for f in files:
-            p = "{}/{}".format(self.path, f)
-            if os.path.isfile(p):
-                filestodelete += "\n    "+f
-                pathstodelete += " "+p
 
-        if pathstodelete.replace(" ", "") == "":
-            print("No files to delete with current specified protection options")
+        print("\nCleaning up '{}' files".format(self.header))
+
+        #determine existing files that would actually be deleted
+        deletefiles = ['{}.{}'.format(self.header, i) for i in iterstodelete]
+        filestodelete = [f for f in deletefiles if os.path.isfile('{}/{}'.format(self.path, f))]
+        printfilestodelete = "\n".join(["        "+f for f in filestodelete])
+        pathstodelete = ["{}/{}".format(self.path, f) for f in filestodelete]
+
+
+        #determine existing files that would actually be protected
+        protectfiles = ['{}.{}'.format(self.header, i) for i in self.iwriteprotects]
+        filestoprotect = [f for f in protectfiles if os.path.isfile('{}/{}'.format(self.path, f))]
+        if len(filestoprotect) > 0:
+            print(           "    NOT Deleting (Write Protected):")
+            print("\n".join(["        "+f for f in filestoprotect]))
+
+
+        #DELETE FILES
+        if len(pathstodelete) == 0:
+            #no files to delete
+            print("    No files to delete with current specified protection options")
         elif self.dryrun:
-            print("DRY-RUN, Otherwise Would Delete:"+filestodelete)
+            #dry run: dont delete files
+            print("    DRY-RUN, Otherwise Would Delete:\n"+printfilestodelete)
         else:
-            rmcmd = "rm {}".format(pathstodelete)
-            print(rmcmd)
-            print("Deleting:"+filestodelete)
+            #delete files
+            rmcmd = "rm {}".format( " ".join(pathstodelete) )
+            print("    ", rmcmd)
+            print("    Deleting:\n"+ printfilestodelete)
             print(cmd(rmcmd))
-        # pathtodelete = '{}/{}'.format(path, filename)
-        # if os.path.isfile(pathtodelete):
-        #     print('Deleting: {}'.format(filename))
-        #     cmd('rm {}'.format(pathtodelete))
 
 
 

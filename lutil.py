@@ -206,7 +206,12 @@ def OrderedGlob(globpattern=None, header=None):
         try:
             match = [int(i) for i in match]
         except:
-            match = [float(i) for i in match]
+            try:
+                match = [float(i) for i in match]
+            except:
+                #it wasnt actually numeric after all
+                pass
+
 
     #'TAILS' IS FOR COMPATIBILITY
     df = pd.DataFrame({'file':files, 'match':match, 'tail':match}).sort_values('match')
