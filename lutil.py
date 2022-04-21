@@ -142,23 +142,41 @@ def NoWhitespace(string):
     """Return given string with all whitespace removed"""
     return string.replace(' ', '')
 
-def FindBetween(string, before='^', after=None):
-    """Search 'string' for characters between 'before' and 'after' characters
-    If after=None, return everything after 'before'
-    Default before is beginning of line
+def FindBetween(string, before=None, after=None):
+    """Search `string` for characters between `before` and `after` strings
+    before --> [default: beginning of line]
+    after  --> [default: end of line]
     """
-    if after == None and before != None:
+    if before is None: before = '^' #default is beginning of line
+    before = before.replace("(", "\(").replace(")", "\)") #make matching parentheses work
+
+    if after is None:
+        #return everything after `before`
         match = re.search('{}(.*)$'.format(before), string)
         if match != None:
             return match.group(1)
         else:
             return None
     else:
+        #return text between `before` and `after`
+        after = after.replace("(", "\(").replace(")", "\)")
         match = re.search('(?<={})(?P<value>.*?)(?={})'.format(before, after), string)
-        if match != None:
+        if match is not None:
             return match.group('value')
         else:
             return None
+
+def str2numeric(string):
+    #convert string to int or float, if appropriate
+    try:
+        #int first because it will fail if value is a float
+        string = int(string)
+    except ValueError:
+        try:
+            string = float(string)
+        except ValueError:
+            pass
+    return string
 
 def listify(nonlist, n=1):
     """Given a single item, return a list n long (default 1).

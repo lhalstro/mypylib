@@ -358,6 +358,35 @@ def LaTeXPlotSize():
 ### PLOTTING UTILITIES
 ########################################################################
 
+
+def MakeFakeFigure(num=None):
+    """ Start a dummy figure for prototyping that wont interact with your current plot
+    Use to make dummy lines, format axis labels, etc
+    IMPORTANT: Call `KillFakeFigure()` once done, otherwise this will mess up your current figure
+    """
+    if num is None: num = 999999
+    #fake plot to format axis labels
+    curfig = plt.gcf()
+    curax  = plt.gca()
+    fakefig = plt.figure(num)
+    fakeax  = fakefig.add_subplot()
+    return curfig, curax, fakefig, fakeax
+
+def DrawFakeFigure(fakefig):
+    """ Fake draw the fake prototyping figure (will not show).
+    Allows settings to manifest, like tick label formatting
+    """
+    fakefig.canvas.draw() #axis ticks dont get set until the figure is shown
+
+def KillFakeFigure(curfig, curax, fakefig):
+    """ Close fake prototyping figure and restore previous current figure
+    """
+    #close fake figure and reset old figure to current
+    plt.close(fakefig)
+    plt.figure(curfig.number)
+    plt.sca(curax)
+
+
 def PlotStart(nrow=1, ncol=1):
     """ Start a plot for a single figure or a variable layout for subplots
     Default is one subplot
@@ -630,6 +659,7 @@ GetRelativeTicksX = partial(GetRelativeTicks, whichax='x')
 
 def SyncDualAxisTicks(ax1, ax2, whichax=None):
     """ Sync secondary axis ticks to align with primary (align grid)
+    ASSUMES: linear relationship between both x-axis parameters (for non-linear parameters, use `MakeSyncedDualAxis`)
     Required: data must already be plotted on both axes
 
     (Functionality demonstrated by plotting in GUI and hovering cursor next to
@@ -649,19 +679,20 @@ def SyncDualAxisTicks(ax1, ax2, whichax=None):
 
     #get axis bounds of second axis
     ax2min, ax2max = getattr(ax2, 'get_{}lim'.format(xy))()
-    # ax2min, ax2max = ax2.get_ylim()
 
-    #interp relative location of ticks on 1st axis to corresponding values on 2nd axis
+    #linear relationship between dual-axis parameters (standard functionality)
     ax2vals = np.interp(ax1reltcks, np.linspace(0, 1), np.linspace(ax2min, ax2max), )
     #eliminate negative zeros
     ax2vals = ax2vals + 0.0
 
-    #set new tick locations on second axis
+    # ### DEBUG
     # print("    LPLOT DEBUG: SyncDualAxisTicks sometimes dont line up if a slight round makes the numbers better. could fix this by changing axis number formatter")
     # print("    LPLOT DEBUG: old ticks", getattr(ax2, "get_{}ticks".format(xy))() )
     # print("    LPLOT DEBUG: new ticks", ax2vals )
+
+    #set new tick locations on second axis
     getattr(ax2, "set_{}ticks".format(xy))(ax2vals)
-    # ax2.set_yticks(ax2vals)
+
 
     return ax2
 
@@ -674,7 +705,90 @@ SyncTicks_DualAxisX = SyncDualAxisTicksX
 
 
 
-def SecondaryXaxis(ax, x2, bot=True, xlbl=None, xlblcombine=True, offset=None):
+def MakeSyncedDualAxis(ax1, x2, whichax=None, linear=None):
+    """ Create a second axis stacked on the first, which shows equivalent values of a second parameter at each tick
+    Use the plot data for interpolation to handle non-linear relationships (DATA MUST BE POINT-MATCHED)
+    Use `SyncDualAxisTicks` for linear, non-point-matched dual axis.
+
+    Strategy: plot the exact same data invisibly, then rename each tick with the interplated value for the second xaxis parameter
+
+    Args:
+        ax1: primary axis
+        x2:  data for secondary axis
+        whichax: 'x' or 'y', which dual axis pair to sync
+        linear: use a linear interpolation to determine the relative tick locations [True]. Otherwise, interpolate with actual plot data (MUST BE POINT-MATCHED)
+    """
+
+    if whichax == None or (whichax.lower() != 'x' and whichax.lower() != 'y'):
+        raise IOError("Must choose 'x' or 'y' axes to sync ticks")
+    xy = whichax.lower()
+    xyopposite = 'x' if xy == 'y' else 'y'
+
+    if linear is None: linear = True
+
+
+    if not linear:
+
+
+        #get original axis data for interpolation with `x2`
+        ax1data = {}
+        ax1data['x'], ax1data['y'] = ax1.lines[0].get_data() #original x-data (must be point-matched to second x axis)
+        #get original and secondary axis bounds
+        ax1minmax = getattr(ax1, 'get_{}lim'.format(xy))()   #original axis bounds
+        ax2minmax = np.interp(ax1minmax, ax1data[xy], x2 ) + 0.0 #equivalent axis bounts on 2nd axis
+        #get original and secondary axis tick locations
+        ax1vals = getattr(ax1, "get_{}ticks".format(xy))()   #original tick values (locations)
+        ax1vals = ax1vals[(ax1vals<ax1minmax[1]) & (ax1vals>ax1minmax[0])] #exclude out of bound end ticks, they'll mess up the second axis ***(THIS MIGHT STILL CREATE PROBLEMS WITH SOME TICKS, COULD JUST FAKE-PLOT THE FIRST AXIS TO GET FORMATTED TICK LABELS) ***
+        ax2vals   = np.interp(ax1vals,   ax1data[xy], x2 ) + 0.0 #eqivalent tick locations on 2nd axis (plus zero eliminates negative zeros)
+
+
+        #SET UP SECOND AXIS
+        #ax2 is just an empty twin axis since it will never actually show any plotted data
+        ax2 = getattr(ax1, 'twin{}'.format(xyopposite))()
+        #Set second axis to equivalent bounds as first
+        ax2.set_xlim(ax1minmax)
+        #make the ticks on the second axis at the same location as the first
+        ax2.set_xticks(ax1vals)
+
+
+        #FORMAT SECOND AXIS TICK VALUES WITH MATPLOTLIB TICK FORMATER (USING DUMMY PLOT)
+        #fake plot with second axis data so the tick labels get formatted, make sure ticks are in appropriate locations
+        curfig, curax, fakefig, fakeax = MakeFakeFigure()
+        getattr( fakeax, "set_{}lim".format(xy))(ax2minmax)
+        fakeax.plot(x2, x2)
+        getattr( fakeax, "set_{}ticks".format(xy))(ax2vals)
+        #axis ticks dont get formatted until the figure is shown
+        DrawFakeFigure(fakefig)
+
+        #get formatted tick labels and unpack just the strings
+        ax2ticklabels = [xx.get_text() for xx in getattr(fakeax, "get_{}ticklabels".format(xy))() ]
+
+        #close fake figure and reset old figure to current
+        KillFakeFigure(curfig, curax, fakefig)
+
+        #RENAME SECONDARY AXIS TICKS WITH EQUIVALENT VALUES
+        #label second axis ticks with corresponding, interpolated values
+        getattr( ax2, "set_{}ticklabels".format(xy))(ax2ticklabels)
+
+
+        # print("\n\nLPLOT DEBUG: MAKESYNCEDDUALAXIS")
+        # print("1st axis tick values: ", ax1vals)
+        # print("1st axis bounds: ", ax1minmax)
+        # print("2nd axis tick labels:", ax2ticklabels)
+        # print("2nd axis bounds: ", ax2minmax)
+        # # print(ax2vals, ax2ticklabels)
+
+
+    else:
+        #invisible throwaway plot to set up the second x-axis
+        ax2.plot(x2, ax1.lines[0].get_ydata(), color='k', alpha=0 )
+        #sync ticks assuming linear relationship (no need for point-matched data)
+        ax2 = SyncDualAxisTicks(ax1, ax2, xy)
+
+
+    return ax2
+
+def SecondaryXaxis(ax, x2, bot=True, xlbl=None, xlblcombine=True, offset=None, linear=None):
     """Make a second x-axis below the first, mapping a second independent parameter
     from the dataset to y-data ALREADY PLOTTED
     Args:
@@ -684,16 +798,16 @@ def SecondaryXaxis(ax, x2, bot=True, xlbl=None, xlblcombine=True, offset=None):
         xlbl     --> new x-axis label [None]
         xlblcombine --> combine primary and secondary x-axis labels with a "/" on one line below both axes [True]
         offset   --> axis-relative distance to offset 2nd x-axis from first [0.15]
+        linear   --> use a linear interpolation to determine the relative tick locations [True]. Otherwise, interpolate with actual plot data (MUST BE POINT-MATCHED)
     """
     if offset is None: offset = 0.15
+    if linear is None: linear = True
+
+    #
+    ax2 = MakeSyncedDualAxis(ax, x2, 'x', linear=linear)
 
 
-    #SETUP SECONDARY AXIS
-    ax2 = ax.twiny() #get separte x-axis for labeling trajectory Mach
-    # ax2 = MakeTwiny(ax, xlbl)
-
-
-    #show second x-axis on same side as first (bottom)
+    #SHOW SECOND X-AXIS ON SAME SIDE AS FIRST (BOTTOM)
     if bot:
         #offset the 2nd xaxis from the first (spines are the lines that tick lines are connected to)
         ax2.spines["bottom"].set_position(("axes", 0.0-offset))
@@ -709,12 +823,7 @@ def SecondaryXaxis(ax, x2, bot=True, xlbl=None, xlblcombine=True, offset=None):
         ax2.xaxis.set_ticks_position('bottom')
 
 
-    #invisible throwaway plot to set up the second x-axis
-    ax2.plot(x2, ax.lines[0].get_ydata(), color='k', alpha=0 )
-    ax2 = SyncDualAxisTicks(ax, ax2, 'x')
-
-
-    #label new x-axis
+    #LABEL NEW X-AXIS
     if xlbl is not None:
         if xlblcombine:
             xlbl1 = ax.get_xlabel()
@@ -726,11 +835,10 @@ def SecondaryXaxis(ax, x2, bot=True, xlbl=None, xlblcombine=True, offset=None):
 
     return ax2
 
-
-
 def MakeSecondaryXaxis(ax, xlbl, tickfunc, locs=5):
-    """Make a second x-axis with tick values interpolated from user-provided function
-    *** SEE `SecondaryXaxis` FOR SECOND X-AXIS WITH VALUES SYNCED TO DATA ***
+    """*** SEE `SecondaryXaxis` FOR SECOND X-AXIS WITH VALUES SYNCED TO DATA ***
+    Make a second x-axis with tick values interpolated from user-provided function
+
     ax       --> original axes object for plot
     xlbl     --> new x-axis label
     tickfunc --> function that calculates tick value, based on location
@@ -749,7 +857,8 @@ def MakeSecondaryXaxis(ax, xlbl, tickfunc, locs=5):
     return ax2
 
 def SecondXaxisSameGrid(ax1, xold, xnew, xlbl='', rot=0):
-    """*** DEPRECATED - USE `SecondaryXaxis` INSTEAD*** Make a secondary x-axis with the same tick locations as the original
+    """*** DEPRECATED - USE `SecondaryXaxis` INSTEAD***
+    Make a secondary x-axis with the same tick locations as the original
     for a specific second parameter. Tick values are interpolated to match original
     ax1  --> original axis handle
     xold --> x-data used when plotting with ax1
