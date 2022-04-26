@@ -40,7 +40,7 @@ class Deletor():
     """ Makes filecleanup more efficient by passing options through an object instead of booleans
     """
 
-    def __init__(self, head, istart, iend, incr=None, tail=None, path=None,
+    def __init__(self, head, istart, iend, incr=None, tail=None, fmt=None, path=None,
                     allbut=False, dryrun=None, iwriteprotects=None):
 
 
@@ -56,6 +56,8 @@ class Deletor():
         else:
             if self.tail[0] != ".":
                 self.tail = ".{}".format(self.tail)
+
+        self.fmt = fmt
 
         if path is None:
             #Default path is current directory
@@ -88,7 +90,8 @@ class Deletor():
             #delete only files in specified series
             self.DeleteFiles = self.DeleteSeries
 
-
+    def FileName(self, i):
+        return '{}.{}{}'.format(self.head, i, self.tail) if self.fmt is None else '{}.{:{}}{}'.format(self.head, i, self.fmt, self.tail)
 
     def DeleteSeries(self, ):
         """Delete a series of files of given file header withing the number range
@@ -132,14 +135,16 @@ class Deletor():
         print("\nCleaning up '{}.##{}' files".format(self.head, self.tail))
 
         #determine existing files that would actually be deleted
-        deletefiles = ['{}.{}{}'.format(self.head, i, self.tail) for i in iterstodelete]
+        deletefiles = [self.FileName(i) for i in iterstodelete]
+        # deletefiles = ['{}.{}{}'.format(self.head, i, self.tail) for i in iterstodelete]
         filestodelete = [f for f in deletefiles if os.path.isfile('{}/{}'.format(self.path, f))]
         printfilestodelete = "\n".join(["        "+f for f in filestodelete])
         pathstodelete = ["{}/{}".format(self.path, f) for f in filestodelete]
 
 
         #determine existing files that would actually be protected
-        protectfiles = ['{}.{}{}'.format(self.head, i, self.tail) for i in self.iwriteprotects]
+        protectfiles = [self.FileName(i) for i in self.iwriteprotects]
+        # protectfiles = ['{}.{}{}'.format(self.head, i, self.tail) for i in self.iwriteprotects]
         filestoprotect = [f for f in protectfiles if os.path.isfile('{}/{}'.format(self.path, f))]
         if len(filestoprotect) > 0:
             print(           "    NOT Deleting (Write Protected):")
@@ -154,11 +159,16 @@ class Deletor():
             #dry run: dont delete files
             print("    DRY-RUN, Otherwise Would Delete:\n"+printfilestodelete)
         else:
-            #delete files
-            rmcmd = "rm {}".format( " ".join(pathstodelete) )
-            print("    ", rmcmd)
+            #DELETE FILES
+            #use temporary file to pipe in arguments, since we might run into stack limit if we try to delete too many at once
+            with open('killem.tmp', 'w') as f: f.write(" ".join(pathstodelete))
+            rmcmd = """cat killem.tmp | xargs rm"""
+            # rmcmd = "rm {}".format( " ".join(pathstodelete) )
+            # print("    ", rmcmd)
             print("    Deleting:\n"+ printfilestodelete)
             print(cmd(rmcmd))
+
+            cmd("rm killem.tmp") #remove temporary list of files to delete
 
 
 
@@ -228,7 +238,7 @@ def FunctionalityTestOOP():
 
 
 
-def main(path=None, headers=None, istart=None, iend=None, incr=1, tail=None,
+def main(path=None, headers=None, istart=None, iend=None, incr=1, tail=None, fmt=None,
             allbut=False, setdryrun=False, iprotect=None):
     """ Delete specified file interval
     """
@@ -241,7 +251,7 @@ def main(path=None, headers=None, istart=None, iend=None, incr=1, tail=None,
 
 
     #delete iter series for each header
-    o = Deletor(headers[0], istart, iend, incr, tail=tail, path=path, iwriteprotects=iprotect, dryrun=setdryrun, allbut=allbut)
+    o = Deletor(headers[0], istart, iend, incr, tail=tail, fmt=fmt, path=path, iwriteprotects=iprotect, dryrun=setdryrun, allbut=allbut)
     for head in headers:
         o.header = head
         o.DeleteFiles()
@@ -281,6 +291,10 @@ if __name__ == "__main__":
             help="File name series also has footer text e.g. q.XX.tail",
             default=None, type=str,
         )
+    parser.add_argument('-f', '--format',
+            help="formating of numbers (what comes after the colon in `format`) (e.g. `06d` gives '009500' for i=9500 )  [integer]",
+            default=None, type=str,
+        )
 
     parser.add_argument('-p', '--protect', metavar='i', #name of variable is text after '--'
             help="Protect these files",
@@ -315,5 +329,5 @@ if __name__ == "__main__":
         #         allbut=args.allbut, setdryrun=args.dryrun, iprotect=args.protect)
         #Object oriented (adopted 4/22/2021)
         main(path=None, headers=args.header,
-                istart=args.istart, iend=args.iend, incr=args.incr, tail=args.tail,
+                istart=args.istart, iend=args.iend, incr=args.incr, tail=args.tail, fmt=args.format,
                 allbut=args.allbut, setdryrun=args.dryrun, iprotect=args.protect)
