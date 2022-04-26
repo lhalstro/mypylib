@@ -2,7 +2,7 @@
 """FILE CLEAN-UP TOOL
 Logan Halstrom
 CREATED:  09 FEB 2016
-MODIFIED: 24 SEP 2020
+MODIFIED: 26 APR 2022
 
 DESCRIPTION:  Used to clean up numbered file series.  Delete numbered ranges
 or ordered series of files.
@@ -22,10 +22,10 @@ import argparse
 
 import sys
 import os
-#Get path to home directory
-HOME = os.path.expanduser('~')
-sys.path.append('{}/lib/python'.format(HOME))
-from lutil import cmd
+# #Get path to home directory
+# HOME = os.path.expanduser('~')
+# sys.path.append('{}/lib/python'.format(HOME))
+from mypylib.lutil import cmd
 
 dryrun = False
 
@@ -40,15 +40,22 @@ class Deletor():
     """ Makes filecleanup more efficient by passing options through an object instead of booleans
     """
 
-    def __init__(self, head, istart, iend, incr=None, path=None,
+    def __init__(self, head, istart, iend, incr=None, tail=None, path=None,
                     allbut=False, dryrun=None, iwriteprotects=None):
 
 
-        self.header=head
+        self.head=head
         self.istart=istart
         self.iend=iend
         self.incr=incr
         if self.incr is None: self.incr = 1
+
+        self.tail=tail
+        if self.tail is None:
+            self.tail = ""
+        else:
+            if self.tail[0] != ".":
+                self.tail = ".{}".format(self.tail)
 
         if path is None:
             #Default path is current directory
@@ -122,17 +129,17 @@ class Deletor():
         (minimum 3x faster to delete all files at once instead of individually in a loop)
         """
 
-        print("\nCleaning up '{}' files".format(self.header))
+        print("\nCleaning up '{}.##{}' files".format(self.head, self.tail))
 
         #determine existing files that would actually be deleted
-        deletefiles = ['{}.{}'.format(self.header, i) for i in iterstodelete]
+        deletefiles = ['{}.{}{}'.format(self.head, i, self.tail) for i in iterstodelete]
         filestodelete = [f for f in deletefiles if os.path.isfile('{}/{}'.format(self.path, f))]
         printfilestodelete = "\n".join(["        "+f for f in filestodelete])
         pathstodelete = ["{}/{}".format(self.path, f) for f in filestodelete]
 
 
         #determine existing files that would actually be protected
-        protectfiles = ['{}.{}'.format(self.header, i) for i in self.iwriteprotects]
+        protectfiles = ['{}.{}{}'.format(self.head, i, self.tail) for i in self.iwriteprotects]
         filestoprotect = [f for f in protectfiles if os.path.isfile('{}/{}'.format(self.path, f))]
         if len(filestoprotect) > 0:
             print(           "    NOT Deleting (Write Protected):")
@@ -193,7 +200,7 @@ def FunctionalityTestOOP():
     saveiters = [3]
     # main(testdir, 'b', 2, 10, 3, allbut=True, setdryrun=False, iprotect=saveiters)
     t = time()
-    main_oop(path=testdir, headers='b', istart=2, iend=10, incr=3, allbut=True, iprotect=saveiters)
+    main(path=testdir, headers='b', istart=2, iend=10, incr=3, allbut=True, iprotect=saveiters)
     dt1 = time()-t
     print("\nDid it Delete all 'b.' except b.1, b.2, b.3, b.5, and b.8?")
     print(glob.glob('{}/b.*'.format(testdir)))
@@ -204,7 +211,7 @@ def FunctionalityTestOOP():
     # DeleteSeries(testdir, 'a', 1, 8)
     # main(testdir, 'a.b', 1, 8, iprotect=saveiters)
     t = time()
-    main_oop(path=testdir, headers='a.b', istart=1, iend=8, incr=1, iprotect=saveiters)
+    main(path=testdir, headers='a.b', istart=1, iend=8, incr=1, iprotect=saveiters)
     dt2 = time()-t
     print("\nDid it Delete all a files up to and including a.b.8, save a.b.3?")
     print(glob.glob('{}/a.b.*'.format(testdir)))
@@ -221,7 +228,7 @@ def FunctionalityTestOOP():
 
 
 
-def main_oop(path=None, headers=None, istart=None, iend=None, incr=1,
+def main(path=None, headers=None, istart=None, iend=None, incr=1, tail=None,
             allbut=False, setdryrun=False, iprotect=None):
     """ Delete specified file interval
     """
@@ -229,12 +236,12 @@ def main_oop(path=None, headers=None, istart=None, iend=None, incr=1,
     #Required inputs
     if headers is None or istart is None or iend is None:
         raise ValueError("headers, istart, and iend are required inputs")
-    elif type(headers) is not list:
+    if type(headers) is not list:
         headers = [headers]
 
 
     #delete iter series for each header
-    o = Deletor(headers[0], istart, iend, incr, path=path, iwriteprotects=iprotect, dryrun=setdryrun, allbut=allbut)
+    o = Deletor(headers[0], istart, iend, incr, tail=tail, path=path, iwriteprotects=iprotect, dryrun=setdryrun, allbut=allbut)
     for head in headers:
         o.header = head
         o.DeleteFiles()
@@ -432,6 +439,11 @@ if __name__ == "__main__":
             default=1,
         )
 
+    parser.add_argument('-t', '--tail', #name of variable is text after '--'
+            help="File name series also has footer text e.g. q.XX.tail",
+            default=None, type=str,
+        )
+
     parser.add_argument('-p', '--protect', metavar='i', #name of variable is text after '--'
             help="Protect these files",
             default=None, type=int, nargs='+',
@@ -447,7 +459,7 @@ if __name__ == "__main__":
             default=False, action='store_true', #default: False, True if '-d'
         )
 
-    parser.add_argument('-t', '--test', #name of variable is text after '--'
+    parser.add_argument('-z', '--test', #name of variable is text after '--'
             help="Test functionality, other inputs are irrelevent",
             default=False, action='store_true', #default: False, True if '-d'
         )
@@ -464,6 +476,6 @@ if __name__ == "__main__":
         #         istart=args.istart, iend=args.iend, incr=args.incr,
         #         allbut=args.allbut, setdryrun=args.dryrun, iprotect=args.protect)
         #Object oriented (adopted 4/22/2021)
-        main_oop(path=None, headers=args.header,
-                istart=args.istart, iend=args.iend, incr=args.incr,
+        main(path=None, headers=args.header,
+                istart=args.istart, iend=args.iend, incr=args.incr, tail=args.tail,
                 allbut=args.allbut, setdryrun=args.dryrun, iprotect=args.protect)
