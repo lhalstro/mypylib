@@ -27,7 +27,7 @@ import os
 # sys.path.append('{}/lib/python'.format(HOME))
 from mypylib.lutil import cmd
 
-dryrun = False
+# dryrun = False
 
 def range_inclusive(start, stop, step=1):
     """ Like 'range' but includes 'stop' in interval.
@@ -41,7 +41,22 @@ class Deletor():
     """
 
     def __init__(self, head, istart, iend, incr=None, tail=None, fmt=None, path=None,
-                    allbut=False, dryrun=None, iwriteprotects=None):
+                    allbut=None, dryrun=None, iwriteprotects=None):
+        """ Initiate file deletion instance
+
+        Args:
+            head:   filename text header (before number)
+            istart: number in file series to start at
+            iend:   number in file series to end at
+            incr:   interval between istart/iend [1]
+            tail:   filename text after number [""]
+            fmt:    formater for the number [integer]
+            path:   location to delete files in [pwd]
+            allbut: delete all files within range EXCEPT specified series [False]
+                    (use to preserve a movie interval an nothing else)
+            dryrun: Don't delete files, just report what would be deleted [False]
+            iwriteprotects: list of specific number to not delete under any circumstances [None]
+        """
 
 
         self.head=head
@@ -69,21 +84,12 @@ class Deletor():
         self.dryrun = dryrun
         if self.dryrun is None: self.dryrun = False
 
-        # if self.dryrun:
-        #     #do nothing when file is deleted
-        #     # self.Delete = lambda *args: None
-        #     self.Delete = DontDelete
-        #     print("DRY RUN, NOT ACTUALLY DELETING FILES")
-        # else:
-        #     #delete the file
-        #     # self.Delete = lambda filename: cmd('rm {}'.format(filename))
-        #     self.Delete = DoDelete
 
         self.iwriteprotects = iwriteprotects
         if self.iwriteprotects is None: self.iwriteprotects = []
 
         #DELETE SERIES FOR EACH FILE HEADER
-        if allbut:
+        if allbut is not None:
             #delete all files within range except specified series
             self.DeleteFiles = self.DeleteExcept
         else:
@@ -117,9 +123,11 @@ class Deletor():
             return
         #DELETE EVERY FILE NOT WITHIN GIVEN SERIES TO SAVE
         tosave = list( range_inclusive(self.istart, self.iend, self.incr) )
-        todelete = [i for i in range_inclusive(self.istart, self.iend, 1) if i not in tosave]
 
+        #delete everything that isnt in the protected series AND isnt otherwise protected
+        todelete = [i for i in range_inclusive(self.istart, self.iend, 1) if i not in tosave]
         todelete = [i for i in todelete if i not in self.iwriteprotects]
+
         self.Delete(todelete)
         # [self.Delete(self.path, '{}.{}'.format(self.header, i)) for i in todelete]
         # # for i in todelete:
@@ -239,8 +247,21 @@ def FunctionalityTestOOP():
 
 
 def main(path=None, headers=None, istart=None, iend=None, incr=1, tail=None, fmt=None,
-            allbut=False, setdryrun=False, iprotect=None):
-    """ Delete specified file interval
+            allbut=None, setdryrun=None, iprotect=None):
+    """ Delete specified file interval, for multiple file headers.
+
+    Args:
+        headers: str or list: filename text header(s) (before number)
+        istart: number in file series to start at
+        iend:   number in file series to end at
+        incr:   interval between istart/iend [1]
+        tail:   filename text after number [""]
+        fmt:    formater for the number [integer]
+        path:   location to delete files in [pwd]
+        allbut: delete all files within range EXCEPT specified series [False]
+                (use to preserve a movie interval an nothing else)
+        dryrun: Don't delete files, just report what would be deleted [False]
+        iprotect: list of specific number to not delete under any circumstances [None]
     """
 
     #Required inputs
@@ -253,7 +274,7 @@ def main(path=None, headers=None, istart=None, iend=None, incr=1, tail=None, fmt
     #delete iter series for each header
     o = Deletor(headers[0], istart, iend, incr, tail=tail, fmt=fmt, path=path, iwriteprotects=iprotect, dryrun=setdryrun, allbut=allbut)
     for head in headers:
-        o.header = head
+        o.head = head
         o.DeleteFiles()
 
 
@@ -296,7 +317,7 @@ if __name__ == "__main__":
             default=None, type=str,
         )
 
-    parser.add_argument('-p', '--protect', metavar='i', #name of variable is text after '--'
+    parser.add_argument('-p', '--protect', metavar='i', #name of variable is text after '--'. `metavar` is name used in help description
             help="Protect these files",
             default=None, type=int, nargs='+',
         )
