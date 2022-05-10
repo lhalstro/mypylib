@@ -87,7 +87,7 @@ def GetRootDir(filename):
     return rootpath
 
 def GetParentDir(savename):
-    """Original functionality (DEPRECATED).
+    """Original functionality (DEPRECATED, USE `GetRootDir` INSTEAD).
     Return root path with slash at end
     """
     #split individual directories
