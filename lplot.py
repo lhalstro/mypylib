@@ -178,6 +178,8 @@ xkcdhex =    [  "#75bbfd" ,  "#??????" ,  '#a552e6',           '#??????',       
 colordark = get_palette(xkcddark, colorkind='xkcd') #actual rgbs that matplotlib likes
 colorlight = get_palette(xkcdlight, colorkind='xkcd') #actual rgbs that matplotlib likes
 colordarklight = [x for x in zip(colordark, colorlight)]
+colordictdark  = {k:colordark[i]  for i,k in enumerate(["blue", "orange",  "purple",  "green", "red" ])}
+colordictlight = {k:colorlight[i] for i,k in enumerate(["blue", "orange",  "purple",  "green", "red" ])}
 
 
 xkcdrainbow =       ["cherry" ,   "tangerine",    "puke yellow",  "leaf green",  "windows blue",  "dusty purple",  'light brown',  "greyish",   "salmon pink",     "sky blue", "aqua"     ]

@@ -89,7 +89,8 @@ class Deletor():
         if self.iwriteprotects is None: self.iwriteprotects = []
 
         #DELETE SERIES FOR EACH FILE HEADER
-        if allbut is not None:
+        if allbut is None: allbut = False
+        if allbut:
             #delete all files within range except specified series
             self.DeleteFiles = self.DeleteExcept
         else:

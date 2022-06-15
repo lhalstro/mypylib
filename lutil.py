@@ -18,14 +18,24 @@ import pandas as pd
 def cmd(command):
     """Execute a shell command.
     TIPS:
-    - Execute multiple commands by separating with semicolon+space: '; '
-    - Execute commands containing single and double quotes by enclosing in '''cmd'''
+        - Execute multiple commands by separating with semicolon+space: '; '
+        - Execute commands containing single and double quotes by enclosing in '''cmd'''
     """
+    #EXECUTE COMMAND
     process = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
+    #PRINT STDOUT
+    proc_stdout = process.communicate()[0].strip().decode() #In python3, output is byte-encoded, so need to use decode to turn to string
+    return proc_stdout
+
     #print proc_stdout
     proc_stdout = process.communicate()[0].strip()
     #In python3, output is byte-encoded, so need to use decode to turn to string
     return proc_stdout.decode()
+
+def cmd_nooutput(command):
+    """Execute a shell command only, do not process stdout (more reliable)
+    """
+    subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
 
 def command(cmd):
     """Execute shell command and return subprocees and subprocess output"""
