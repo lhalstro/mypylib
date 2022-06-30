@@ -15,7 +15,7 @@ import numpy as np
 from scipy.interpolate import interp1d
 import pandas as pd
 
-def cmd(command):
+def cmd(command, nindent=0):
     """Execute a shell command.
     TIPS:
         - Execute multiple commands by separating with semicolon+space: '; '
@@ -25,6 +25,11 @@ def cmd(command):
     process = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
     #PRINT STDOUT
     proc_stdout = process.communicate()[0].strip().decode() #In python3, output is byte-encoded, so need to use decode to turn to string
+    #add indentation to output
+    if nindent > 0:
+        tabs = ""
+        for i in range(nindent): tabs += "    "
+        proc_stdout.replace("\n", "\n{}".format(tabs))
     return proc_stdout
 
     #print proc_stdout
@@ -224,12 +229,17 @@ def OrderedGlob(globpattern=None, header=None):
     #return empty DF if no files globbed
     if len(files) < 1: return pd.DataFrame(columns=['file','match','tail'])
 
-    #get glob match for each file (remove boilerplate portion of the glob pattern, and delete any wildcards in square brackets (e.g. `[0-9]`) )
-    pattern = re.sub( "\[.*?\]", "", globpattern).split("*")
+    #get glob match for each file
+        #(remove boilerplate portion of the glob pattern, and delete any wildcards in square brackets (e.g. `[0-9]`) )
+        #if filename is a path, dont bother matching the path, just the filename (`GetFilename`)
+    pattern = re.sub( "\[.*?\]", "", GetFilename(globpattern)).split("*")
     for i, x in enumerate(pattern):
         if x == '': pattern[i] = None
 
-    match = [ FindBetween(f, pattern[0], pattern[1]) for f in files]
+    #dont search full paths, just the filename:
+    # match = [ FindBetween(f, pattern[0], pattern[1]) for f in files]
+    match = [GetFilename(f) for f in files]
+    match = [ FindBetween(f, pattern[0], pattern[1]) for f in match]
     if match[0].isnumeric():
         try:
             match = [int(i) for i in match]
