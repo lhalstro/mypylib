@@ -203,7 +203,6 @@ def listify(nonlist, n=1):
         outlist = nonlist
     return outlist
 
-
 def OrderedGlob(globpattern=None, header=None):
     """ Glob all files in cwd with provided glob pattern or: "ls header.*"
     Return DataFrame with file list ordered by * match converted to float/int
@@ -221,8 +220,8 @@ def OrderedGlob(globpattern=None, header=None):
     elif "*" not in globpattern:
         #original functionality, where a header was given assuming a file extension of ".XXXXX..."
         globpattern += ".*"
-    elif len(globpattern.split("*")) > 2:
-        raise ValueError("'{}': I don't know how to handle globs with more than one wildcard (*) ".format(globpattern))
+    elif len(globpattern.split("*")) > 3:
+        raise ValueError("'{}': I don't know how to handle globs with more than two wildcards (*) ".format(globpattern))
 
     from glob import glob
     files = glob(globpattern)
@@ -233,22 +232,36 @@ def OrderedGlob(globpattern=None, header=None):
         #(remove boilerplate portion of the glob pattern, and delete any wildcards in square brackets (e.g. `[0-9]`) )
         #if filename is a path, dont bother matching the path, just the filename (`GetFilename`)
     pattern = re.sub( "\[.*?\]", "", GetFilename(globpattern)).split("*")
+    #if string on one side of '*' is empty, use `None` so `FindBetween` will match default (beginning/end of string)
     for i, x in enumerate(pattern):
         if x == '': pattern[i] = None
 
-    #dont search full paths, just the filename:
-    # match = [ FindBetween(f, pattern[0], pattern[1]) for f in files]
-    match = [GetFilename(f) for f in files]
-    match = [ FindBetween(f, pattern[0], pattern[1]) for f in match]
-    if match[0].isnumeric():
-        try:
-            match = [int(i) for i in match]
-        except:
-            try:
-                match = [float(i) for i in match]
-            except:
-                #it wasnt actually numeric after all
-                pass
+    if len(pattern) == 2:
+        #get numeric match for one-wildcard glob pattern
+        match = [ FindBetween(GetFilename(f), pattern[0], pattern[1]) for f in files] #dont search full paths, just the filename
+        #convert strings to numbers
+        isnum = [i.isnumeric() for i in match]
+        if any(isnum) and not all(isnum): raise ValueError("Not all matches are numeric, glob pattern is ambiguous")
+        if isnum[0]: match = [str2numeric(i) for i in match]
+
+    elif len(pattern) == 3:
+        #get numeric match for two-wildcard glob pattern, assuming only one of two is numeric
+
+        match = []
+        for f in files:
+            #trim off the head and tail of the filename, and match both wildcards
+                # (e.g. `q.*.[0-9]*[0-9].triq` + `q.y0.009999.triq` = ['y0', '009999'])
+                # dont search full paths, just the filename
+            # match = [ FindBetween(GetFilename(f), pattern[0], pattern[-1]).split(pattern[1]) for f in match]
+            matchs = FindBetween(GetFilename(f), pattern[0], pattern[-1]).split(pattern[1])
+            #determine which wildcard match is the numeric one
+            isnum = [m.isnumeric() for m in matchs]
+            if any(isnum) and not all(isnum):
+                for n, b in zip(matchs, isnum):
+                    if b: num = str2numeric(n)
+            else:
+                raise ValueError("{}: Either no numeric matches or two. There can only be one numeric match for OrderedGlob".format(f))
+            match.append(num)
 
 
     #'TAILS' IS FOR COMPATIBILITY
