@@ -197,7 +197,22 @@ bigmarkers = ['o', 'v', 'd', 's', '*', 'D', 'p', '>', 'H', '8']
 bigdotmarkers = ['$\\odot$', 'v', 'd', '$\\boxdot$', '*', 'D', 'p', '>', 'H', '8']
 scattermarkers = ['o', 'v', 'd', 's', 'p']
 
-linestyles = ['-', '--', '-.', '.'] #linestyle sequencer
+#linestyle sequencer
+# linestyles = ['-', '--', '-.', '.'] #old
+linestyles = [
+    (0, ())                    , #'solid
+    (0, (5, 5))                , #'dashed
+    (0, (3, 5, 1, 5))          , #'dashdot
+    (0, (1, 1))                , #'dotted
+    (0, (1, 10))               ,
+    (0, (5, 10))               ,
+    (0, (5, 1))                ,
+    (0, (3, 10, 1, 10))        ,
+    (0, (3, 1, 1, 1))          ,
+    (0, (3, 5, 1, 5, 1, 5))    ,
+    (0, (3, 10, 1, 10, 1, 10)) ,
+    (0, (3, 1, 1, 1, 1, 1))    ,
+]
 #more named linestyles that must be input as a tuple
 linestyle_names = {
     'solid'                  :  'solid'                    ,
@@ -208,7 +223,7 @@ linestyle_names = {
     'dotted'                 :  (0, (1, 1))                ,
     'densely dotted'         :  (0, (1, 1))                ,
     'loosely dashed'         :  (0, (5, 10))               ,
-    'dashed'                 :  (0, (5, 5))                ,
+    # 'dashed'                 :  (0, (5, 5))                ,
     'densely dashed'         :  (0, (5, 1))                ,
     'loosely dashdotted'     :  (0, (3, 10, 1, 10))        ,
     'dashdotted'             :  (0, (3, 5, 1, 5))          ,
@@ -217,6 +232,12 @@ linestyle_names = {
     'loosely dashdotdotted'  :  (0, (3, 10, 1, 10, 1, 10)) ,
     'densely dashdotdotted'  :  (0, (3, 1, 1, 1, 1, 1))    ,
 }
+linestyle_name_cycle = ['solid']
+for mod in ["", "loosely ", "densely "]:
+    for s in ['dashed', 'dashdotted', 'dotted', 'dashdotdotted']:
+        linestyle_name_cycle.append("{}{}".format(mod, s))
+
+
 
 #GLOBAL INITIAL FONT SIZES
 #default font sizes
