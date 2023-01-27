@@ -1017,6 +1017,7 @@ legboxdict = {
     'bottom' : {'bbox' : (0.5,-0.15), 'loc' : 'upper center',}, #legend on bottom of plot
     'right'  : {'bbox' : (1,0.5),     'loc' : 'center left' ,}, #Legend to right of plot [default]
     'upperrightcorner'  : {'bbox' : (1,1),     'loc' : 'upper left' ,}, #Legend starts at upper right corner of plot, goes down
+    'lowerrightcorner'  : {'bbox' : (1,0),     'loc' : 'lower left' ,}, #Legend starts at lower right corner of plot, goes up
     'rightup': {'bbox' : (1,0.5),     'loc' : 'lower left' ,}, #Legend to right of plot, but above midline so you can fit two legends
     'rightlo': {'bbox' : (1,0.5),     'loc' : 'upper left' ,}, #Legend to right of plot, but below midline
 }
@@ -1316,19 +1317,29 @@ def Grid_Minor(ax, nx=None, ny=None, **kwargs):
         ax.grid(True, which='minor', linestyle='--', **kwargs)
     return ax
 
-def TextBox(ax, boxtext, x=0.005, y=0.95, fontsize=None,
-                alpha=1.0, props=None, color=None, textcolor=None, relcoord=True,
-                vert='top', horz='left', rotation=0):
+def TextBox(ax, boxtext, x=0.005, y=0.95, relcoord=None, vert='top', horz='left',
+                fontsize=None, textcolor=None, color=None, alpha=1.0, props=None,
+                 rotation=0, **kwargs):
     """Add text box.
-    (Default anchor position is upper left corner of text box, Origin is lower left corner of plot,
-    So x=0,y=1 puts the upper left corner of text box in upper left corner of plot)
-    For transparent textbox, use: color='none', alpha=0
-    relcoord --> Use relative coordinate achor points (0 --> 1) if [True],
-                    actual x,y coordinates if False
-    vert/horz --> vertical and horizontal alignment of box about anchor point
-                    e.g. center/center places box centered on point
-                         top/center places box with point on top center
-    rotation --> text rotation in degrees
+
+    Args:
+        ax: matplotlib plot object
+        boxtext: str text to display
+        x: box anchor point x-position
+        y: box anchor point y-position
+        relcoord: relative coordinates for anchor points if [True] (e.g. x=0,y=1 is upper left corner of plot)
+                        actual x,y coordinates if False
+                        'x'/'y' for relative only on x/y-axis
+        vert: box anchor point vertical alignment (['top'],'center','bottom')
+        horz: box anchor point horizontal alignment (['left'],'center','right')
+            e.g. center/center places box centered on point
+                top/center places box with point on top center
+        fontsize: text pt fontsize [default]
+        textcolor: text color ['black']
+        color: color of textbox edge and fill [black,white]
+        alpha: transparency of textbox fill [1.0 (fully opaque)] (0 for transparent)
+        rotation: text rotation in degrees
+        props: dict textbox 'bbox' properties
     """
     if fontsize == None:
         fontsize = matplotlib.rcParams['font.size']
@@ -1340,13 +1351,27 @@ def TextBox(ax, boxtext, x=0.005, y=0.95, fontsize=None,
         props['edgecolor'] = color
         props['facecolor'] = color
 
+    kw = dict(**kwargs) #copy give keyword args
     kw = {
             'fontsize' : fontsize, 'bbox' : props,
             'verticalalignment' : vert, 'horizontalalignment' : horz,
             'rotation' : rotation,
     }
     if textcolor is not None: kw['color'] = textcolor
-    if relcoord: kw['transform'] = ax.transAxes #makes coordinate relative
+
+    # if relcoord: kw['transform'] = ax.transAxes #makes coordinate relative
+    if relcoord is None: relcoord = True
+    if type(relcoord) is bool and relcoord:
+        kw['transform'] = ax.transAxes #relative coordinates for both axes
+    elif type(relcoord) is str:
+        if relcoord.lower() == "y":
+            kw['transform'] = ax.get_xaxis_transform() #relative coordinates on y-axis only
+        elif relcoord.lower() == "x":
+            kw['transform'] = ax.get_yaxis_transform() #relative coordinates on x-axis only
+        elif relcoord.lower() == "xy" or relcoord.lower() == "yx":
+            kw['transform'] = ax.transAxes #relative coordinates for both axes
+
+
 
     ax.text(x, y, boxtext, **kw)
 

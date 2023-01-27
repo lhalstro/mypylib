@@ -419,6 +419,11 @@ def dfTimeSubset(df, tstart=None, tend=None, tevery=None, reindex=True):
 
     return df
 
+def dfNearestRow(df, key, val):
+    """ Find row in dataframe where `key` column is closest/nearest to `val`
+    """
+    return df.loc[[df[key].sub(val).abs().idxmin()]]
+
 def dfWriteFixedWidth(df, savename, index=True, datatype='f', wid=16, prec=6,
                         writemode='w'):
     """Write dataframe to file with fixed-width format
