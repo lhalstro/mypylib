@@ -49,6 +49,11 @@ def command(cmd):
     proc_stdout = process.communicate()[0].strip()
     return process, proc_stdout
 
+def GetHomeDir():
+    """ Return path to current user's home directory
+    """
+    return os.path.expanduser("~")
+
 def MakeOutputDir(filename):
     """ Makes output directories in filename that do not already exist
     filename --> save file path, used to determine parent directories
