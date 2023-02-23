@@ -290,26 +290,54 @@ def OrderedGlob(globpattern=None, header=None):
     df = pd.concat(dfs, ignore_index=True)
     return df
 
-########################################################################
-### PANDAS UTILITIES ###################################################
-########################################################################
+# ======================================================================
+# PANDAS UTILITIES
+# ======================================================================
 
-def dfInterp(df, key, vals, method='linear', fill=np.nan):
-    """Interpolate a Pandas DataFrame so that the selected column
-    matches the provided list.
+def dfInterp(df, key=None, vals=None, method=None):
+    """Interpolate a Pandas DataFrame so that the selected column matches the provided list.
+    Don't extrapolate outside of data range and don't interpolate non-numeric columns.
     NOTE: Recommended use time as 'key' for timeseries data for correct interp
-    df     --> Pandas DataFrame to interpolate
-    key    --> column key for independent variable to interpolate against
-    vals   --> values to interpolate to
-    method --> interpolation method ('linear', 'nearest', 'cubic')
-                (see scipy.interpolate.interp1d for more options)
+
+    Args:
+        df     (:obj:`~pandas.DataFrame`): data to interpolate
+        key    (:obj:`str`): column key for independent variable to interpolate against
+        vals   (:obj:`list` or :obj:`~numpy.array`): values to interpolate to
+        method (:obj:`str`): interpolation method (['linear'], 'nearest', 'cubic')
+                    (see `~scipy.interpolate.interp1d` for more options)
+    Returns:
+        (:obj:`~pandas.DataFrame`): dataframe interpolated to `vals`
     """
-    newdf = pd.DataFrame() #Interpolated DataFrame
-    for k in df.keys():
-        #interp func for each column
-        f = interp1d(df[key], df[k], kind=method, fill_value=fill)
-        newdf[k] = f(vals) #Interp each column to desired values
-    return newdf
+
+    #INPUTS
+
+    #default is linear interpolation by the index (pandas interpolation with 'linear' ignores the index)
+    if method is None or method == 'linear': method = 'index'
+
+    #use given column for interpolation (if specified, otherwise use index)
+    if key is not None: df = df.set_index(key)
+
+    #this var only has default value to preserve original order of args
+    if vals is None: raise ValueError("`vals` is required input")
+
+
+    #INTERPOLATE
+
+    #dont extrapolate outside of data range
+    vals = vals[(vals >= min(df.index.values)) & (vals <= max(df.index.values))]
+
+    #interpolate
+    # 1. `reindex`+`union`: extend index (interpolation column) with values to interpolated to (fill with NaN in other cols where there is no overlap) ((combined index is automatically sorted by `union`))
+    # 2. `interpolate`: fill NaNs in all other columns by interpolation (`limit_direction`: fill consecutive NaNs starting from both directions of the gap)
+    # 3. `loc`: return values only at the given interpolation points
+    # 4. `dropna`: remove NaN columns that correspond to non-interpolatable (non-numeric) parameters
+    df =  df.reindex(df.index.union(vals)).interpolate(method=method, limit_direction='both', ).loc[vals].dropna(how='all', axis='columns')
+
+    #restore interpolation column if it was not originally the index
+    if key is not None: df = df.reset_index()
+
+    return df
+
 
 
 def dfSubset(df, tmin=None, tmax=None, tevery=None, tkey=None, tkeymin=None, tkeymax=None, reindex=True, ):
