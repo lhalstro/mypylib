@@ -331,12 +331,14 @@ def dfInterp(df, key=None, vals=None, method=None):
     # 2. `interpolate`: fill NaNs in all other columns by interpolation (`limit_direction`: fill consecutive NaNs starting from both directions of the gap)
     # 3. `loc`: return values only at the given interpolation points
     # 4. `dropna`: remove NaN columns that correspond to non-interpolatable (non-numeric) parameters
-    df =  df.reindex(df.index.union(vals)).interpolate(method=method, limit_direction='both', ).loc[vals].dropna(how='all', axis='columns')
+    df2 =  df.reindex(df.index.union(vals)).interpolate(method=method, limit_direction='both', ).loc[vals].dropna(how='all', axis='columns')
+    #restore original index name after `reindex` blitzed it
+    df2.index.name = df.index.name
 
     #restore interpolation column if it was not originally the index
-    if key is not None: df = df.reset_index()
+    if key is not None: df2 = df2.reset_index()
 
-    return df
+    return df2
 
 
 
