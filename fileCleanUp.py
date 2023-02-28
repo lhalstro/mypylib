@@ -17,6 +17,7 @@ USAGE:
 ToDo:
     Function that deletes all files of given header except specified iterations (basically done)
 """
+from time import time
 import numpy as np
 import argparse
 
@@ -25,9 +26,15 @@ import os
 # #Get path to home directory
 # HOME = os.path.expanduser('~')
 # sys.path.append('{}/lib/python'.format(HOME))
-from mypylib.lutil import cmd
+from mypylib.lutil import cmd, OrderedGlob
 
 # dryrun = False
+
+def timer(t0, txt=None):
+    t = time()
+    dt = t - t0
+    if txt is not None: print("{}: {:1.6f}s".format(txt, dt))
+    return dt, t
 
 def range_inclusive(start, stop, step=1):
     """ Like 'range' but includes 'stop' in interval.
@@ -141,7 +148,29 @@ class Deletor():
         (minimum 3x faster to delete all files at once instead of individually in a loop)
         """
 
+        # t0 = time() #timing debug*************************
+
         print("\nCleaning up '{}.##{}' files".format(self.head, self.tail))
+
+        #bound iter range to the files that actually exist (saves time for really long time histories)
+
+        #glob pattern that would match ALL files of this form, not just this series (use to bound large ranges)
+            #match single digit and multiple digit while excluding wildcard file extensions
+        # ii = OrderedGlob("{}/{}.[0-9]{}  {}/{}.[0-9]*[0-9]{}".format(self.path, self.head, self.tail, self.path, self.head, self.tail) )['match'].values
+        allfiles = OrderedGlob("{}/{}.[0-9]*[0-9]{}".format(self.path, self.head, self.tail) ) #doesnt catch single digits, but oh well that's just 10
+        nfiles = len(allfiles)
+        if nfiles > 0:
+            ii = allfiles['match'].values
+            imin, imax = min(ii), max(ii)
+            ii = np.array(iterstodelete)
+            ii = ii[ii>=imin]
+            ii = ii[ii<=imax]
+            iterstodelete = list(ii)
+        # dt, t0 = timer(t0, txt="scope down delete range to actual files") #timing debug*************************
+
+        # if nfiles < len(iterstodelete):
+        #     #faster to just check if the existing files should be deleted
+        #     #but glob doesnt catch all files...
 
         #determine existing files that would actually be deleted
         deletefiles = [self.FileName(i) for i in iterstodelete]
@@ -150,6 +179,7 @@ class Deletor():
         printfilestodelete = "\n".join(["        "+f for f in filestodelete])
         pathstodelete = ["{}/{}".format(self.path, f) for f in filestodelete]
 
+        # dt, t0 = timer(t0, txt="determine existing files that would actually be deleted") #timing debug*************************
 
         #determine existing files that would actually be protected
         protectfiles = [self.FileName(i) for i in self.iwriteprotects]
@@ -159,6 +189,7 @@ class Deletor():
             print(           "    NOT Deleting (Write Protected):")
             print("\n".join(["        "+f for f in filestoprotect]))
 
+        # dt, t0 = timer(t0, txt="determine existing files that would actually be protected") #timing debug*************************
 
         #DELETE FILES
         if len(pathstodelete) == 0:
@@ -171,6 +202,9 @@ class Deletor():
             #DELETE FILES
             #use temporary file to pipe in arguments, since we might run into stack limit if we try to delete too many at once
             with open('killem.tmp', 'w') as f: f.write(" ".join(pathstodelete))
+
+            # dt, t0 = timer(t0, txt="write input file") #timing debug*************************
+
             rmcmd = """cat killem.tmp | xargs rm"""
             # rmcmd = "rm {}".format( " ".join(pathstodelete) )
             # print("    ", rmcmd)
@@ -179,7 +213,7 @@ class Deletor():
 
             cmd("rm killem.tmp") #remove temporary list of files to delete
 
-
+        # dt, t0 = timer(t0, txt="remove files") #timing debug*************************
 
 
 def MakeFilesToDelete(path, header, istart, iend, incr=1):
@@ -238,6 +272,15 @@ def FunctionalityTestOOP():
 
     print("\ntime to delete: {:1.6f} + {:1.6f} = {:1.6f}s".format(dt1, dt2, dt1+dt2))
 
+
+
+    #TIMING TEST
+    print("\n TIMING TEST")
+    MakeFilesToDelete(testdir, 'c', 1, 1001, incr=1)
+    t = time()
+    main(path=testdir, headers='c', istart=2, iend=1002, incr=2, allbut=False, iprotect=[999])
+    dt3 = time() - t
+    print("timing test: {:1.6f}s".format(dt3))
 
 
     #CLEANUP TEST CASE

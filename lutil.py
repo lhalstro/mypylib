@@ -208,7 +208,6 @@ def listify(nonlist, n=1):
         outlist = nonlist
     return outlist
 
-
 def OrderedGlob(globpattern=None, header=None):
     """ Glob all files in cwd with provided glob pattern or: "ls header.*"
     Return DataFrame with file list ordered by * match converted to float/int
@@ -223,63 +222,129 @@ def OrderedGlob(globpattern=None, header=None):
     #Manage inputs
     if globpattern is None:
         raise IOError("Usage: OrderedGlob(globpattern) -> glob(globpattern) -> return df{['file', 'match']}")
-    elif "*" not in globpattern:
-        #original functionality, where a header was given assuming a file extension of ".XXXXX..."
-        globpattern += ".*"
-    elif len(globpattern.split("*")) > 2:
-        raise ValueError("'{}': I don't know how to handle globs with more than one wildcard (*) ".format(globpattern))
+    #handle multiple glob patterns separately, then combine at the end
+    globpatterns = globpattern.split()
+    dfs = []
+    for gp in globpatterns:
+        if "*" not in gp:
+            if len(gp.split("[")) == 2 and len(gp.split("]")) == 2:
+                raise NotImplementedError("cant handle non-wildcard globs yet")
+            else:
+                #original functionality, where a header was given assuming a file extension of ".XXXXX..."
+                gp += ".*"
+        elif len(gp.split("*")) > 3:
+            raise ValueError("'{}': I don't know how to handle globs with more than two wildcards (*) ".format(gp))
 
-    from glob import glob
-    files = glob(globpattern)
-    #return empty DF if no files globbed
-    if len(files) < 1: return pd.DataFrame(columns=['file','match','tail'])
+        from glob import glob
+        files = glob(gp)
+        #return empty DF if no files globbed
+        if len(files) < 1:
+            # return pd.DataFrame(columns=['file','match','tail'])
+            dfs.append( pd.DataFrame(columns=['file','match','tail']) )
+            continue
 
-    #get glob match for each file
-        #(remove boilerplate portion of the glob pattern, and delete any wildcards in square brackets (e.g. `[0-9]`) )
-        #if filename is a path, dont bother matching the path, just the filename (`GetFilename`)
-    pattern = re.sub( "\[.*?\]", "", GetFilename(globpattern)).split("*")
-    for i, x in enumerate(pattern):
-        if x == '': pattern[i] = None
+        #get glob match for each file
+            #(remove boilerplate portion of the glob pattern, and delete any wildcards in square brackets (e.g. `[0-9]`) )
+            #if filename is a path, dont bother matching the path, just the filename (`GetFilename`)
+        pattern = re.sub( "\[.*?\]", "", GetFilename(gp)).split("*")
+        #if string on one side of '*' is empty, use `None` so `FindBetween` will match default (beginning/end of string)
+        for i, x in enumerate(pattern):
+            if x == '': pattern[i] = None
 
-    #dont search full paths, just the filename:
-    # match = [ FindBetween(f, pattern[0], pattern[1]) for f in files]
-    match = [GetFilename(f) for f in files]
-    match = [ FindBetween(f, pattern[0], pattern[1]) for f in match]
-    if match[0].isnumeric():
-        try:
-            match = [int(i) for i in match]
-        except:
-            try:
-                match = [float(i) for i in match]
-            except:
-                #it wasnt actually numeric after all
-                pass
+        if len(pattern) == 1:
+            #No wildcard, just strip the glob boilerplate
+            match = [ GetFilename(f).replace() for f in files] #dont search full paths, just the filename
 
+            #get numeric match for one-wildcard glob pattern
+            match = [ FindBetween(GetFilename(f), pattern[0], pattern[1]) for f in files] #dont search full paths, just the filename
+            #convert strings to numbers
+            isnum = [i.isnumeric() for i in match]
+            if any(isnum) and not all(isnum): raise ValueError("Not all matches are numeric, glob pattern is ambiguous")
+            if isnum[0]: match = [str2numeric(i) for i in match]
+        elif len(pattern) == 2:
+            #get numeric match for one-wildcard glob pattern
+            match = [ FindBetween(GetFilename(f), pattern[0], pattern[1]) for f in files] #dont search full paths, just the filename
+            #convert strings to numbers
+            isnum = [i.isnumeric() for i in match]
+            if any(isnum) and not all(isnum): raise ValueError("Not all matches are numeric, glob pattern is ambiguous")
+            if isnum[0]: match = [str2numeric(i) for i in match]
 
-    #'TAILS' IS FOR COMPATIBILITY
-    df = pd.DataFrame({'file':files, 'match':match, 'tail':match}).sort_values('match')
+        elif len(pattern) == 3:
+            #get numeric match for two-wildcard glob pattern, assuming only one of two is numeric
+
+            match = []
+            for f in files:
+                #trim off the head and tail of the filename, and match both wildcards
+                    # (e.g. `q.*.[0-9]*[0-9].triq` + `q.y0.009999.triq` = ['y0', '009999'])
+                    # dont search full paths, just the filename
+                # match = [ FindBetween(GetFilename(f), pattern[0], pattern[-1]).split(pattern[1]) for f in match]
+                matchs = FindBetween(GetFilename(f), pattern[0], pattern[-1]).split(pattern[1])
+                #determine which wildcard match is the numeric one
+                isnum = [m.isnumeric() for m in matchs]
+                if any(isnum) and not all(isnum):
+                    for n, b in zip(matchs, isnum):
+                        if b: num = str2numeric(n)
+                else:
+                    raise ValueError("{}: Either no numeric matches or two. There can only be one numeric match for OrderedGlob".format(f))
+                match.append(num)
+
+        #'TAILS' IS FOR COMPATIBILITY
+        df = pd.DataFrame({'file':files, 'match':match, 'tail':match}).sort_values('match')
+        dfs.append(df)
+
+    df = pd.concat(dfs, ignore_index=True)
     return df
 
-########################################################################
-### PANDAS UTILITIES ###################################################
-########################################################################
+# ======================================================================
+# PANDAS UTILITIES
+# ======================================================================
 
-def dfInterp(df, key, vals, method='linear', fill=np.nan):
-    """Interpolate a Pandas DataFrame so that the selected column
-    matches the provided list.
+def dfInterp(df, key=None, vals=None, method=None):
+    """Interpolate a Pandas DataFrame so that the selected column matches the provided list.
+    Don't extrapolate outside of data range and don't interpolate non-numeric columns.
     NOTE: Recommended use time as 'key' for timeseries data for correct interp
-    df     --> Pandas DataFrame to interpolate
-    key    --> column key for independent variable to interpolate against
-    vals   --> values to interpolate to
-    method --> interpolation method ('linear', 'nearest', 'cubic')
-                (see scipy.interpolate.interp1d for more options)
+
+    Args:
+        df     (:obj:`~pandas.DataFrame`): data to interpolate
+        key    (:obj:`str`): column key for independent variable to interpolate against
+        vals   (:obj:`list` or :obj:`~numpy.array`): values to interpolate to
+        method (:obj:`str`): interpolation method (['linear'], 'nearest', 'cubic')
+                    (see `~scipy.interpolate.interp1d` for more options)
+    Returns:
+        (:obj:`~pandas.DataFrame`): dataframe interpolated to `vals`
     """
-    newdf = pd.DataFrame() #Interpolated DataFrame
-    for k in df.keys():
-        #interp func for each column
-        f = interp1d(df[key], df[k], kind=method, fill_value=fill)
-        newdf[k] = f(vals) #Interp each column to desired values
-    return newdf
+
+    #INPUTS
+
+    #default is linear interpolation by the index (pandas interpolation with 'linear' ignores the index)
+    if method is None or method == 'linear': method = 'index'
+
+    #use given column for interpolation (if specified, otherwise use index)
+    if key is not None: df = df.set_index(key)
+
+    #this var only has default value to preserve original order of args
+    if vals is None: raise ValueError("`vals` is required input")
+
+
+    #INTERPOLATE
+
+    #dont extrapolate outside of data range
+    vals = vals[(vals >= min(df.index.values)) & (vals <= max(df.index.values))]
+
+    #interpolate
+    # 1. `reindex`+`union`: extend index (interpolation column) with values to interpolated to (fill with NaN in other cols where there is no overlap) ((combined index is automatically sorted by `union`))
+    # 2. `interpolate`: fill NaNs in all other columns by interpolation (`limit_direction`: fill consecutive NaNs starting from both directions of the gap)
+    # 3. `loc`: return values only at the given interpolation points
+    # 4. `dropna`: remove NaN columns that correspond to non-interpolatable (non-numeric) parameters
+    df2 =  df.reindex(df.index.union(vals)).interpolate(method=method, limit_direction='both', ).loc[vals].dropna(how='all', axis='columns')
+    #restore original index name after `reindex` blitzed it
+    df2.index.name = df.index.name
+
+    #restore interpolation column if it was not originally the index
+    if key is not None: df2 = df2.reset_index()
+
+    return df2
+
 
 
 def dfSubset(df, tmin=None, tmax=None, tevery=None, tkey=None, tkeymin=None, tkeymax=None, reindex=True, ):
@@ -388,6 +453,11 @@ def dfTimeSubset(df, tstart=None, tend=None, tevery=None, reindex=True):
         df = df.reset_index(drop=True)
 
     return df
+
+def dfNearestRow(df, key, val):
+    """ Find row in dataframe where `key` column is closest/nearest to `val`
+    """
+    return df.loc[[df[key].sub(val).abs().idxmin()]]
 
 def dfWriteFixedWidth(df, savename, index=True, datatype='f', wid=16, prec=6,
                         writemode='w'):
