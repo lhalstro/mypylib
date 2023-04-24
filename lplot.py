@@ -724,6 +724,8 @@ def SyncDualAxisTicks(ax1, ax2, whichax=None):
         ax1: primary axis
         ax2: secondary axis
         whichax: 'x' or 'y', which dual axis pair to sync
+    Returns:
+        updated `ax2`
     """
     if whichax == None or (whichax.lower() != 'x' and whichax.lower() != 'y'):
         raise IOError("Must choose 'x' or 'y' axes to sync ticks")
@@ -837,6 +839,10 @@ def MakeSyncedDualAxis(ax1, x2, whichax=None, linear=None):
 
 
     else:
+        #SET UP SECOND AXIS
+        #ax2 is just an empty twin axis since it will never actually show any plotted data
+        ax2 = getattr(ax1, 'twin{}'.format(xyopposite))()
+
         #invisible throwaway plot to set up the second x-axis
         ax2.plot(x2, ax1.lines[0].get_ydata(), color='k', alpha=0 )
         #sync ticks assuming linear relationship (no need for point-matched data)
@@ -1309,9 +1315,13 @@ def GridLines(ax, linestyle='--', color='k', which='major'):
     ax.grid(True, which=which, linestyle=linestyle, color=color)
 
 def Grid_Minor(ax, nx=None, ny=None, **kwargs):
-    """ Add minor ticks and associated dashed grid,
-    with nx/ny minor ticks for every major tick [Default: None (no minor ticks)]
-    Takes standard mpl kwargs
+    """ Add minor ticks and associated dashed grid.
+
+    Args:
+        ax : matplotlib axis object
+        nx (:obj:`in`): Number of x-axis minor ticks (e.g. 4 visible tick marks for nx=5) [No minor x-ticks]
+        ny (:obj:`in`): Number of y-axis minor ticks [No minor y-ticks]
+        kwargs: standard matplotlib.ax.grid kwargs for axis grid style
     """
     from matplotlib import ticker
 
