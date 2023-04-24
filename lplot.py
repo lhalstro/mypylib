@@ -253,6 +253,7 @@ Lbl = 24-4
 Box = 20-4
 Leg = 20-4
 Tck = 13 #13: max size that allows dense tick spacing (smaller doesnt help if whole numbers are weird)
+Tck = 15 #larger font is acceptable for Noto fonts
 
 #big font sizes
 Lbl_big = 32
@@ -267,6 +268,10 @@ from matplotlib import font_manager
 for f in font_manager.findSystemFonts(fontpaths="fonts"):
     font_manager.fontManager.addfont(f)
 
+# #how to figure out the correct name of fonts:
+# font_manager.findfont("CMU Sans Serif")
+# sys.exit()
+
 #MATPLOTLIB DEFAULTS
 mplparams = {
 
@@ -280,15 +285,11 @@ mplparams = {
         #FONT.FAMILY sets the font for the entire figure
             #use specific font names, e.g. generic 'monospace' selects DejaVu, not the specified `font.monospace`
         'font.family'    : 'sans',
-        # 'font.family'    : 'monospace', #this just defaults to DejaVu, not 'font.monospace', specify specific font here
-        # 'font.family'    : 'Noto Serif',
-        # 'font.family'    : 'Noto Sans',                     #prettier for labels
-        # 'font.family'    : 'Noto Sans Mono Condensed',      #better on plots than regular Noto Sans Mono
-        # 'font.family'    : 'CMU Typewriter Text', #monospace with no dot or slash in "0"
+        # 'font.family'    : 'monospace',
         # 'font.family': 'helvetica' #Font family
         'font.serif'     : ['Noto Serif', 'DejaVu Serif'], #list is priority order to cycle through if a font is not found on local system
-        'font.sans-serif': ['Noto Sans', 'DejaVu Sans'],
-        'font.monospace' : ['Noto Sans Mono Condensed', 'DejaVu Sans Mono'],
+        'font.sans-serif': ['Noto Sans',                'CMU Sans Serif',      'DejaVu Sans'],      #Noto is sleek and modern, CMU (Computer Modern) is a classic 70's look, DejaVu ships with python
+        'font.monospace' : ['Noto Sans Mono Condensed', 'CMU Typewriter Text', 'DejaVu Sans Mono'],
         'font.fantasy'   : 'xkcd',
 
         #AXIS PROPERTIES
@@ -385,7 +386,7 @@ def UseSeaborn(palette=None, ncycle=6):
     colors = sns.color_palette() #Save new color palette to variable
 
     #CALL MATPLOTLIB DEFAULTS AGAIN, AFTER SEABORN CHANGED THEM
-    matplotlib.rcParams.update(params)
+    matplotlib.rcParams.update(mplparams)
     # matplotlib.rcParams.update(tickparams) #DONT CALL THIS IF YOU WANT TIGHT TICK SPACING
 
     #return color cycle
@@ -1074,7 +1075,7 @@ def Legend(ax, *args, outside=None, font=None, **kwargs):
 
     #Default monospace font
     newkwargs['prop'] = {}
-    if font is None and 'mono' not in matplotlib.rcParams['font.family'].lower():
+    if font is None and 'mono' not in matplotlib.rcParams['font.family'][0].lower():
         newkwargs['prop']['family'] = 'monospace'
     else:
         newkwargs['prop']['family'] = font
@@ -1680,7 +1681,8 @@ def PolyFit(x, y, order, n, showplot=0):
 
 def main():
 
-
+    #----------------------------------------------------
+    #MAKE DATA TO PLOT
     x = np.linspace(0,100,1001)
     x = np.linspace(0,69,1001)
     y1 = -1 * 500 + x ** 2
@@ -1688,8 +1690,28 @@ def main():
     y3 = -3 * 500 + x ** 2
 
 
+    #----------------------------------------------------
+    #DEFAULT PLOT SETTINGS, WITH BEST PRACTICES
+    # nrow, ncol = 1, 1
+    # fig, ax = plt.subplots(nrow,ncol, figsize=[7*ncol, 6*nrow])
+    fig, ax = plt.subplots()
+    plt.title('Default $lplot$ Settings (w/ Best Practices)')
+    ax.set_xlabel('X-LABEL')
+    ax.set_ylabel('Y-Axis Label [m/s]')
+    ax.plot(x, y1, label='y1')
+    ax.plot(x, y2, label='y02')
+    ax.plot(x, y3, label='$y03^{{rd}}$')
+    Grid_Minor(ax, 5, 5) #minor axis grid
+    Legend(ax) #use `lplot.Legend` instead of `ax.legend` to have monospace legend font
+    plt.show()
+    plt.close()
 
-    #PASS KEYWORD ARGUMENTS THROUGH TO MATPLOTLIB
+
+
+
+
+    #----------------------------------------------------
+    #TEST PASS KEYWORD ARGUMENTS THROUGH TO MATPLOTLIB
     #test args and kwargs
     mykwargs = {'linestyle' : '--', 'linewidth' : 5}
 
@@ -1700,9 +1722,7 @@ def main():
         pd.Series({'lab' : '$y3$', 'x': x, 'y': y3, 'mplkwargs' : {'marker' : '.'} }),
         ])
 
-    x2 = x*10000 #arbitrary 2nd xaxis for dual axis
-    # x2 = np.log(x+1) #arbitrary 2nd xaxis for dual axis
-    # cases['x2'] = x2
+
 
     # fig, ax = PlotStart()
     # plt.title('Test kwarg Pass-Thru')
@@ -1763,6 +1783,9 @@ def main():
 
 
     #TEST SECOND X AXIS ON SAME GRID
+    x2 = x*10000 #arbitrary 2nd xaxis for dual axis
+    # x2 = np.log(x+1) #arbitrary 2nd xaxis for dual axis
+    # cases['x2'] = x2
 
     # ax3 = SecondXaxisSameGrid(ax1, x, x2, xlbl='x2', rot=0)
     ax3 = SecondaryXaxis(ax1, x2, xlbl='x2')
@@ -1777,6 +1800,8 @@ def main():
 
 
 
+
+    #----------------------------------------------------
     #TEST COLORMAPS
 
     def PlotColorCycle(ax, colors, title=''):
@@ -1803,6 +1828,7 @@ def main():
     PlotColorCycle(axs[2], colors, 'Custom Rainbow Color Cycle:')
 
     plt.show()
+
 
 
 
