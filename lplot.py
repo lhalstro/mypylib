@@ -21,6 +21,7 @@ To Do:
 import numpy as np
 import pandas as pd
 import os
+import sys
 import re
 
 import matplotlib
@@ -259,6 +260,13 @@ Leg_big = 24
 Box_big = 28
 Tck_big = 22
 
+
+#ADD ALTERNATIVE FONTS
+# import matplotlib.font_manager
+from matplotlib import font_manager
+for f in font_manager.findSystemFonts(fontpaths="fonts"):
+    font_manager.fontManager.addfont(f)
+
 #MATPLOTLIB DEFAULTS
 params = {
 
@@ -269,14 +277,19 @@ params = {
         'xtick.labelsize': Tck, #Axis tick labels [default: ?, OG: 20]
         'ytick.labelsize': Tck, #Axis tick labels [default: ?, OG: 20]
         'legend.fontsize': Leg, #Legend font size
+        #FONT.FAMILY sets the font for the entire figure
+            #use specific font names, e.g. generic 'monospace' selects DejaVu, not the specified `font.monospace`
+        # 'font.family'    : 'sans',
+        # 'font.family'    : 'monospace', #this just defaults to DejaVu, not 'font.monospace', specify specific font here
+        # 'font.family'    : 'Noto Serif',
+        # 'font.family'    : 'Noto Sans',                     #prettier for labels
+        # 'font.family'    : 'Noto Sans Mono Condensed',      #better on plots than regular Noto Sans Mono
+        'font.family'    : 'CMU Typewriter Text', #monospace with no dot or slash in "0"
         # 'font.family': 'helvetica' #Font family
-        # 'font.family'    : 'serif',
-        'font.family'    : 'DejaVu Serif',
+        'font.serif'     : ['Noto Serif', 'DejaVu Serif'],
+        'font.sans-serif': ['Noto Sans', 'DejaVu Sans'],
+        'font.monospace' : ['Noto Sans Mono Condensed', 'DejaVu Sans Mono'],
         'font.fantasy'   : 'xkcd',
-        # 'font.sans-serif': 'Helvetica',
-        'font.sans-serif': 'DejaVu Sans',
-        # 'font.monospace' : 'Courier',
-        'font.monospace' : 'DejaVu Sans Mono',
 
         #AXIS PROPERTIES
         'axes.titlepad'  : 2*6.0, #title spacing from axis
@@ -768,6 +781,8 @@ def MakeSyncedDualAxis(ax1, x2, whichax=None, linear=None):
 
     if linear is None: linear = True
 
+    #ax2 is just an empty twin axis since it will never actually show any plotted data
+    ax2 = getattr(ax1, 'twin{}'.format(xyopposite))()
 
     if not linear:
 
@@ -785,8 +800,8 @@ def MakeSyncedDualAxis(ax1, x2, whichax=None, linear=None):
 
 
         #SET UP SECOND AXIS
-        #ax2 is just an empty twin axis since it will never actually show any plotted data
-        ax2 = getattr(ax1, 'twin{}'.format(xyopposite))()
+        # #ax2 is just an empty twin axis since it will never actually show any plotted data
+        # ax2 = getattr(ax1, 'twin{}'.format(xyopposite))()
         #Set second axis to equivalent bounds as first
         ax2.set_xlim(ax1minmax)
         #make the ticks on the second axis at the same location as the first

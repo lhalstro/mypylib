@@ -1,5 +1,6 @@
 .DS_Store
 test*
+scratch/
 
 
 # Byte-compiled / optimized / DLL files
