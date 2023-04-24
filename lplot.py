@@ -840,8 +840,6 @@ def MakeSyncedDualAxis(ax1, x2, whichax=None, linear=None):
 
     else:
         #SET UP SECOND AXIS
-        #ax2 is just an empty twin axis since it will never actually show any plotted data
-        ax2 = getattr(ax1, 'twin{}'.format(xyopposite))()
 
         #invisible throwaway plot to set up the second x-axis
         ax2.plot(x2, ax1.lines[0].get_ydata(), color='k', alpha=0 )
