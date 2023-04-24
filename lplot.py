@@ -184,7 +184,7 @@ colordictlight = {k:colorlight[i] for i,k in enumerate(["blue", "orange",  "purp
 
 xkcdrainbow =       ["cherry" ,   "tangerine",    "puke yellow",  "leaf green",  "windows blue",  "dusty purple",  'light brown',  "greyish",   "salmon pink",     "sky blue", "aqua"     ]
 xkcdrainbowhex =    ['#cf0234',    "#ff9408" ,    '#c2be0e',      '#5ca904',     '#3778bf',       '#825f87',        '#ad8150',      '#a8a495',   "#fe7b7c"     ,   "#75bbfd" , "#13eac9"    ]
-colorrainbow = get_palette(xkcdcolors, colorkind='xkcd') #actual rgbs that matplotlib like
+colorrainbow = get_palette(xkcdrainbow, colorkind='xkcd') #actual rgbs that matplotlib like
 
 #Line Styles
 mark = 5
