@@ -268,7 +268,7 @@ for f in font_manager.findSystemFonts(fontpaths="fonts"):
     font_manager.fontManager.addfont(f)
 
 #MATPLOTLIB DEFAULTS
-params = {
+mplparams = {
 
         #FONT SIZES
         'axes.labelsize' : Lbl, #Axis Labels
@@ -279,14 +279,14 @@ params = {
         'legend.fontsize': Leg, #Legend font size
         #FONT.FAMILY sets the font for the entire figure
             #use specific font names, e.g. generic 'monospace' selects DejaVu, not the specified `font.monospace`
-        # 'font.family'    : 'sans',
+        'font.family'    : 'sans',
         # 'font.family'    : 'monospace', #this just defaults to DejaVu, not 'font.monospace', specify specific font here
         # 'font.family'    : 'Noto Serif',
         # 'font.family'    : 'Noto Sans',                     #prettier for labels
         # 'font.family'    : 'Noto Sans Mono Condensed',      #better on plots than regular Noto Sans Mono
-        'font.family'    : 'CMU Typewriter Text', #monospace with no dot or slash in "0"
+        # 'font.family'    : 'CMU Typewriter Text', #monospace with no dot or slash in "0"
         # 'font.family': 'helvetica' #Font family
-        'font.serif'     : ['Noto Serif', 'DejaVu Serif'],
+        'font.serif'     : ['Noto Serif', 'DejaVu Serif'], #list is priority order to cycle through if a font is not found on local system
         'font.sans-serif': ['Noto Sans', 'DejaVu Sans'],
         'font.monospace' : ['Noto Sans Mono Condensed', 'DejaVu Sans Mono'],
         'font.fantasy'   : 'xkcd',
@@ -303,20 +303,20 @@ params = {
         'ytick.direction': 'in',  #ticks inward
 
         #FIGURE PROPERTIES
-        'figure.figsize' : (6,6),   #square plots
+        'figure.figsize' : (7,6),   #square plots
         'savefig.bbox'   : 'tight', #reduce whitespace in saved figures
 
         #LEGEND PROPERTIES
         'legend.framealpha'     : 0.75,
-        'legend.fancybox'       : True,
-        'legend.frameon'        : True,
-        'legend.numpoints'      : 1,
-        'legend.scatterpoints'  : 1,
+        # 'legend.fancybox'       : True,
+        # 'legend.frameon'        : True,
+        # 'legend.numpoints'      : 1,
+        # 'legend.scatterpoints'  : 1,
         'legend.borderpad'      : 0.1,
         'legend.borderaxespad'  : 0.1,
         'legend.handletextpad'  : 0.2,
         'legend.handlelength'   : 1.0,
-        'legend.labelspacing'   : 0,
+        'legend.labelspacing'   : 0.001,
 }
 
 # tickparams = {
@@ -329,7 +329,7 @@ params = {
 #UPDATE MATPLOTLIB DEFAULT PREFERENCES
     #These commands are called again in UseSeaborn since Seaborn resets defaults
      #If you want tight tick spacing, don't update tick size default, just do manually
-matplotlib.rcParams.update(params)
+matplotlib.rcParams.update(mplparams)
 # matplotlib.rcParams.update(tickparams)
 
 
@@ -1041,7 +1041,7 @@ legboxdict = {
     'rightlo': {'bbox' : (1,0.5),     'loc' : 'upper left' ,}, #Legend to right of plot, but below midline
 }
 
-def Legend(ax, *args, outside=None, **kwargs):
+def Legend(ax, *args, outside=None, font=None, **kwargs):
     """General legend command, with option to locate outside fig frame with simple commands
     Use handle/label args like matplotlib legend
     Lplot legend defaults: Curved edges, semi-transparent, single markers, 'best' location
@@ -1049,7 +1049,8 @@ def Legend(ax, *args, outside=None, **kwargs):
     Args:
         ax: matplotlib axis object
         *args: nothing, labels, or handles and labels (just like ax.legend)
-        outside: `str` locate legend outside of plot frame. [Default: inside]. Options: 'top', 'bottom', 'right', 'upperrightcorner', 'rightup', 'rightlo'
+        outside (:obj:`str`): locate legend outside of plot frame. [Default: inside]. Options: 'top', 'bottom', 'right', 'upperrightcorner', 'rightup', 'rightlo'
+        font (:obj:`str`): font type to use in legend e.g. ['monospace'], 'sans' (matches rest of plot), 'Computer Modern Text', etc
         **kwargs: matplotlib.legend kwargs
 
     Useful matplotlib kwargs that you can passthru:
@@ -1071,8 +1072,17 @@ def Legend(ax, *args, outside=None, **kwargs):
         newkwargs['bbox_to_anchor'] = legboxdict[outside]['bbox'] #loc of anchor point
         newkwargs['loc']            = legboxdict[outside]['loc'] #anchor point on leg
 
+    #Default monospace font
+    newkwargs['prop'] = {}
+    if font is None and 'mono' not in matplotlib.rcParams['font.family'].lower():
+        newkwargs['prop']['family'] = 'monospace'
+    else:
+        newkwargs['prop']['family'] = font
+
     #Add keys in newkwargs to kwargs, but don't replace existing keys
     mykwargs = {**newkwargs, **kwargs}
+    #also merge sub-dict props (done by default if user didn't specific prop in kwargs)
+    if 'prop' in kwargs: mykwargs['prop'] = {**newkwargs['prop'], **kwargs['prop']}
 
     leg = ax.legend(*args, **mykwargs)
 
