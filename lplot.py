@@ -409,7 +409,7 @@ def UseSeaborn(palette=None, ncycle=6):
     colors = sns.color_palette() #Save new color palette to variable
 
     #CALL MATPLOTLIB DEFAULTS AGAIN, AFTER SEABORN CHANGED THEM
-    matplotlib.rcParams.update(mplparams)
+    matplotlib.rcParams.update(mpl_params)
     # matplotlib.rcParams.update(tickparams) #DONT CALL THIS IF YOU WANT TIGHT TICK SPACING
 
     #return color cycle
