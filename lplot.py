@@ -248,12 +248,14 @@ Box = 20
 Leg = 20
 Tck = 18
 
-Ttl = 24-4
-Lbl = 24-4
-Box = 20-4
-Leg = 20-4
-Tck = 13 #13: max size that allows dense tick spacing (smaller doesnt help if whole numbers are weird)
-Tck = 15 #larger font is acceptable for Noto fonts
+# #small font sizes
+# Ttl = 24-4
+# Lbl = 24-4
+# Box = 20-4
+# Leg = 20-4
+# Tck = 13 #13: max size that allows dense tick spacing (smaller doesnt help if whole numbers are weird)
+# Tck = 15 #larger font is acceptable for Noto fonts
+
 
 #big font sizes
 Lbl_big = 32
@@ -263,12 +265,13 @@ Tck_big = 22
 
 
 #ADD ALTERNATIVE FONTS
-# import matplotlib.font_manager
 from matplotlib import font_manager
+# ogfonts = font_manager.get_font_names() #debug new fonts
 for f in font_manager.findSystemFonts(fontpaths="fonts"):
     font_manager.fontManager.addfont(f)
 
 # #how to figure out the correct name of fonts:
+# print([f for f in font_manager.get_font_names() if f not in ogfonts]) #new fonts
 # font_manager.findfont("CMU Sans Serif")
 # sys.exit()
 
@@ -291,6 +294,18 @@ mplparams = {
         'font.sans-serif': ['Noto Sans',                'CMU Sans Serif',      'DejaVu Sans'],      #Noto is sleek and modern, CMU (Computer Modern) is a classic 70's look, DejaVu ships with python
         'font.monospace' : ['Noto Sans Mono Condensed', 'CMU Typewriter Text', 'DejaVu Sans Mono'],
         'font.fantasy'   : 'xkcd',
+
+        #Font used for LaTeX math:
+        'mathtext.fontset' : 'cm', #Computer Modern instead of DejaVu
+        #I cant get custom math fonts to work becuase bold text is same as normal (Noto is not good for math)
+        # 'mathtext.fontset' : 'custom',
+        # 'mathtext.bf'  : "CMU Sans Serif Bold",
+        # 'mathtext.cal' : 'CMU Classical Serif',
+        # 'mathtext.it'  : 'CMU Sans Serif Oblique',
+        # 'mathtext.rm'  : 'CMU Sans Serif',
+        # 'mathtext.sf'  : 'CMU Sans Serif',
+        # 'mathtext.tt'  : 'CMU Typewriter Text',
+        # 'mathtext.fallback' : 'cm',
 
         #AXIS PROPERTIES
         'axes.titlepad'  : 2*6.0, #title spacing from axis
@@ -1700,9 +1715,11 @@ def main():
     ax.set_ylabel('Y-Axis Label [m/s]')
     ax.plot(x, y1, label='y1')
     ax.plot(x, y2, label='y02')
-    ax.plot(x, y3, label='$y03^{{rd}}$')
+    # ax.plot(x, y3, label='$y03^{{rd}} \\alpha \\gg$')
+    ax.plot(x, y3, label='y03$^{{rd}} \\alpha \\gg$')
     Grid_Minor(ax, 5, 5) #minor axis grid
     Legend(ax) #use `lplot.Legend` instead of `ax.legend` to have monospace legend font
+    SavePlot('scratch/test.png')
     plt.show()
     plt.close()
 
