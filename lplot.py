@@ -38,6 +38,9 @@ from scipy.interpolate import interp1d
 
 from functools import partial
 
+#path to directory containing "lplot.py", so local files can be sourced regardless of the location where lplot is being imported
+sourcepath = os.path.dirname(os.path.abspath(__file__))
+
 ########################################################################
 ### UTILITIES
 ########################################################################
@@ -244,9 +247,9 @@ for mod in ["", "loosely ", "densely "]:
 #default font sizes
 Ttl = 24
 Lbl = 24
-Box = 20
-Leg = 20
-Tck = 18
+Box = 20+2
+Leg = 20+2
+Tck = 18+2+2
 
 # #small font sizes
 # Ttl = 24-4
@@ -264,11 +267,16 @@ Box_big = 28
 Tck_big = 22
 
 
+# print("{}/fonts".format(os.path.dirname(os.path.abspath(__file__))) )
+# sys.exit()
+
 #ADD ALTERNATIVE FONTS
+# import matplotlib.font_manager
+from matplotlib.font_manager import fontManager
 from matplotlib import font_manager
 # ogfonts = font_manager.get_font_names() #debug new fonts
-for f in font_manager.findSystemFonts(fontpaths="fonts"):
-    font_manager.fontManager.addfont(f)
+for f in font_manager.findSystemFonts(fontpaths="{}/fonts".format(sourcepath)):
+    fontManager.addfont(f)
 
 # #how to figure out the correct name of fonts:
 # print([f for f in font_manager.get_font_names() if f not in ogfonts]) #new fonts
@@ -276,7 +284,7 @@ for f in font_manager.findSystemFonts(fontpaths="fonts"):
 # sys.exit()
 
 #MATPLOTLIB DEFAULTS
-mplparams = {
+mpl_params = {
 
         #FONT SIZES
         'axes.labelsize' : Lbl, #Axis Labels
@@ -345,7 +353,7 @@ mplparams = {
 #UPDATE MATPLOTLIB DEFAULT PREFERENCES
     #These commands are called again in UseSeaborn since Seaborn resets defaults
      #If you want tight tick spacing, don't update tick size default, just do manually
-matplotlib.rcParams.update(mplparams)
+matplotlib.rcParams.update(mpl_params)
 # matplotlib.rcParams.update(tickparams)
 
 
