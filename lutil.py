@@ -10,6 +10,7 @@ import subprocess
 import os
 import errno
 import re
+import ntpath
 # import matplotlib.pyplot as plt
 import numpy as np
 from scipy.interpolate import interp1d
@@ -145,7 +146,6 @@ def GetFilename(path, withext=True):
     """
 
     #Remove path from file
-    import ntpath
     filename = ntpath.basename(path)
 
     #Return filname with file extension, if specified
@@ -245,25 +245,25 @@ def OrderedGlob(globpattern=None, header=None):
 
         #get glob match for each file
             #(remove boilerplate portion of the glob pattern, and delete any wildcards in square brackets (e.g. `[0-9]`) )
-            #if filename is a path, dont bother matching the path, just the filename (`GetFilename`)
-        pattern = re.sub( "\[.*?\]", "", GetFilename(gp)).split("*")
+            #if filename is a path, dont bother matching the path, just the filename+extension (`ntpath.basename`)
+        pattern = re.sub( "\[.*?\]", "", ntpath.basename(gp)).split("*")
         #if string on one side of '*' is empty, use `None` so `FindBetween` will match default (beginning/end of string)
         for i, x in enumerate(pattern):
             if x == '': pattern[i] = None
 
         if len(pattern) == 1:
             #No wildcard, just strip the glob boilerplate
-            match = [ GetFilename(f).replace() for f in files] #dont search full paths, just the filename
+            match = [ ntpath.basename(f).replace() for f in files] #dont search full paths, just the filename
 
             #get numeric match for one-wildcard glob pattern
-            match = [ FindBetween(GetFilename(f), pattern[0], pattern[1]) for f in files] #dont search full paths, just the filename
+            match = [ FindBetween(ntpath.basename(f), pattern[0], pattern[1]) for f in files] #dont search full paths, just the filename
             #convert strings to numbers
             isnum = [i.isnumeric() for i in match]
             if any(isnum) and not all(isnum): raise ValueError("Not all matches are numeric, glob pattern is ambiguous")
             if isnum[0]: match = [str2numeric(i) for i in match]
         elif len(pattern) == 2:
             #get numeric match for one-wildcard glob pattern
-            match = [ FindBetween(GetFilename(f), pattern[0], pattern[1]) for f in files] #dont search full paths, just the filename
+            match = [ FindBetween(ntpath.basename(f), pattern[0], pattern[1]) for f in files] #dont search full paths, just the filename
             #convert strings to numbers
             isnum = [i.isnumeric() for i in match]
             if any(isnum) and not all(isnum): raise ValueError("Not all matches are numeric, glob pattern is ambiguous")
@@ -278,7 +278,7 @@ def OrderedGlob(globpattern=None, header=None):
                     # (e.g. `q.*.[0-9]*[0-9].triq` + `q.y0.009999.triq` = ['y0', '009999'])
                     # dont search full paths, just the filename
                 # match = [ FindBetween(GetFilename(f), pattern[0], pattern[-1]).split(pattern[1]) for f in match]
-                matchs = FindBetween(GetFilename(f), pattern[0], pattern[-1]).split(pattern[1])
+                matchs = FindBetween(ntpath.basename(f), pattern[0], pattern[-1]).split(pattern[1])
                 #determine which wildcard match is the numeric one
                 isnum = [m.isnumeric() for m in matchs]
                 if any(isnum) and not all(isnum):
