@@ -642,17 +642,9 @@ def SeriesFromFile(filename):
 
             #has trouble with lists of strings with quote marks
             s[i] = [x.replace("'", "") for x in s[i]]
-
-
         else:
             #convert any floats or ints
-            try:
-                s[i] = int(val)
-            except ValueError:
-                try:
-                    s[i] = float(val)
-                except ValueError:
-                    pass
+            s[i] = str2numeric(val)
     return s
 
 def dfSafetyValve(df, targetsize=None, quiet=True):
