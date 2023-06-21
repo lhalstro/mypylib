@@ -39,6 +39,7 @@ import numpy as np
 import pandas as pd
 from glob import glob
 import time
+import re
 
 from mypylib import fileCleanUp as fclean
 from mypylib.lutil import cmd, OrderedGlob
@@ -166,7 +167,7 @@ def pigz_list(files, retcmd=False):
 
 
 
-def Archive_Glob(globpattern, tarname, compress=False, retcmd=False, verbose=False):
+def Archive_Glob(globpattern, tarname=None, compress=False, retcmd=False, verbose=False):
     """ Create archive of files matching globpattern.
     Automatically append if existing tar file.
     Compress in parallel (pigz) before archive is faster and allows incremental archive.
@@ -180,12 +181,15 @@ def Archive_Glob(globpattern, tarname, compress=False, retcmd=False, verbose=Fal
         compress: also compress each file individually to reduce archive size [False]
         retcmd: return command as string to be executed later instead of executing now [False]
     """
+    #Default archive name: remove glob wildcards to get base file text, and remove accidental double dots
+    if tarname is None: tarname = re.sub( "\[.*?\]", "", globpattern).replace("*", "").replace("..", '.')
     ccmd = cmdv if verbose else cmd #verbose command option
-    if retcmd: raise NotImplementedError("see Archive_Files for how to implement")
+    if retcmd: raise NotImplementedError("Can't return command because need to run `pigz` separately. see Archive_Files for how to implement")
     #only tar if there are files to tar
     if sum([len(glob(gp)) for gp in globpattern.split()]) == 0: #account for multiple glob patterns in one line
         print("    No files to tar for: {}".format(globpattern))
         return
+    #Option to compress individual files before archiving (faster overall process)
     if compress:
         ccmd("pigz {}".format(globpattern))
         curglobpattern = globpattern + ".gz"
@@ -196,6 +200,7 @@ def Archive_Glob(globpattern, tarname, compress=False, retcmd=False, verbose=Fal
         tarext = "tar"
     createappend = 'r' if os.path.isfile("{}.{}".format(tarname, tarext)) else 'c'
     if verbose: createappend += 'vh' #verbose tar
+    #run archive command
     ccmd( "tar -{}f {}.{} {} --remove-files".format(createappend, tarname, tarext, curglobpattern) )
 
 
