@@ -521,7 +521,14 @@ def PlotStartOld(title, xlbl, ylbl, horzy='vertical', figsize='square',
 
     return fig, ax
 
-
+def MoveSubplot(ax, xoffset=0, yoffset=0):
+    """ Offset a subplot relative to its original position.
+    offset values are absolute(?).
+    (NOTE: must be done AFTER second y-axis is created).
+    """
+    bbox=ax.get_position()
+    ax.set_position([bbox.x0+xoffset, bbox.y0+yoffset, bbox.x1-bbox.x0, bbox.y1 - bbox.y0])
+    return ax
 
 # def SubPlotStart(shape, figsize='square',
 #                 sharex=False, sharey=False,
