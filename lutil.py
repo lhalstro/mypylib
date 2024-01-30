@@ -16,7 +16,7 @@ import numpy as np
 from scipy.interpolate import interp1d
 import pandas as pd
 
-def cmd(command, nindent=0):
+def cmd(command, nindent=0, verbose=False):
     """Execute a shell command.
     TIPS:
         - Execute multiple commands by separating with semicolon+space: '; '
@@ -31,6 +31,7 @@ def cmd(command, nindent=0):
         tabs = ""
         for i in range(nindent): tabs += "    "
         proc_stdout.replace("\n", "\n{}".format(tabs))
+    if verbose: print(proc_stdout)
     return proc_stdout
 
     #print proc_stdout
