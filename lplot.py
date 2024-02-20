@@ -522,7 +522,14 @@ def PlotStartOld(title, xlbl, ylbl, horzy='vertical', figsize='square',
 
     return fig, ax
 
-
+def MoveSubplot(ax, xoffset=0, yoffset=0):
+    """ Offset a subplot relative to its original position.
+    offset values are absolute(?).
+    (NOTE: must be done AFTER second y-axis is created).
+    """
+    bbox=ax.get_position()
+    ax.set_position([bbox.x0+xoffset, bbox.y0+yoffset, bbox.x1-bbox.x0, bbox.y1 - bbox.y0])
+    return ax
 
 # def SubPlotStart(shape, figsize='square',
 #                 sharex=False, sharey=False,
@@ -1053,6 +1060,54 @@ def ScatPlot(ax, df, X, Y, lbl, clr='black', mkr='o', plottype='mark'):
                     edgecolor='black')
 
     return ax
+
+def get_current_color(ax):
+    """ Get color cycle and return color for index of number of lines in current ax +1
+    """
+    return plt.rcParams["axes.prop_cycle"].by_key()["color"][len(ax.lines)]
+
+def get_color_from_kwargs(ax, kwargs):
+    """ Given a dict of mpl keyword args, determine if user specified a color and return.
+    Otherwise return current color in cycle.
+
+    Args:
+        ax (:obj:`~matplotlib.pyplot.Axes`): plot axis object
+        kwargs (:obj:`dict`): keyword args to submit to `~matplotlib.pyplot.plot`
+    Returns:
+        mpl color
+    """
+    ckey = [k for k in ['color', 'c'] if k in kwargs]
+    if len(ckey) == 1:
+        clr = kwargs[ckey[0]]
+    elif len(ckey) == 0:
+        clr = get_current_color(ax)
+    else:
+        raise ValueError("only enter 'color' or 'c' for mpl kwargs, not both")
+    return clr
+
+def scatter_hollow(ax, x, y, **kwargs):
+    """ Hollow marker scatter plot.
+
+    Args:
+        ax (:obj:`~matplotlib.pyplot.Axes`): plot axis object
+        x (:obj:`~numpy.array`): x-axis data to plot
+        y (:obj:`~numpy.array`): y-axis data to plot
+        **kwargs: `~matplotlib.pyplot.plot` kwargs (e.g. label, color, marker, markersize, markevery, zorder)
+    Returns:
+        mpl handle for scatter plot
+    """
+    clr = get_color_from_kwargs(ax, kwargs)
+    scatkwargs = dict(
+                        color=clr, markeredgecolor=clr,
+                        markeredgewidth=1,
+                        markerfacecolor="None", #hollow marker
+                        linewidth=0, #scatter plot (no line)
+                    )
+    #Add user-specified mpl kwargs to scatterplot kwargs, but dont overwrite any scatkwargs
+    scatkwargs = {**kwargs, **scatkwargs}
+    if 'marker' not in scatkwargs: scatkwargs['marker']="o" #scatter plot points need to have markers to be seen
+    handle, = ax.plot(x, y, **scatkwargs)
+    return handle
 
 
 #Params for locating legend outside of figure (bbox: loc of anchor point, loc: anchor point on legend)
