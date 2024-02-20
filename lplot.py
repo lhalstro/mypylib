@@ -25,12 +25,13 @@ import sys
 import re
 
 import matplotlib
-if 'DISPLAY' not in os.environ:
-    #Compatiblity mode for plotting on non-X11 server (also need to call this in your local script)
-    matplotlib.use('Agg')
-elif 'pfe' in os.environ['DISPLAY']:
-    #for some reason, pfe sets display but hangs up, so treat as no X11
-    matplotlib.use('Agg')
+if sys.platform != 'darwin': #not an issue on mac
+    if 'DISPLAY' not in os.environ:
+        #Compatiblity mode for plotting on non-X11 server (also need to call this in your local script)
+        matplotlib.use('Agg')
+    elif 'pfe' in os.environ['DISPLAY']:
+        #for some reason, pfe sets display but hangs up, so treat as no X11
+        matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from matplotlib.cm import get_cmap
 from matplotlib.transforms import Bbox #for getting plot bounding boxes
