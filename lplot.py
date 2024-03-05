@@ -1493,6 +1493,50 @@ def TextBox(ax, boxtext, x=0.005, y=0.95, relcoord=None, vert='top', horz='left'
 
     ax.text(x, y, boxtext, **kw)
 
+def autoscale_axis(ax, whichax='y', pad=0.0, relative=False, inplace=True):
+    """Return axis limits for tight bounding of data set in ax.
+    NOTE: doesn't work for scatter plots(?).
+    ax  --> plot axes to bound
+    pad --> whitespace padding (in [axis units] or relative fraction if rel=True)
+    relative --> consider tol to be a fraction of the total height/width of the axes bounds
+    inplace --> set the new axis limit in place [True]
+    """
+    whichax = whichax.lower()
+    if whichax == 'y':
+        otherax = 'x'
+    elif whichax == 'x'
+        otherax = 'y'
+    else:
+        raise ValueError("`lplot.autoscale_axis`: `whichax` must be 'x' or 'y' ")
+
+    def get_minmax(line):
+        data  = getattr(ax, "get_{}data".format(whichax))
+        other = getattr(ax, "get_{}data".format(otherax))
+        mn, mx = getattr(ax, "get_{}lim".format(otherax))
+        #get only y data that is visible with current xlim (and vice versa)
+        d = data[((other>=mn) & (other<=mx))]
+        if len(d) == 0:
+            print("DEVEL WARNING `lplot.autoscale_axis`: one of your lines is empty")
+            return np.inf, -np.inf
+        h   = np.max(d) - np.min(d)
+        margin = pad * h if relative else pad
+        bot = np.min(d)-margin*h
+        top = np.max(d)+margin*h
+
+        return bot,top
+
+    #find the smallest/largest data (with margin) in the currently visible data set
+    lines = ax.get_lines()
+    bot,top = np.inf, -np.inf
+    for line in lines:
+        new_bot, new_top = get_minmax(line)
+        if new_bot < bot: bot = new_bot
+        if new_top > top: top = new_top
+
+    #set new axis limits
+    if inplace: getattr(ax, "set_{}lim".format(whichax))(bot,top)
+    #return new axis limits
+    return bot, top
 
 def TightLims(ax, tol=0.0, rel=False):
     """Return axis limits for tight bounding of data set in ax.
