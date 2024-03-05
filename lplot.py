@@ -1085,7 +1085,7 @@ def get_color_from_kwargs(ax, kwargs):
         raise ValueError("only enter 'color' or 'c' for mpl kwargs, not both")
     return clr
 
-def scatter_hollow(ax, x, y, **kwargs):
+def scatter_hollow(ax, x=None, y=None, getkwargs=False, **kwargs):
     """ Hollow marker scatter plot.
 
     Args:
@@ -1106,8 +1106,11 @@ def scatter_hollow(ax, x, y, **kwargs):
     #Add user-specified mpl kwargs to scatterplot kwargs, but dont overwrite any scatkwargs
     scatkwargs = {**kwargs, **scatkwargs}
     if 'marker' not in scatkwargs: scatkwargs['marker']="o" #scatter plot points need to have markers to be seen
-    handle, = ax.plot(x, y, **scatkwargs)
-    return handle
+    if getkwargs:
+        return scatkwargs
+    else:
+        handle, = ax.plot(x, y, **scatkwargs)
+        return handle
 
 
 #Params for locating legend outside of figure (bbox: loc of anchor point, loc: anchor point on legend)
@@ -1454,12 +1457,12 @@ def TextBox(ax, boxtext, x=0.005, y=0.95, relcoord=None, vert='top', horz='left'
         rotation: text rotation in degrees
         props: dict textbox 'bbox' properties
     """
-    if fontsize == None:
+    if fontsize is None:
         fontsize = matplotlib.rcParams['font.size']
-    if props == None:
+    if props is None:
         #Default textbox properties
         props = dict(boxstyle='round', facecolor='white', alpha=alpha)
-    if color != None:
+    if color is not None:
         #Set box fill and edge color if specified
         props['edgecolor'] = color
         props['facecolor'] = color
@@ -1471,6 +1474,8 @@ def TextBox(ax, boxtext, x=0.005, y=0.95, relcoord=None, vert='top', horz='left'
             'rotation' : rotation,
     }
     if textcolor is not None: kw['color'] = textcolor
+    #Default monospace font
+    if 'family' not in kw: kw['family'] = 'monospace'
 
     # if relcoord: kw['transform'] = ax.transAxes #makes coordinate relative
     if relcoord is None: relcoord = True
