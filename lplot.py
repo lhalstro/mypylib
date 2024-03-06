@@ -1504,15 +1504,15 @@ def autoscale_axis(ax, whichax='y', pad=0.0, relative=False, inplace=True):
     whichax = whichax.lower()
     if whichax == 'y':
         otherax = 'x'
-    elif whichax == 'x'
+    elif whichax == 'x':
         otherax = 'y'
     else:
         raise ValueError("`lplot.autoscale_axis`: `whichax` must be 'x' or 'y' ")
 
     def get_minmax(line):
-        data  = getattr(ax, "get_{}data".format(whichax))
-        other = getattr(ax, "get_{}data".format(otherax))
-        mn, mx = getattr(ax, "get_{}lim".format(otherax))
+        data   = getattr(line, "get_{}data".format(whichax))()
+        other  = getattr(line, "get_{}data".format(otherax))()
+        mn,mx = getattr(ax,   "get_{}lim".format(otherax))() #not working for some reason
         #get only y data that is visible with current xlim (and vice versa)
         d = data[((other>=mn) & (other<=mx))]
         if len(d) == 0:
