@@ -1509,27 +1509,41 @@ def autoscale_axis(ax, whichax='y', pad=0.0, relative=False, inplace=True):
     else:
         raise ValueError("`lplot.autoscale_axis`: `whichax` must be 'x' or 'y' ")
 
-    def get_minmax(line):
+
+    mn,mx = getattr(ax,   "get_{}lim".format(otherax))()
+
+    def get_data_line(line):
         data   = getattr(line, "get_{}data".format(whichax))()
         other  = getattr(line, "get_{}data".format(otherax))()
-        mn,mx = getattr(ax,   "get_{}lim".format(otherax))() #not working for some reason
         #get only y data that is visible with current xlim (and vice versa)
         d = data[((other>=mn) & (other<=mx))]
-        if len(d) == 0:
-            print("DEVEL WARNING `lplot.autoscale_axis`: one of your lines is empty")
-            return np.inf, -np.inf
-        h   = np.max(d) - np.min(d)
+        return d
+    def get_data_collection(collection):
+        """e.g. from a fill_between collection"""
+        xy = collection.get_paths()[0].vertices
+        x = xy[:,0]
+        y = xy[:,1]
+        data  = y if whichax == 'y' else x
+        other = x if whichax == 'y' else y
+        #get only y data that is visible with current xlim (and vice versa)
+        d = data[((other>=mn) & (other<=mx))]
+        return d
+    def get_data_lim(data):
+        if len(data) == 0: return np.inf, -np.inf
+        h   = np.max(data) - np.min(data)
         margin = pad * h if relative else pad
-        bot = np.min(d)-margin*h
-        top = np.max(d)+margin*h
-
+        bot = np.min(data)-margin*h
+        top = np.max(data)+margin*h
         return bot,top
 
-    #find the smallest/largest data (with margin) in the currently visible data set
-    lines = ax.get_lines()
+    #get the min/max plus buffer of the data from each line
+    datas = [get_data_line(l) for l in ax.lines]
+    #also get min/max plus buffer of fill_betweens, if they exist
+    if len(ax.collections) > 0: datas.extend([get_data_collection(c) for c in ax.collections])
+
     bot,top = np.inf, -np.inf
-    for line in lines:
-        new_bot, new_top = get_minmax(line)
+    for data in datas:
+        new_bot, new_top = get_data_lim(data)
         if new_bot < bot: bot = new_bot
         if new_top > top: top = new_top
 
