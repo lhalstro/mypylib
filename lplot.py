@@ -1085,7 +1085,7 @@ def get_color_from_kwargs(ax, kwargs):
         raise ValueError("only enter 'color' or 'c' for mpl kwargs, not both")
     return clr
 
-def scatter_hollow(ax, x, y, **kwargs):
+def scatter_hollow(ax, x=None, y=None, getkwargs=False, **kwargs):
     """ Hollow marker scatter plot.
 
     Args:
@@ -1106,8 +1106,11 @@ def scatter_hollow(ax, x, y, **kwargs):
     #Add user-specified mpl kwargs to scatterplot kwargs, but dont overwrite any scatkwargs
     scatkwargs = {**kwargs, **scatkwargs}
     if 'marker' not in scatkwargs: scatkwargs['marker']="o" #scatter plot points need to have markers to be seen
-    handle, = ax.plot(x, y, **scatkwargs)
-    return handle
+    if getkwargs:
+        return scatkwargs
+    else:
+        handle, = ax.plot(x, y, **scatkwargs)
+        return handle
 
 
 #Params for locating legend outside of figure (bbox: loc of anchor point, loc: anchor point on legend)
@@ -1454,12 +1457,12 @@ def TextBox(ax, boxtext, x=0.005, y=0.95, relcoord=None, vert='top', horz='left'
         rotation: text rotation in degrees
         props: dict textbox 'bbox' properties
     """
-    if fontsize == None:
+    if fontsize is None:
         fontsize = matplotlib.rcParams['font.size']
-    if props == None:
+    if props is None:
         #Default textbox properties
         props = dict(boxstyle='round', facecolor='white', alpha=alpha)
-    if color != None:
+    if color is not None:
         #Set box fill and edge color if specified
         props['edgecolor'] = color
         props['facecolor'] = color
@@ -1471,6 +1474,8 @@ def TextBox(ax, boxtext, x=0.005, y=0.95, relcoord=None, vert='top', horz='left'
             'rotation' : rotation,
     }
     if textcolor is not None: kw['color'] = textcolor
+    #Default monospace font
+    if 'family' not in kw: kw['family'] = 'monospace'
 
     # if relcoord: kw['transform'] = ax.transAxes #makes coordinate relative
     if relcoord is None: relcoord = True
@@ -1488,6 +1493,64 @@ def TextBox(ax, boxtext, x=0.005, y=0.95, relcoord=None, vert='top', horz='left'
 
     ax.text(x, y, boxtext, **kw)
 
+def autoscale_axis(ax, whichax='y', pad=0.0, relative=False, inplace=True):
+    """Return axis limits for tight bounding of data set in ax.
+    NOTE: doesn't work for scatter plots(?).
+    ax  --> plot axes to bound
+    pad --> whitespace padding (in [axis units] or relative fraction if rel=True)
+    relative --> consider tol to be a fraction of the total height/width of the axes bounds
+    inplace --> set the new axis limit in place [True]
+    """
+    whichax = whichax.lower()
+    if whichax == 'y':
+        otherax = 'x'
+    elif whichax == 'x':
+        otherax = 'y'
+    else:
+        raise ValueError("`lplot.autoscale_axis`: `whichax` must be 'x' or 'y' ")
+
+
+    mn,mx = getattr(ax,   "get_{}lim".format(otherax))()
+
+    def get_data_line(line):
+        data   = getattr(line, "get_{}data".format(whichax))()
+        other  = getattr(line, "get_{}data".format(otherax))()
+        #get only y data that is visible with current xlim (and vice versa)
+        d = data[((other>=mn) & (other<=mx))]
+        return d
+    def get_data_collection(collection):
+        """e.g. from a fill_between collection"""
+        xy = collection.get_paths()[0].vertices
+        x = xy[:,0]
+        y = xy[:,1]
+        data  = y if whichax == 'y' else x
+        other = x if whichax == 'y' else y
+        #get only y data that is visible with current xlim (and vice versa)
+        d = data[((other>=mn) & (other<=mx))]
+        return d
+    def get_data_lim(data):
+        if len(data) == 0: return np.inf, -np.inf
+        h   = np.max(data) - np.min(data)
+        margin = pad * h if relative else pad
+        bot = np.min(data)-margin*h
+        top = np.max(data)+margin*h
+        return bot,top
+
+    #get the min/max plus buffer of the data from each line
+    datas = [get_data_line(l) for l in ax.lines]
+    #also get min/max plus buffer of fill_betweens, if they exist
+    if len(ax.collections) > 0: datas.extend([get_data_collection(c) for c in ax.collections])
+
+    bot,top = np.inf, -np.inf
+    for data in datas:
+        new_bot, new_top = get_data_lim(data)
+        if new_bot < bot: bot = new_bot
+        if new_top > top: top = new_top
+
+    #set new axis limits
+    if inplace: getattr(ax, "set_{}lim".format(whichax))(bot,top)
+    #return new axis limits
+    return bot, top
 
 def TightLims(ax, tol=0.0, rel=False):
     """Return axis limits for tight bounding of data set in ax.
