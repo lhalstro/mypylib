@@ -190,7 +190,8 @@ def FindBetween(string, before=None, after=None):
             return None
 
 def str2numeric(string):
-    #convert string to int or float, if appropriate
+    """convert string to int or float, if appropriate
+    """
     try:
         #int first because it will fail if value is a float
         string = int(string)
@@ -200,6 +201,19 @@ def str2numeric(string):
         except ValueError:
             pass
     return string
+
+def str2bool(val):
+    """ Attempt to convert a string to bool, based on contents
+    ('True' --> `True`, 'False' --> `False`)
+    """
+    bools = {'True':True, 'False':False}
+    if isinstance(val,str) and val in bools: val = bools[val]
+    return val
+
+def str2numericbool(val):
+    """ Attempt to convert given string to an int, float, or bool.
+    """
+    return str2bool(str2numeric(val))
 
 def listify(nonlist, n=1):
     """Given a single item, return a list n long (default 1).

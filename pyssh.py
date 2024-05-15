@@ -98,10 +98,12 @@ def sshcmd(command, host=None, out=None, bg=True, lockfile=None, uniquelock=None
     #add destination for stdout/stderr (to each nested command) and run in background, if specified
     if bg: command = bgcommand(command, out=out, lockfile=lockfile, unique=uniquelock)
 
-    try:
-        print("    DEBUG ssh: trying to run: {}".format( """ssh -qf {} "sh -c '{}'" """.format( host, command ) ) )
-    except:
-        pass
+    # debug = False
+    # if debug:
+    #     try:
+    #         print("    DEBUG ssh: trying to run: {}".format( """ssh -qf {} "sh -c '{}'" """.format( host, command ) ) )
+    #     except:
+    #         pass
 
 
     #non-interactive shell, does NOT have environment from .bashrc
