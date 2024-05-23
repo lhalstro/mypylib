@@ -42,6 +42,7 @@ def bgcommand(command, out=None, lockfile=None, unique=None):
 
     Returns:
         shell command in nohup mode
+        path to lockfile
 
     TODO:
         - Add if statement that stops sshcmd if the lockfile exists
@@ -73,9 +74,13 @@ def bgcommand(command, out=None, lockfile=None, unique=None):
         #                       ($! and `` must be escaped (\) so that it is processed on the ssh host side)
         #                           ((python makes me escape the escape character, hence two \\'s))
     # return "{} echo \\`hostname\\` > {} ; ({} ; rm {}) > {} 2>&1 & echo \\$! >> {}".format(makedestdircmd, lockfile, command, lockfile, out, lockfile)
-    return "mkdir -p {} ; echo \\`hostname\\` > {} ; ({} ; rm {}) > {} 2>&1 & echo \\$! >> {}".format(os.path.dirname(lockfile), lockfile, command, lockfile, out, lockfile)
+    backgroundcommand =  "mkdir -p {} ; echo \\`hostname\\` > {} ; ({} ; rm {}) > {} 2>&1 & echo \\$! >> {}".format(os.path.dirname(lockfile), lockfile, command, lockfile, out, lockfile)
+    return backgroundcommand, lockfile
 
 
+def check_lock(lockfile, host):
+    locked = sshcmd("""[ -f "{}" ] && echo "true" || echo "false" """.format(lockfile), host=host, bg=False)
+    return True if locked == 'true' else False
 
 
 def sshcmd(command, host=None, out=None, bg=True, lockfile=None, uniquelock=None):
@@ -96,7 +101,14 @@ def sshcmd(command, host=None, out=None, bg=True, lockfile=None, uniquelock=None
     if host is None: host = "pfe"
 
     #add destination for stdout/stderr (to each nested command) and run in background, if specified
-    if bg: command = bgcommand(command, out=out, lockfile=lockfile, unique=uniquelock)
+    if bg:
+        #command with wrapping to run in the background
+        command, lockfile = bgcommand(command, out=out, lockfile=lockfile, unique=uniquelock)
+        #check if ssh process is locked before running it
+        if check_lock(lockfile, host):
+            print("\n`pyssh.sshcmd`: LOCKFILE EXISTS:\n\t`{}:{}`".format(host, lockfile))
+            print("SKIPPING sshcmd:\n\t`{}`\n\n".format(command))
+            return ""
 
     # debug = False
     # if debug:
@@ -142,7 +154,7 @@ def offload_file(file, host=None, rootdir=None, precmd=None, out=None, lockfile=
     #lockfile in same location as file destination
     if lockfile is None:
         #same name as transfer file
-        lockfile="{}.pid".format( os.path.splitext(os.path.splitext(dest)[0])[0] ) #just in case, try to remove multiple file extensions
+        lockfile = dest + ".pid"
     else:
         #given filename, but in location of transfer file
         lockfile = "{}/{}/{}".format(rootdir, relpath, ntpath.basename(lockfile))
@@ -154,8 +166,6 @@ def offload_file(file, host=None, rootdir=None, precmd=None, out=None, lockfile=
     command = """mkdir -p {}; rsync -avh --remove-source-files {} {} """.format(os.path.dirname(dest), sorc, dest)
     if precmd is not None: command = precmd + " ; " + command
     sshcmd(command, host=host, out=out, lockfile=lockfile, uniquelock=uniquelock)
-
-
 
 
 def offload2lou(file, precmd=None, lockfile=None, out=None):
