@@ -191,6 +191,11 @@ xkcdrainbow =       ["cherry" ,   "tangerine",    "puke yellow",  "leaf green", 
 xkcdrainbowhex =    ['#cf0234',    "#ff9408" ,    '#c2be0e',      '#5ca904',     '#3778bf',       '#825f87',        '#ad8150',      '#a8a495',   "#fe7b7c"     ,   "#75bbfd" , "#13eac9"    ]
 colorrainbow = get_palette(xkcdrainbow, colorkind='xkcd') #actual rgbs that matplotlib like
 
+
+bigrainbowxkcd =       ["cherry" ,   "tangerine",    "puke yellow",  "leaf green",  "windows blue",  "dusty purple",  'light brown',  "greyish",   "cherry red",  "sunflower",   "leaf green", "sky blue", "lightish purple",  "salmon pink", "aqua",     ]
+bigrainbowhex =    ['#cf0234',    "#ff9408" ,    '#c2be0e',      '#5ca904',     '#3778bf',       '#825f87',        '#ad8150',      '#a8a495',  '#??????',     '#??????',     '#??????',    "#75bbfd",  '#a552e6',           "#fe7b7c"     , "#13eac9",  ]
+colorrainbowbig = get_palette(bigrainbowxkcd, colorkind='xkcd')
+
 #Line Styles
 mark = 5
 minimark = 0.75
