@@ -1355,15 +1355,21 @@ def GetPlotBbox(ypad=0.5, xpad=0, shft=0.1, offtop=0.5):
 
     return bbox
 
-def SavePlot(savename, overwrite=1, trans=False, bbox='tight', pad=None):
+def SavePlot(savename, overwrite=1, bbox='tight', pad=None, **kwargs):
     """Save file given save path.  Do not save if file exists
     or if variable overwrite is 1
-    trans --> tranparent background if True
     bbox --> 'tight' for tight border (best for individual plots)
              'fixed' for fixed-size border (best for plots that need to be same size)
              'fixedsquare' same as 'fixed' but final shape is square, not rect
     pad  --> lower left corner padding for 'fixed' bbox [0.5] or padding on all sides for 'tight' [0.1] (inches)
+    kwargs: matplotlib.pyplot.savefig kwargs e.g. tranparent=True for transparent background
     """
+
+    #backwards compatibility
+    if 'trans' in kwargs:
+        kwargs['transparent'] = kwargs['trans']
+        del kwargs['trans']
+
     if os.path.isfile(savename):
         if overwrite == 0:
             print('     Overwrite is off')
@@ -1392,7 +1398,7 @@ def SavePlot(savename, overwrite=1, trans=False, bbox='tight', pad=None):
             #top is too high, subtrack some height
         bbox = GetPlotBbox(ypad=pad, xpad=0, shft=shft, offtop=0.5)
 
-    plt.savefig(savename, bbox_inches=bbox, transparent=trans, pad_inches=pad)
+    plt.savefig(savename, bbox_inches=bbox, pad_inches=pad, **kwargs)
     # plt.savefig(savename, bbox_inches='tight', transparent=trans)
     # plt.close()
 
