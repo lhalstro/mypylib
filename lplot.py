@@ -1765,10 +1765,10 @@ def PlotArrow(ax, x1, y1, x2, y2, label, head1='<', head2='>',
     sz      --> size of arrowheads
     """
     #Plot line connecting two points
-    ax.plot([x1, x2], [y1, y2], color=color, label=label)
-    ax.plot(x1, y1, color=color, marker=head1, markersize=sz) #1st arrow head
-    ax.plot(x2, y2, color=color, marker=head2, markersize=sz) #2nd arrow head
-    return ax
+    h1 = ax.plot([x1, x2], [y1, y2], color=color, label=label)
+    h2 = ax.plot(x1, y1, color=color, marker=head1, markersize=sz) #1st arrow head
+    h3 = ax.plot(x2, y2, color=color, marker=head2, markersize=sz) #2nd arrow head
+    return ax, [h1,h2,h3]
 
 def PlotVelProfile(ax, y, u, color='green', narrow=4):
     """Plot velocity profile as y vs y
