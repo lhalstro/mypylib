@@ -768,6 +768,14 @@ def dfStatsTimeseries(df, window=None, windowend=None, windowpar=None):
 
     return s
 
+def dfPrint(df):
+    """ Print all rows/columns of a dataframe
+    """
+    with pd.option_context('display.max_rows', None, 'display.max_columns', None):
+        print(df)
+
+
+
 # ########################################################################
 # ### PLOTTING ###########################################################
 # ########################################################################
