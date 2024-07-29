@@ -190,7 +190,8 @@ def FindBetween(string, before=None, after=None):
             return None
 
 def str2numeric(string):
-    #convert string to int or float, if appropriate
+    """convert string to int or float, if appropriate
+    """
     try:
         #int first because it will fail if value is a float
         string = int(string)
@@ -200,6 +201,19 @@ def str2numeric(string):
         except ValueError:
             pass
     return string
+
+def str2bool(val):
+    """ Attempt to convert a string to bool, based on contents
+    ('True' --> `True`, 'False' --> `False`)
+    """
+    bools = {'True':True, 'False':False}
+    if isinstance(val,str) and val in bools: val = bools[val]
+    return val
+
+def str2numericbool(val):
+    """ Attempt to convert given string to an int, float, or bool.
+    """
+    return str2bool(str2numeric(val))
 
 def listify(nonlist, n=1):
     """Given a single item, return a list n long (default 1).
@@ -687,6 +701,72 @@ def dfStats(df):
         s = pd.concat([s, s1])
     return s
 
+def dfStatsTimeseries(df, window=None, windowend=None, windowpar=None):
+    """ Get average, st. dev., min/max of time series data OVER SPECIFIED INTERVAL FOR NOW
+    window    --> averaging window, bounded by `windowend` [1000] (-1 will use entire dataset from `windowend` to start, or reverse if negative)
+    windowend --> end of averaging window [end of series, negative window] (use negative value to spec. start of series, positive window)
+    windowpar --> time parameter to average over ['iter']
+    """
+
+    if windowpar is None:
+        windowpar = 'iter'
+    #Failure options if averaging window parameter isnt in dataset
+    if windowpar not in df:
+        if windowpar.lower() in df:
+            windowpar = windowpar.lower()
+        elif windowpar.upper() in df:
+            windowpar = windowpar.upper()
+        else:
+            raise ValueError("{} is not in time-series, can't set the averaging window with it".format(windowpar))
+
+    #default avg window size (assumes windowpar='iter')
+    if window is None:
+        window = 1000
+
+    #default averaging window interval endpoint is end of data time history
+    if windowend is None:
+        windowend = max(df[windowpar])
+
+
+
+    if windowend < 0:
+        #user is specifying start of a forward interval, instead of end of a reverse interval
+        windowstart = abs(windowend)
+        if window < 0 or windowstart + window > max(df[windowpar]):
+            #forward avg window between windowstart and end of data (because user specified or fixed window was too big)
+            windowend = max(df[windowpar])
+            window = windowend - windowstart
+        else:
+            #forward avg window of specified size starting at windowstart
+            windowend = windowstart + window
+    else:
+        #user is specifying start of a backwards averaging interval
+        if window < 0 or windowend - window < min(df[windowpar]):
+            #backward average between windowend and beginning of data (because user specified or fixed window was too big)
+            windowstart = min(df[windowpar])
+            window = windowend - windowstart
+        else:
+            #backwards avg window of specified size starting at windowstart
+            windowstart = windowend - window
+
+
+    # df = dfTrimToBounds(df, windowpar, lim=[windowstart, windowend]).drop(windowpar, axis=1)
+    df = dfSubset(df, tkey=windowpar, tmin=windowstart, tmax=windowend).drop(windowpar, axis=1)
+
+    #COMPUTE MEAN, MIN/MAX, STD
+    s = dfStats(df)
+
+    #tag with averaging details
+    s['windowpar'] = windowpar
+    s['window'] = window
+    s['windowstart'] = windowstart
+    s['windowend']   = windowend
+
+
+    # m = df.min()
+    # m.index = m.index + "_min"
+
+    return s
 
 # ########################################################################
 # ### PLOTTING ###########################################################
