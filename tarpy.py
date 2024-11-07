@@ -165,7 +165,13 @@ def pigz_list(files, retcmd=False):
         if not success: raise ValueError("pigz unsuccessful, probably because too many files in argument")
         return
 
-
+def Archive_Name(tarname, compress=False):
+    """ Return the name of the tarfile archive that will be created by any of
+    the Archive subroutines in this module (`Archive_Glob`, `Archive_Files`, etc.)
+    """
+    tarext = "gz.tar" if compress else "tar" #tar extension, accounting for file compression
+    tarfilename = "{}.{}".format(tarname, tarext)
+    return tarfilename
 
 def Archive_Glob(globpattern, tarname=None, compress=False, retcmd=False, verbose=False):
     """ Create archive of files matching globpattern.
@@ -204,17 +210,21 @@ def Archive_Glob(globpattern, tarname=None, compress=False, retcmd=False, verbos
     ccmd( "tar -{}f {}.{} {} --remove-files".format(createappend, tarname, tarext, curglobpattern) )
 
 
-def Archive_Files(files, tarname, compress=False, retcmd=False, verbose=False):
+def Archive_Files(files=None, tarname=None, compress=False, retcmd=False, retfilename=False, verbose=False):
     """ Create archive of given list of files.
     Automatically append if existing tar file.
     Compress before archive is faster and allows incremental archive.
 
     Args:
-        files: list of files to archive
-        tarname: filename header for tar archive file
+        files: list of files to archive [REQUIRED] (except for retfilename=True)
+        tarname: filename header for tar archive file [REQUIRED]
         compress: also compress each file individually to reduce archive size [False]
         retcmd: return command as string to be executed later instead of executing now [False]
+        retfilename: return the name of the archive file that would be created (so you can test if it already exists) [False]
     """
+    if retfilename: return Archive_Name(tarname, compress=compress)
+    if files is None:   raise ValueError("`tarpy.Archive_Files`: `files` is a required input")
+    if tarname is None: raise ValueError("`tarpy.Archive_Files`: `tarname` is a required input")
     ccmd = cmdv if verbose else cmd #verbose command option
     commands = [] #list of command line arguments to perform tar operations
 
