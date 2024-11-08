@@ -129,7 +129,7 @@ def pigz_list(files, retcmd=False):
         #read pigz input from file, split into reasonable group sizes with xargs
         inp = "pigz_{}.inp".format(time.time())
         with open(inp, "w") as f: f.write( "\n".join(files) ) #THIS IS NOT RELIABLE WITH `retcmd` OPTION, BUT I CANT GET ECHO AND QUOTES TO BEHAVE**********************************************
-        command = "cat pigz_{}.inp | xargs pigz ; rm {}".format(inp, inp)
+        command = "cat {} | xargs pigz ; rm {}".format(inp, inp)
     return command
 
 
