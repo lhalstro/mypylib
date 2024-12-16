@@ -11,6 +11,7 @@ import os
 import errno
 import re
 import ntpath
+import inspect
 # import matplotlib.pyplot as plt
 import numpy as np
 from scipy.interpolate import interp1d
@@ -52,6 +53,14 @@ def command(cmd):
     #print proc_stdout
     proc_stdout = process.communicate()[0].strip()
     return process, proc_stdout
+
+def DevelPrint(message, user='lhalstro'):
+    """Print devel message ("DEVEL `scriptname`: message") (only for specified user(s)).
+    """
+    if isinstance(user, str): user = [user]
+    if not cmd("echo $USER") in user: return
+    scriptname = os.path.basename(inspect.stack()[1][1])
+    print('DEVEL `{}`: {}'.format(scriptname, message))
 
 def GetHomeDir():
     """ Return path to current user's home directory
