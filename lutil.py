@@ -984,7 +984,21 @@ def dfPrint(df):
 #         plt.show()
 #     return polyfit
 
+def distance(x1, y1, x2, y2): return np.sqrt( (x2 - x1)**2 + (y2 - y1)**2 )
 
+def dfConnectTheDots(df,xkey,ykey):
+    """ Arrange a list of points by shortest distance between each point.
+    Assumes points are arranged on a 2D plane.
+    E.g. Sort a point cloud into a continuous curve (e.g. airfoil)
+    """
+    df = df.drop_duplicates([xkey,ykey])
+    inds = [df.index[0]]
+    for i in range(len(df)-1):
+        row = df.loc[inds[-1],:]
+        d = df.copy().drop(inds)
+        d['mindist'] = d.apply(lambda r: distance(row[xkey], row[ykey], r[xkey], r[ykey]), axis=1)
+        inds.append(d.sort_values('mindist').index[0])
+    return df.loc[inds]
 
 
 ########################################################################
