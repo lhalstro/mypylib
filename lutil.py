@@ -321,10 +321,13 @@ def OrderedGlob(globpattern=None, header=None):
     df = pd.concat(dfs, ignore_index=True)
     return df
 
-def parallelizer(inp, func, nproc=1):
+def parallelizer(inp=None, func=None, nproc=1):
     """ Run function `func` with input any given item in list `inp` in `nproc` parallel processes
     NOTE: use functools.partial to fix other inputs of function
     """
+    req_args = ['inp','func']
+    empty_req_args = [k for k,v in pd.Series(locals())[req_args].items() if v is None]
+    if len(empty_req_args) > 0: raise ValueError("Empty required input: {}".format(', '.join(empty_req_args)))
     if nproc > len(inp): nproc = len(inp)
     if nproc > 1:
         import multiprocessing as mp #only import if needed (in case not installed)
