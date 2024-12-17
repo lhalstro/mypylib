@@ -321,6 +321,27 @@ def OrderedGlob(globpattern=None, header=None):
     df = pd.concat(dfs, ignore_index=True)
     return df
 
+def parallelizer(inp, func, nproc=1):
+    """ Run function `func` with input any given item in list `inp` in `nproc` parallel processes
+    NOTE: use functools.partial to fix other inputs of function
+    """
+    if nproc > len(inp): nproc = len(inp)
+    if nproc > 1:
+        import multiprocessing as mp #only import if needed (in case not installed)
+        p = mp.Pool(nproc)
+        out = p.map(func, inp)
+    else:
+        out = []
+        for I in inp:
+            out.append(func(I))
+    return out
+
+def dfparallelizer(df, func, nproc=1):
+    """ Assumes the input to `func` is each row of the dataframe `df`.
+    """
+    indices, rows = zip(*df.iterrows())
+    parallelizer(rows, func, nproc=nproc)
+
 # ======================================================================
 # PANDAS UTILITIES
 # ======================================================================
