@@ -12,12 +12,13 @@ import sys
 import os
 if os.path.isfile('/home/robinson/lib/python'):
     sys.path.append('/home/robinson/lib/python')
-# else:
+    import cdat
+else:
     # sys.path.append('SourceCode')
+    from cdat import cdat
 
 import numpy as np
 import pandas as pd
-import cdat
 import pickle
 
 def Cdat2Pandas(cd):
