@@ -176,15 +176,15 @@ colorxkcd = get_palette(xkcdcolors, colorkind='xkcd') #actual rgbs that matplotl
 colordictxkcd = {k:colorxkcd[i] for i,k in enumerate(["blue", "orange",  "purple",  "green", "red" ,  'brown',  "pink",   "gray",   "yellow",  "light blue", "aqua"     ])}
 
 #corresponding dark/light color pairs
-xkcddark = ["windows blue", "tangerine",  "dusty purple",    "viridian",           "cherry" ,      ]
+xkcddark = ["windows blue", "tangerine",  "dusty purple",    "viridian",           "cherry" ,   "black"   ]
 xkcdhex =    ['#3778bf',       "#ff9408" ,  '#825f87',         '#5ca904',            '#cf0234',    ]
-xkcdlight =[  "sky blue",   "sunflower",  "lightish purple", "leaf green",  "cherry red" , ]
+xkcdlight =[  "sky blue",   "sunflower",  "lightish purple", "leaf green",  "cherry red" ,      "gray" ]
 xkcdhex =    [  "#75bbfd" ,  "#??????" ,  '#a552e6',           '#??????',           '#??????',    ]
 colordark = get_palette(xkcddark, colorkind='xkcd') #actual rgbs that matplotlib likes
 colorlight = get_palette(xkcdlight, colorkind='xkcd') #actual rgbs that matplotlib likes
 colordarklight = [x for x in zip(colordark, colorlight)]
-colordictdark  = {k:colordark[i]  for i,k in enumerate(["blue", "orange",  "purple",  "green", "red" ])}
-colordictlight = {k:colorlight[i] for i,k in enumerate(["blue", "orange",  "purple",  "green", "red" ])}
+colordictdark  = {k:colordark[i]  for i,k in enumerate(["blue", "orange",  "purple",  "green", "red", "black" ])}
+colordictlight = {k:colorlight[i] for i,k in enumerate(["blue", "orange",  "purple",  "green", "red", "black" ])}
 
 
 xkcdrainbow =       ["cherry" ,   "tangerine",    "puke yellow",  "leaf green",  "windows blue",  "dusty purple",  'light brown',  "greyish",   "salmon pink",     "sky blue", "aqua"     ]
