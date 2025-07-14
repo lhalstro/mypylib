@@ -512,7 +512,7 @@ def PlotStart(xlabel=None, ylabel=None, nrow=1, ncol=1, width_factor=None, heigh
     return fig, ax
 
 def PlotFinish(fig, ax, savename=None, xlim=None, ylim=None, noautolegend=False, legloc=None):
-    """ Finish up a plot: set axis limits nicely, add legend, save to file.
+    """ Finish up a plot: set axis limits nicely, add legend, save to file, close plot.
     TODO: HANDLE MULTIPLE SUBPLOTS
     Args:
         savename: path to save figure to (file extension optional [png]) [None] (do not save, return figure objects)
