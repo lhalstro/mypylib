@@ -335,6 +335,7 @@ mpl_params = {
         #FIGURE PROPERTIES
         'figure.figsize' : (7,6),   #square plots
         'savefig.bbox'   : 'tight', #reduce whitespace in saved figures
+        'savefig.format' : 'png',   #default figure filetype
 
         #LEGEND PROPERTIES
         'legend.framealpha'     : 0.75,
@@ -472,12 +473,69 @@ def KillFakeFigure(curfig, curax, fakefig):
     plt.sca(curax)
 
 
-def PlotStart(nrow=1, ncol=1):
-    """ Start a plot for a single figure or a variable layout for subplots
-    Default is one subplot
+def PlotStart(xlabel=None, ylabel=None, nrow=1, ncol=1, width_factor=None, height_factor=None, minoraxisgrid=None, wf=None, hf=None):
+    """ Start a plot for a single figure or a variable layout for subplots.
+    Default: 1 subplot, show minor axis grid, square aspect ratio
+    Args:
+        nrow: number of subplots horizontally [1]
+        ncol: number of subplots vertically   [1]
+        width_factor:  float: multiplier for plot width [7] (for a square plot)
+        height_factor: float: multiplier for plot height [6] (for a square plot)
+        wf: float: alias for width_factor
+        hf: float: alias for height_factor
+        minoraxisgrid: int: show secondary axis grid with `subgrid` lines [5]
+    TODO:
+    - HANDLE MULTIPLE SUBPLOTS
+    - PLOT TITLE
     """
-    fig, ax = plt.subplots(nrow, ncol, figsize=[7*ncol, 6*nrow])
+    values = [width_factor, wf]
+    if all(v is None for v in values):
+        width_factor=7
+    elif all(v is not None for v in values):
+        raise ValueError("`width_factor` and `wf` double defined")
+    else:
+        width_factor=[v for v in values  if v is not None][0]
+    values = [height_factor, hf]
+    if all(v is None for v in values):
+        height_factor=6
+    elif all(v is not None for v in values):
+        raise ValueError("`height_factor` and `hf` double defined")
+    else:
+        height_factor=[v for v in values  if v is not None][0]
+
+    fig, ax = plt.subplots(nrow,ncol, figsize=[width_factor*ncol, height_factor*nrow])
+    if xlabel is not None: ax.set_xlabel(xlabel)
+    if ylabel is not None: ax.set_ylabel(ylabel)
+    if minoraxisgrid is None: minoraxisgrid=5
+
+    if isinstance(minoraxisgrid,(int,np.int64)): Grid_Minor(ax, nx=minoraxisgrid, ny=minoraxisgrid) #minor axis grid
     return fig, ax
+
+def PlotFinish(fig, ax, savename=None, xlim=None, ylim=None, noautolegend=False, legloc=None):
+    """ Finish up a plot: set axis limits nicely, add legend, save to file.
+    TODO: HANDLE MULTIPLE SUBPLOTS
+    Args:
+        savename: path to save figure to (file extension optional [png]) [None] (do not save, return figure objects)
+        legloc: str: location of plot legend. Standard `loc` options and `lplot` 'outside' options (e.g. 'outsideright') ['best']
+    """
+    if xlim is not None: ax.set_xlim(xlim)
+    if ylim is not None:
+        ax.set_ylim(ylim)
+    elif xlim is not None:
+        autoscale_axis(ax, whichax='y', pad=0.0, relative=False, inplace=True)
+    if not noautolegend:
+        if legloc is not None:
+            if 'outside' in legloc:
+                Legend(ax, outside=legloc.replace('outside',''))
+            else:
+                Legend(ax, loc=legloc)
+        else:
+            Legend(ax)
+    if savename is not None:
+        SavePlot(savename)
+        plt.close()
+    else:
+        return fig, ax
 
 def PlotStartOld(title, xlbl, ylbl, horzy='vertical', figsize='square',
                 ttl=None, lbl=None, tck=None, leg=None, box=None,
@@ -1358,6 +1416,7 @@ def GetPlotBbox(ypad=0.5, xpad=0, shft=0.1, offtop=0.5):
 def SavePlot(savename, overwrite=1, bbox='tight', pad=None, fig=None, **kwargs):
     """Save file given save path.  Do not save if file exists
     or if variable overwrite is 1
+    savename --> path to save figure to (file extension optional [png])
     bbox --> 'tight' for tight border (best for individual plots)
              'fixed' for fixed-size border (best for plots that need to be same size)
              'fixedsquare' same as 'fixed' but final shape is square, not rect
