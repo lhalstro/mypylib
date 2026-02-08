@@ -473,7 +473,7 @@ def KillFakeFigure(curfig, curax, fakefig):
     plt.sca(curax)
 
 
-def PlotStart(xlabel=None, ylabel=None, nrow=1, ncol=1, width_factor=None, height_factor=None, minoraxisgrid=None, wf=None, hf=None):
+def PlotStart(xlabel=None, ylabel=None, nrow=1, ncol=1, width_factor=None, height_factor=None, minoraxisgrid=None, wf=None, hf=None, title=None):
     """ Start a plot for a single figure or a variable layout for subplots.
     Default: 1 subplot, show minor axis grid, square aspect ratio
     Args:
@@ -508,10 +508,14 @@ def PlotStart(xlabel=None, ylabel=None, nrow=1, ncol=1, width_factor=None, heigh
     if ylabel is not None: ax.set_ylabel(ylabel)
     if minoraxisgrid is None: minoraxisgrid=5
 
-    if isinstance(minoraxisgrid,(int,np.int64)): Grid_Minor(ax, nx=minoraxisgrid, ny=minoraxisgrid) #minor axis grid
+    #supertitle
+    if title is not None: fig.suptitle(title, y=1)
+
+    #minor axis grid
+    if isinstance(minoraxisgrid,(int,np.int64)): Grid_Minor(ax, nx=minoraxisgrid, ny=minoraxisgrid)
     return fig, ax
 
-def PlotFinish(fig, ax, savename=None, xlim=None, ylim=None, noautolegend=False, legloc=None):
+def PlotFinish(fig, ax, savename=None, xlim=None, ylim=None, noautolegend=False, legloc=None, pad=0.0):
     """ Finish up a plot: set axis limits nicely, add legend, save to file, close plot.
     TODO: HANDLE MULTIPLE SUBPLOTS
     Args:
@@ -522,7 +526,7 @@ def PlotFinish(fig, ax, savename=None, xlim=None, ylim=None, noautolegend=False,
     if ylim is not None:
         ax.set_ylim(ylim)
     elif xlim is not None:
-        autoscale_axis(ax, whichax='y', pad=0.0, relative=False, inplace=True)
+        autoscale_axis(ax, whichax='y', pad=pad, relative=False, inplace=True)
     if not noautolegend:
         if legloc is not None:
             if 'outside' in legloc:
@@ -534,8 +538,7 @@ def PlotFinish(fig, ax, savename=None, xlim=None, ylim=None, noautolegend=False,
     if savename is not None:
         SavePlot(savename)
         plt.close()
-    else:
-        return fig, ax
+    return fig, ax
 
 def PlotStartOld(title, xlbl, ylbl, horzy='vertical', figsize='square',
                 ttl=None, lbl=None, tck=None, leg=None, box=None,
@@ -1255,7 +1258,7 @@ def AddlLegend(ax, leg1, *args, outside=None, **kwargs):
         ax: matplotlib axis object
         leg1: legend that exists before this one (need to make it reappear after it hides)
         *args: nothing, labels, or handles and labels (just like ax.legend)
-        outside: `str` locate legend outside of plot frame. Default: inside. Options: 'top', 'bottom', 'right'
+        outside: `str` locate legend outside of plot frame. Default: inside. Options: 'top', 'bottom', 'right', 'upperrightcorner', 'rightup', 'rightlo'
         **kwargs: matplotlib.legend kwargs
     """
 
@@ -1622,6 +1625,7 @@ def autoscale_axis(ax, whichax='y', pad=0.0, relative=False, inplace=True):
         if new_top > top: top = new_top
 
     #set new axis limits
+    if any(np.isnan([bot,top])) or any(np.isinf([bot,top])): inplace = False
     if inplace: getattr(ax, "set_{}lim".format(whichax))(bot,top)
     #return new axis limits
     return bot, top

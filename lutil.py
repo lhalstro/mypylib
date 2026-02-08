@@ -884,8 +884,9 @@ def df2tex(df, filename=None, dec=4, exp=False, align='c', boldcol=True, boldrow
         out = out.replace("NaN", "   ")
 
     if filename != None:
+        if filename[-4:] != '.tex': filename += '.tex'
         #WRITE TEX TABLE TO FILE
-        f = open('{}.tex'.format(filename), 'w')
+        f = open(filename, 'w')
         f.write(out)
         f.close()
 
