@@ -131,20 +131,9 @@ class UnitTracker():
         #new units entry
         s = pd.Series(name=par, data={'unit':unit,'info':info})
 
-        #If this is a duplicate entry, replace old entry
-        if par in self.pars.index:
-            self.pars.loc[par] = s
-        else:
-            #Add new unit entry to units dataframe
-            self.pars = self.pars.append(s,
-            # ignore_index=True
-            )
-
-        # #Add new unit entry to units dataframe
-        # self.pars = self.pars.append(
-        #     pd.Series(name=par, data={'unit':unit,'info':info}),
-        #     # ignore_index=True
-        #     )
+        # Using .loc to add or update a row.
+        # If 'par' is a new index, it will be added. If it exists, it will be updated.
+        self.pars.loc[par] = s
 
     def GetDegAngs(self, ):
         """ For all angles in radians, compute them in degrees
@@ -246,22 +235,22 @@ convdf = pd.DataFrame([
 conversions = dict(convdf['conv'])
 
 #MORE CONVERSIONS (DERIVATIVE)
+derived_units = [
+    #AREA
+    pd.Series(name='m2',  data={'conv':1.0,                  'info':'m^2',  'sys':'SI',   'std':1, 'type':'area' }),
+    pd.Series(name='ft2', data={'conv':conversions['ft']**2, 'info':'ft^2', 'sys':'USCS', 'std':1, 'type':'area'}),
+    #SPEED
+    pd.Series(name='mps',  data={'conv':1.0,                'info':'m/s',  'sys':'SI',   'std':1, 'type':'speed' }),
+    pd.Series(name='ftps', data={'conv':conversions['ft'],  'info':'ft/s', 'sys':'USCS', 'std':1, 'type':'speed'}),
+    #DENSITY
+    pd.Series(name='kgpm3',    data={'conv':1.0, 'info':'Density (kg/m^3)',    'sys':'SI',   'std':1, 'type':'density' }),
+    pd.Series(name='slugpft3', data={'conv':conversions['slug']/conversions['ft']**3, 'info':'Density (slug/ft^3)', 'sys':'USCS', 'std':1 , 'type':'density'}),
+    #DYNAMIC VISCOSITY
+    pd.Series(name='kgspm',    data={'conv':1.0, 'info':'Dynamic Viscosity (mu) [kg*s/m]',    'sys':'SI',   'std':1, 'type':'dvisc' }),
+    pd.Series(name='slugspft', data={'conv':conversions['slug']/conversions['ft'], 'info':'Dynamic Viscosity (mu) [slug*s/ft]', 'sys':'USCS', 'std':1 , 'type':'dvisc'}),
+]
+convdf = pd.concat([convdf, pd.DataFrame(derived_units)])
 
-#AREA
-convdf = convdf.append(pd.Series(name='m2',  data={'conv':1.0,                  'info':'m^2',  'sys':'SI',   'std':1, 'type':'area' }))
-convdf = convdf.append(pd.Series(name='ft2', data={'conv':conversions['ft']**2, 'info':'ft^2', 'sys':'USCS', 'std':1, 'type':'area'}))
-
-#SPEED
-convdf = convdf.append(pd.Series(name='mps',  data={'conv':1.0,                'info':'m/s',  'sys':'SI',   'std':1, 'type':'speed' }))
-convdf = convdf.append(pd.Series(name='ftps', data={'conv':conversions['ft'],  'info':'ft/s', 'sys':'USCS', 'std':1, 'type':'speed'}))
-
-#DENSITY
-convdf = convdf.append(pd.Series(name='kgpm3',    data={'conv':1.0, 'info':'Density (kg/m^3)',    'sys':'SI',   'std':1, 'type':'density' }))
-convdf = convdf.append(pd.Series(name='slugpft3', data={'conv':conversions['slug']/conversions['ft']**3, 'info':'Density (slug/ft^3)', 'sys':'USCS', 'std':1 , 'type':'density'}))
-
-#DYNAMIC VISCOSITY
-convdf = convdf.append(pd.Series(name='kgspm',    data={'conv':1.0, 'info':'Dynamic Viscosity (mu) [kg*s/m]',    'sys':'SI',   'std':1, 'type':'dvisc' }))
-convdf = convdf.append(pd.Series(name='slugspft', data={'conv':conversions['slug']/conversions['ft'], 'info':'Dynamic Viscosity (mu) [slug*s/ft]', 'sys':'USCS', 'std':1 , 'type':'dvisc'}))
 
 #dict to simplify conversion syntax
 conversions = dict(convdf['conv'])
