@@ -145,7 +145,7 @@ class UnitTracker():
         if df.empty:
             print('warning no units! units.py not computing angles units in degrees')
             return
-        elif 'rad' not in df:
+        elif 'rad' not in self.pars['unit'].unique():
             print('warning no angles! units.py not computing angles units in degrees')
             return
 
