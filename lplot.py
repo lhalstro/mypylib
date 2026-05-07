@@ -507,12 +507,16 @@ def PlotStart(xlabel=None, ylabel=None, nrow=1, ncol=1, width_factor=None, heigh
     if xlabel is not None: ax.set_xlabel(xlabel)
     if ylabel is not None: ax.set_ylabel(ylabel)
     if minoraxisgrid is None: minoraxisgrid=5
+    if isinstance(minoraxisgrid,(int,np.int64)):
+        minoraxisgrid = (minoraxisgrid,minoraxisgrid)
+    elif not isinstance(minoraxisgrid,(list,tuple,np.array)):
+        raise TypeError("minoraxisgrid must be int or tuple")
 
     #supertitle
     if title is not None: fig.suptitle(title, y=1)
 
     #minor axis grid
-    if isinstance(minoraxisgrid,(int,np.int64)): Grid_Minor(ax, nx=minoraxisgrid, ny=minoraxisgrid)
+    Grid_Minor(ax, nx=minoraxisgrid[0], ny=minoraxisgrid[1])
     return fig, ax
 
 def PlotFinish(fig, ax, savename=None, xlim=None, ylim=None, noautolegend=False, legloc=None, pad=0.0):
