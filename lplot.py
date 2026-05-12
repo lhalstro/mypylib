@@ -25,7 +25,41 @@ import sys
 import re
 
 import matplotlib
-if sys.platform != 'darwin': #not an issue on mac
+
+def is_jupyter():
+    """
+    Checks if the code is running in a Jupyter environment (notebook or console).
+
+    This function relies on the `get_ipython` magic function, which is globally
+    available in IPython environments. It checks the name of the running shell
+    class to determine if it's the specific one used by Jupyter.
+
+    Returns:
+        bool: True if running in a Jupyter environment, False otherwise.
+    """
+    try:
+        # This function is globally available in IPython environments.
+        shell = get_ipython().__class__.__name__
+
+        # 'ZMQInteractiveShell' is the class name for the kernel used by
+        # Jupyter notebooks and Jupyter consoles.
+        if shell == 'ZMQInteractiveShell':
+            return True
+        # 'TerminalInteractiveShell' is the class name for the standard
+        # IPython terminal. We don't want to trigger notebook-specific
+        # behavior here.
+        elif shell == 'TerminalInteractiveShell':
+            return False
+        # Other environments like Spyder might have their own shells.
+        else:
+            return False
+    except NameError:
+        # The 'get_ipython' function doesn't exist, so we're definitely not
+        # in an IPython/Jupyter environment.
+        return False
+
+
+if not is_jupyter() and sys.platform != 'darwin': #not an issue on mac
     if 'DISPLAY' not in os.environ:
         #Compatiblity mode for plotting on non-X11 server (also need to call this in your local script)
         matplotlib.use('Agg')
