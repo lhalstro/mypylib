@@ -10,8 +10,8 @@ DESCRIPTION:  Convert between cdat and pandas data objects
 
 import sys
 import os
-if os.path.isfile('/home/robinson/lib/python'):
-    sys.path.append('/home/robinson/lib/python')
+if os.path.exists('/software/user/installs/aero_utils/v1.0/python/projects/cdat'):
+    sys.path.append('/software/user/installs/aero_utils/v1.0/python/projects/cdat')
     import cdat
 else:
     # sys.path.append('SourceCode')
