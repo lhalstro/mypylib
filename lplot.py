@@ -230,6 +230,16 @@ bigrainbowxkcd =       ["cherry" ,   "tangerine",    "puke yellow",  "leaf green
 bigrainbowhex =    ['#cf0234',    "#ff9408" ,    '#c2be0e',      '#5ca904',     '#3778bf',       '#825f87',        '#ad8150',      '#a8a495',  '#??????',     '#??????',     '#??????',    "#75bbfd",  '#a552e6',           "#fe7b7c"     , "#13eac9",  ]
 colorrainbowbig = get_palette(bigrainbowxkcd, colorkind='xkcd')
 
+
+# CUSTOM COLORS
+matplotlib.colors.get_named_colors_mapping().update({
+    'cuipurple': (125/255, 101/255, 158/255),
+    'ucdgold'  : (201/255, 151/255, 0/255),
+    'ucdblue'  : (0/255,   40/255,  85/255),
+    'nasared'  : (228/255, 0/255,   43/255),
+    'nasablue' : (0/255,   50/255,  160/255),
+})
+
 #Line Styles
 mark = 5
 minimark = 0.75
