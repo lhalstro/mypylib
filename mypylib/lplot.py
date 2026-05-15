@@ -211,9 +211,9 @@ colordictxkcd = {k:colorxkcd[i] for i,k in enumerate(["blue", "orange",  "purple
 
 #corresponding dark/light color pairs
 xkcddark = ["windows blue", "tangerine",  "dusty purple",    "viridian",           "cherry" ,   "black"   ]
-xkcdhex =    ['#3778bf',       "#ff9408" ,  '#825f87',         '#5ca904',            '#cf0234',    ]
+xkcddarkhex =['#3778bf',       "#ff9408" ,  '#825f87',         '#5ca904',            '#cf0234',    ]
 xkcdlight =[  "sky blue",   "sunflower",  "lightish purple", "leaf green",  "cherry red" ,      "gray" ]
-xkcdhex =    [  "#75bbfd" ,  "#??????" ,  '#a552e6',           '#??????',           '#??????',    ]
+xkcdlighthex =[  "#75bbfd" ,  "#??????" ,  '#a552e6',           '#??????',           '#??????',    ]
 colordark = get_palette(xkcddark, colorkind='xkcd') #actual rgbs that matplotlib likes
 colorlight = get_palette(xkcdlight, colorkind='xkcd') #actual rgbs that matplotlib likes
 colordarklight = [x for x in zip(colordark, colorlight)]
@@ -239,6 +239,8 @@ matplotlib.colors.get_named_colors_mapping().update({
     'nasared'  : (228/255, 0/255,   43/255),
     'nasablue' : (0/255,   50/255,  160/255),
 })
+print({'xkcd'+k.replace(' ',''):v for k,v in zip(colordictxkcd.keys(),xkcdhex)})
+matplotlib.colors.get_named_colors_mapping().update({'xkcd'+k.replace(' ',''):v for k,v in zip(colordictxkcd.keys(),xkcdhex)})
 
 #Line Styles
 mark = 5
