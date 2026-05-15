@@ -239,7 +239,6 @@ matplotlib.colors.get_named_colors_mapping().update({
     'nasared'  : (228/255, 0/255,   43/255),
     'nasablue' : (0/255,   50/255,  160/255),
 })
-print({'xkcd'+k.replace(' ',''):v for k,v in zip(colordictxkcd.keys(),xkcdhex)})
 matplotlib.colors.get_named_colors_mapping().update({'xkcd'+k.replace(' ',''):v for k,v in zip(colordictxkcd.keys(),xkcdhex)})
 
 #Line Styles
