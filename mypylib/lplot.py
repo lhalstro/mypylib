@@ -1277,6 +1277,12 @@ def Legend(ax, *args, outside=None, font=None, **kwargs):
     else:
         newkwargs['prop']['family'] = font
 
+    if 'fontsize' in kwargs:
+        #this kwarg isn't sticking for some reason, just put it in manually
+        if 'prop' not in kwargs: kwargs['prop'] = {}
+        #add fontsize to prop dict
+        kwargs['prop']['size'] = kwargs['fontsize']
+
     #Add keys in newkwargs to kwargs, but don't replace existing keys
     mykwargs = {**newkwargs, **kwargs}
     #also merge sub-dict props (done by default if user didn't specific prop in kwargs)
