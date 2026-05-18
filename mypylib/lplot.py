@@ -813,7 +813,7 @@ def MoreTicks(ax, ndouble=1, whichax='y'):
         raise IOError("Must choose 'x' or 'y' axes to sync ticks")
     xy = whichax.lower()
 
-    def DoubleTicks(vals, ndoubl=1):
+    def DoubleTicks(vals, ndouble=1):
         for k in range(ndouble):
             newvals = list([ vals[0] ])
             for i in range(1, len(vals)):
