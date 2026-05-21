@@ -180,7 +180,7 @@ def FindBetween(string, before=None, after=None):
     after  --> [default: end of line]
     """
     if before is None: before = '^' #default is beginning of line
-    before = before.replace("(", "\(").replace(")", "\)") #make matching parentheses work
+    before = before.replace("(", r"\(").replace(")", r"\)") #make matching parentheses work
 
     if after is None:
         #return everything after `before`
@@ -191,7 +191,7 @@ def FindBetween(string, before=None, after=None):
             return None
     else:
         #return text between `before` and `after`
-        after = after.replace("(", "\(").replace(")", "\)")
+        after = after.replace("(", r"\(").replace(")", r"\)")
         match = re.search('(?<={})(?P<value>.*?)(?={})'.format(before, after), string)
         if match is not None:
             return match.group('value')
@@ -272,7 +272,7 @@ def OrderedGlob(globpattern=None, header=None):
         #get glob match for each file
             #(remove boilerplate portion of the glob pattern, and delete any wildcards in square brackets (e.g. `[0-9]`) )
             #if filename is a path, dont bother matching the path, just the filename+extension (`ntpath.basename`)
-        pattern = re.sub( "\[.*?\]", "", ntpath.basename(gp)).split("*")
+        pattern = re.sub( r"\[.*?\]", "", ntpath.basename(gp)).split("*")
         #if string on one side of '*' is empty, use `None` so `FindBetween` will match default (beginning/end of string)
         for i, x in enumerate(pattern):
             if x == '': pattern[i] = None
@@ -924,13 +924,13 @@ def TexTable(filename, A, rows, cols, decimal_points='',
     with open(filename, 'w') as f:
         f.write('\\begin{table}[htb]\n')
         f.write('\\begin{center}\n')
-        f.write('\caption{' + caption + '}\n')
+        f.write(r'\caption{' + caption + '}\n')
 
         #TABULAR PORTION
         f.write('\\begin{tabular}{|c | ' + col_sep.join(['c'] * (len(cols)-1)) + '|}\n')
-        f.write('\hline\n')
+        f.write(r'\hline\n')
         f.write(' & '.join([str(col) for col in cols]) + ' \\\\\n')
-        f.write('\hline\n')
+        f.write(r'\hline\n')
         for i, row in enumerate(rows):
             X = []
             for x in A[i,:]:
@@ -942,13 +942,13 @@ def TexTable(filename, A, rows, cols, decimal_points='',
                     fmt = '{:.' + str(decimal_points) + 'f}'
                 X.append(fmt.format(x))
             f.write(row + ' & ' + ' & '.join(X) + ' \\\\\n')
-            if lines==1: f.write('\hline\n')
-        if lines !=1: f.write('\hline\n')
-        f.write('\end{tabular}\n')
+            if lines==1: f.write(r'\hline\n')
+        if lines !=1: f.write(r'\hline\n')
+        f.write(r'\end{tabular}\n')
 
-        f.write('\label{' + label + '}\n')
-        f.write('\end{center}\n')
-        f.write('\end{table}\n')
+        f.write(r'\label{' + label + '}\n')
+        f.write(r'\end{center}\n')
+        f.write(r'\end{table}\n')
 
 def TexTabular(filename, A, rows, cols, decimal_points=''):
     """Given matrix of data, column/row titles, write tabular poriton of
@@ -978,9 +978,9 @@ def TexTabular(filename, A, rows, cols, decimal_points=''):
 
     with open(filename, 'w') as f:
         f.write('\\begin{tabular}{|c | ' + col_sep.join(['c'] * (len(cols)-1)) + '|}\n')
-        f.write('\hline\n')
+        f.write(r'\hline\n')
         f.write(' & '.join([str(col) for col in cols]) + ' \\\\\n')
-        f.write('\hline\n')
+        f.write(r'\hline\n')
         for i, row in enumerate(rows):
             X = []
             for x in A[i,:]:
@@ -992,9 +992,9 @@ def TexTabular(filename, A, rows, cols, decimal_points=''):
                     fmt = '{:.' + str(decimal_points) + 'f}'
                 X.append(fmt.format(x))
             f.write(row + ' & ' + ' & '.join(X) + ' \\\\\n')
-            if lines==1: f.write('\hline\n')
-        if lines !=1: f.write('\hline\n')
-        f.write('\end{tabular}')
+            if lines==1: f.write(r'\hline\n')
+        if lines !=1: f.write(r'\hline\n')
+        f.write(r'\end{tabular}')
 
 ########################################################################
 ### MATH ###############################################################
