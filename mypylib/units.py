@@ -199,7 +199,7 @@ class UnitTracker():
         rootname = path.stem
         ext = path.suffix if path.suffix != '' else '.csv'
         #save data
-        self.GetData().to_csv(f"{rootname}.{ext}", index=False)
+        self.GetData().to_csv(f"{rootname}{ext}", index=False)
         #save units and info
         self.pars.reset_index(names='parameter').to_csv(f"info_{rootname}{ext}", index=False)
 
