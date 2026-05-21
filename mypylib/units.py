@@ -46,6 +46,8 @@ class UnitTracker():
                 data=None,
                 # unit=None,
                 pars=None,
+                verbose=True,
+                debug=False,
                 ):
         """ Constructor for OVERFLOW case object
 
@@ -58,6 +60,8 @@ class UnitTracker():
         """
 
         self.name = name
+        self.verbose = verbose
+        self.debug = debug
 
 
         if data is None:
@@ -600,7 +604,7 @@ def main():
     checkout()
 
 
-    tol=1e-16
+    tol=1e-14 #floating point error should only be precise out to 14 decimal points, max
 
     #Make a unit object
 
@@ -643,9 +647,9 @@ def main():
     dif3 = sum(df2['Vref']-df1['Vref']) #non-dim. convert shouldnt change anything
     dif4 = sum(df2['alf']-df1['alf']) #angle shouldnt change anything
     if 'alf_deg' in df2:
-        dif5 = df2['alf_deg']-df2['alf']*180/np.pi
-        print(dif5)
-        dif5 = sum(dif5) #degree angle should have been created
+        dif5 = df2['alf_deg'].values-df2['alf'].values*180.0/np.pi
+        # print(dif5)
+        # dif5 = sum(dif5) #degree angle should have been created
     else:
         print('   FAIL! (didnt make angles in degrees)')
         # dif5 = tol+1e6 #degree angle not created, set value to fail tolerance
@@ -661,7 +665,7 @@ def main():
         print('   FAIL! (converted non-dimensional units)')
     elif abs(dif4) > tol:
         print('   FAIL! (converted angle units)')
-    elif abs(dif5) > tol:
+    elif any([abs(d) > tol for d in dif5]): #SHOULD BE DOING PRECISION OF INDIVIDUAL VALUES LIKE HERE, NOT SUM LIKE OTHERS
         print('   FAIL! (converted to degrees incorrectly)')
     else:
         print('   PASS!!!')
