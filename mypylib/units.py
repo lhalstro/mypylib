@@ -190,6 +190,11 @@ class UnitTracker():
         self.GetDegAngs( )
 
     def Save(self, filename):
+        """ Save data and info to csv files.
+
+        Args:
+            filename: str: filename for data with optional extension
+        """
         path = Path(filename)
         rootname = path.stem
         ext = path.suffix if path.suffix != '' else '.csv'
@@ -198,6 +203,14 @@ class UnitTracker():
         #save units and info
         self.pars.reset_index(names='parameter').to_csv(f"info_{rootname}{ext}", index=False)
 
+    def Read(self, filename):
+        """ Read data and info from csv files.
+
+        Args:
+            filename: str: data filename with extension
+        """
+        self.SetData(pd.read_csv(filename))
+        self.pars = pd.read_csv(f"info_{filename}").set_index('parameters', drop=True)
 
 #UNIT CONVERSIONS
     #enter conversions relative to standard imperial units.
