@@ -3,11 +3,11 @@ A light-weight, class-based, fail-safe method for converting and tracking units.
 
 DESCRIPTION:
 Provides single and batch unit conversions without classes
-Also provies UnitTracker class to track and convert the units of entire datasets.
+Also provides UnitTracker class to track and convert the units of entire datasets.
 
 LOGAN HALSTROM
 CREATED:  7/14/2020
-MODIFIED: 9/14/2020
+MODIFIED: 5/21/2026
 
 HOW TO USE:
 To convert units of `unconverted` from feet to meters without using classes:
@@ -35,6 +35,7 @@ ToDo:
 
 import numpy as np
 import pandas as pd
+from pathlib import Path
 
 class UnitTracker():
     """ Class definition for unit tracker
@@ -176,6 +177,15 @@ class UnitTracker():
 
         #Calculate Any Angles in Degrees Also
         self.GetDegAngs( )
+
+    def Save(self, filename):
+        path = Path(filename)
+        rootname = path.stem
+        ext = path.suffix if path.suffix != '' else 'csv'
+        #save data
+        self.GetData().to_csv(f"{rootname}.{ext}", index=False)
+        #save units and info
+        self.pars.to_csv(f"info_{rootname}.{ext}", index=True)
 
 
 #UNIT CONVERSIONS
