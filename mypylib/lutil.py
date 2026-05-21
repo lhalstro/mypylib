@@ -375,7 +375,7 @@ def dfInterp(df, key=None, vals=None, method=None):
     #this var only has default value to preserve original order of args
     if vals is None:
         raise ValueError("`vals` is required input")
-    elif not isinstance(vals, (list, np.array)):
+    elif not isinstance(vals, (list, np.ndarray)):
         raise TypeError("`vals` must be list or int")
     else:
         vals = np.array(vals)
