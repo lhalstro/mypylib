@@ -136,6 +136,17 @@ class UnitTracker():
         # If 'par' is a new index, it will be added. If it exists, it will be updated.
         self.pars.loc[par] = s
 
+    def Rename(self, params):
+        """ Rename parameters.
+
+        Args:
+            params: dict: {'current name1':'new name1'}
+        """
+        #rename data
+        self.SetData(self.GetData().rename(columns=params))
+        #rename info
+        self.pars.rename(index=params, inplace=True)
+
     def GetDegAngs(self, ):
         """ For all angles in radians, compute them in degrees
         and save as new variable.
@@ -166,7 +177,7 @@ class UnitTracker():
     def ConvertUnits(self, convto='SI', verbose=False):
         """ Batch-convert a dataset between standard imperial and metric (SI)
         Args:
-            convto (:obj:`str`): standard system of units to convert to ['SI']
+            convto (:obj:`str`): standard system of units to convert to ['SI'] ('imperial')
         """
         #Convert Units
         data, units = batchconvert(self.GetData(), self.GetUnits(),
@@ -181,11 +192,11 @@ class UnitTracker():
     def Save(self, filename):
         path = Path(filename)
         rootname = path.stem
-        ext = path.suffix if path.suffix != '' else 'csv'
+        ext = path.suffix if path.suffix != '' else '.csv'
         #save data
         self.GetData().to_csv(f"{rootname}.{ext}", index=False)
         #save units and info
-        self.pars.to_csv(f"info_{rootname}.{ext}", index=True)
+        self.pars.reset_index(names='parameter').to_csv(f"info_{rootname}{ext}", index=False)
 
 
 #UNIT CONVERSIONS
