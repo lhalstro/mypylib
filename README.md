@@ -18,11 +18,12 @@ Changelog:
   * Option to include some seaborn features
   * Custom color palette
   * Better default matplotlib text sizes
-* units.py - Unit Conversion and Tracking
+* ~~units.py - Unit Conversion and Tracking~~
+  * moved to standalone utility `unit-tracker`
   * Provides simple unit conversions
   * Also provides class-based method for tracking units for a dataset and batch-converting between systems
   * `unitconvert.py` is a depricated version of this
-* fileCleanUp.py 
+* fileCleanUp.py
   * Dataset file size reduction fuctions
   * Delete intervals of save files (e.g. downselect save frequency)
 * aero.py - General Aerodynamics Calculations
