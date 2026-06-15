@@ -188,7 +188,7 @@ def Archive_Glob(globpattern, tarname=None, compress=False, retcmd=False, verbos
         retcmd: return command as string to be executed later instead of executing now [False]
     """
     #Default archive name: remove glob wildcards to get base file text, and remove accidental double dots
-    if tarname is None: tarname = re.sub( "\[.*?\]", "", globpattern).replace("*", "").replace("..", '.')
+    if tarname is None: tarname = re.sub( r"\[.*?\]", "", globpattern).replace("*", "").replace("..", '.')
     ccmd = cmdv if verbose else cmd #verbose command option
     if retcmd: raise NotImplementedError("Can't return command because need to run `pigz` separately. see Archive_Files for how to implement")
     #only tar if there are files to tar
